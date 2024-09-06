@@ -1,0 +1,4 @@
+# Source user-specific aliases and functions
+if [ -f ~/dotfiles/bash/utilities/alias_setup.sh ]; then
+    source ~/dotfiles/bash/utilities/alias_setup.sh
+fi
