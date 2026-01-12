@@ -1,0 +1,86 @@
+# =========================
+# WINDOW
+# =========================
+[window]
+padding = { x = 14, y = 12 }
+dynamic_padding = false
+decorations = "buttonless"
+opacity = 0.97
+startup_mode = "Windowed"
+
+# =========================
+# FONT
+# =========================
+[font]
+size = 13.5
+
+[font.normal]
+family = "JetBrains Mono"
+style = "Regular"
+
+[font.bold]
+family = "JetBrains Mono"
+style = "Bold"
+
+[font.italic]
+family = "JetBrains Mono"
+style = "Italic"
+
+[font.offset]
+x = 0
+y = 1
+
+[font.glyph_offset]
+x = 0
+y = 0
+
+# =========================
+# CURSOR
+# =========================
+[cursor]
+blink_interval = 500
+thickness = 0.18
+
+[cursor.style]
+shape = "Beam"
+blinking = "On"
+
+# =========================
+# SCROLLING
+# =========================
+[scrolling]
+history = 10000
+multiplier = 3
+
+# =========================
+# SELECTION
+# =========================
+[selection]
+save_to_clipboard = true
+
+# =========================
+# COLORS — Tokyo Night
+# =========================
+[colors.primary]
+background = "#1a1b26"
+foreground = "#c0caf5"
+
+[colors.normal]
+black   = "#15161e"
+red     = "#f7768e"
+green   = "#9ece6a"
+yellow  = "#e0af68"
+blue    = "#7aa2f7"
+magenta = "#bb9af7"
+cyan    = "#7dcfff"
+white   = "#a9b1d6"
+
+[colors.bright]
+black   = "#414868"
+red     = "#f7768e"
+green   = "#9ece6a"
+yellow  = "#e0af68"
+blue    = "#7aa2f7"
+magenta = "#bb9af7"
+cyan    = "#7dcfff"
+white   = "#c0caf5"

@@ -1,0 +1,101 @@
+# =========================================================
+# tmux — clean, modern, minimal
+# =========================================================
+
+# -------------------------
+# General
+# -------------------------
+set -g default-terminal "tmux-256color"
+set -g mouse on
+set -g history-limit 100000
+set -sg escape-time 10
+
+# Faster redraw
+set -g focus-events on
+
+# -------------------------
+# Prefix
+# -------------------------
+set -g prefix C-a
+unbind C-b
+bind C-a send-prefix
+
+# -------------------------
+# Indexing (vim-style)
+# -------------------------
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
+# -------------------------
+# Splits (vim muscle memory)
+# -------------------------
+bind | split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+# -------------------------
+# Pane navigation (vim-style)
+# -------------------------
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# Resize panes
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# -------------------------
+# Copy mode (vi)
+# -------------------------
+setw -g mode-keys vi
+bind -T copy-mode-vi v send -X begin-selection
+bind -T copy-mode-vi y send -X copy-selection
+
+# -------------------------
+# Status bar (minimal & elegant)
+# -------------------------
+set -g status on
+set -g status-interval 5
+set -g status-position bottom
+
+# Colors
+set -g status-style bg=default,fg=colour245
+set -g message-style bg=default,fg=colour81
+
+# Left
+set -g status-left-length 40
+set -g status-left "#[fg=colour81,bold]#S "
+
+# Right (clean & useful)
+set -g status-right-length 60
+set -g status-right "#[fg=colour245]%Y-%m-%d #[fg=colour81]%H:%M "
+
+# Windows
+setw -g window-status-style fg=colour245
+setw -g window-status-current-style fg=colour81,bold
+
+setw -g window-status-format " #I:#W "
+setw -g window-status-current-format " #[fg=colour81,bold]#I:#W "
+
+# -------------------------
+# Pane borders (subtle)
+# -------------------------
+set -g pane-border-style fg=colour238
+set -g pane-active-border-style fg=colour81
+
+# -------------------------
+# Bell / activity
+# -------------------------
+set -g visual-bell off
+set -g visual-activity off
+set -g bell-action none
+
+# -------------------------
+# Reload config
+# -------------------------
+bind r source-file ~/.tmux.conf \; display-message "tmux reloaded ✓"
