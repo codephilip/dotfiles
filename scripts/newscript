@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Scaffold a new script in ~/.config/scripts and open it.
+#
+# Anything longer than a few lines graduates out of .zshrc and lands here,
+# where tmux, nvim and Raycast can call it too.
+#
+#   newscript            prompt for a name
+#   newscript deploy     create ./deploy and open it
+
+set -euo pipefail
+
+SCRIPTS="${SCRIPTS:-$HOME/.config/scripts}"
+
+name="${1:-}"
+if [[ -z $name ]]; then
+  read -r -p "Script name: " name
+fi
+
+[[ -n $name ]] || { echo "No name given." >&2; exit 1; }
+
+# Keep the namespace flat — these all end up on PATH.
+if [[ $name == */* ]]; then
+  echo "Name must not contain a slash." >&2
+  exit 1
+fi
+
+target="$SCRIPTS/$name"
+
+if [[ -e $target ]]; then
+  echo "$name already exists — opening it instead." >&2
+else
+  mkdir -p "$SCRIPTS"
+  cat > "$target" <<'EOF'
+#!/usr/bin/env bash
+# <what this does>
+
+set -euo pipefail
+
+EOF
+  chmod +x "$target"
+  echo "Created $target"
+fi
+
+# Guard against a non-interactive caller with no editor configured.
+exec "${EDITOR:-nvim}" "$target"

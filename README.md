@@ -6,6 +6,26 @@ A comprehensive collection of configuration files for a modern developer environ
 
 This configuration setup is designed for macOS/Linux systems with a focus on minimal, fast, and remote-friendly tooling. Each configuration is self-contained and can be used independently.
 
+## 🚀 Quick Start
+
+This repository *is* `~/.config`, so most tools (Neovim, Alacritty, tmux, Starship)
+already find their config at the XDG path with no setup. Only the few files that
+have to live outside `~/.config` need linking:
+
+```bash
+git clone <this-repo> ~/.config
+cd ~/.config
+make verify    # dry run — show what would change
+make install   # create the symlinks, report any missing tools
+```
+
+`make install` is idempotent and never overwrites a real file — if
+`~/.zshrc` already exists as a regular file, it says so and leaves it alone.
+It links `~/.zshrc`, `~/.tmux.conf`, `~/.gitconfig` and `~/.ssh/config`, then
+lists any missing Homebrew formulae as a copy-pasteable `brew install` line.
+
+Per-tool details and manual steps are in the sections below.
+
 ## 🔧 Core Dependencies
 
 ### Required System Tools
@@ -271,40 +291,32 @@ Markdown cheatsheets for:
 - Use aliases: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`
 - These use `bat` for syntax highlighting
 
-## 🚀 Quick Setup
+## 📦 Installing Dependencies
+
+Symlinking is handled by `make install` (see [Quick Start](#-quick-start)) —
+these are just the packages. `make install` also reports which of them are
+missing, so you can run it first and paste the command it gives you.
 
 ### macOS
 
 ```bash
-# Install core dependencies via Homebrew
-brew install neovim tmux fzf ripgrep bat git
-
-# Install fonts
+brew install neovim tmux fzf ripgrep bat git delta eza fd lazygit \
+             starship zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install font-jetbrains-mono
-
-# Link configurations (example)
-ln -s ~/.config/zsh/.zshrc ~/.zshrc
-ln -s ~/.config/tmux/tmux.conf ~/.tmux.conf
-ln -s ~/.config/git/gitconfig ~/.gitconfig
-ln -s ~/.config/nvim ~/.config/nvim  # if not already linked
-ln -s ~/.config/alacritty ~/.config/alacritty  # if using Alacritty
-
-# Restart terminal or source zshrc
-source ~/.zshrc
 ```
 
 ### Linux
 
 ```bash
-# Install core dependencies (example for Debian/Ubuntu)
-sudo apt install neovim tmux fzf ripgrep bat git zsh
+# Debian/Ubuntu — note bat is `batcat` and fd is `fdfind` on apt
+sudo apt install neovim tmux fzf ripgrep bat fd-find git zsh
 
-# Install JetBrains Mono font
-# Download from https://www.jetbrains.com/lp/mono/ or use package manager
-
-# Link configurations (same as macOS)
-# ...
+# Not in apt; install via Homebrew on Linux, cargo, or the release pages:
+#   delta eza lazygit starship zoxide
 ```
+
+JetBrains Mono: download from <https://www.jetbrains.com/lp/mono/> or install
+via your package manager.
 
 ## 🔗 Integration Notes
 
