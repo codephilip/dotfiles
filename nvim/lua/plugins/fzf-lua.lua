@@ -19,13 +19,20 @@ return {
         scrollbar = "float",
       },
     },
+    -- The leading `true` keeps fzf-lua's defaults and layers these on top.
+    -- Without it each table REPLACES the defaults, which silently dropped
+    -- <S-Up>/<S-Down> preview scrolling. That matters because <C-d>/<C-u>
+    -- below only drive the builtin previewer, and files/grep/buffers/LSP
+    -- all preview through bat (fzf's own previewer) instead.
     keymap = {
       builtin = {
+        true,
         ["<C-/>"] = "toggle-help",
         ["<C-u>"] = "preview-page-up",
         ["<C-d>"] = "preview-page-down",
       },
       fzf = {
+        true,
         ["ctrl-q"] = "select-all+accept", -- dump all matches into quickfix
         ["ctrl-u"] = "unix-line-discard",
       },
