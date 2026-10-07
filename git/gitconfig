@@ -1,0 +1,58 @@
+[user]
+  name  = codephil
+  email = philip@meiers.in
+
+[core]
+  pager = delta
+  excludesfile = ~/.config/git/ignore
+  editor = nvim
+
+[interactive]
+  diffFilter = delta --color-only
+
+[delta]
+  navigate = true          # n / N to jump between files in a diff
+  line-numbers = true
+  side-by-side = true
+  hyperlinks = true
+  # `bold yellow` is the ANSI slot, not a hex value, so it follows
+  # whatever palette the terminal is on without needing to be
+  # regenerated.
+  file-style = bold yellow
+
+  # syntax-theme and the two decoration styles are set per-theme in
+  # theme.gitconfig, included at the bottom of this file. They used to
+  # be pinned here to tokyonight_night / #565f89.
+
+[merge]
+  conflictstyle = zdiff3   # shows the common ancestor in conflict markers
+
+[diff]
+  colorMoved = default     # distinguishes moved code from added/removed
+
+[init]
+  defaultBranch = main
+
+[pull]
+  rebase = true
+
+[push]
+  autoSetupRemote = true   # `git push` on a new branch just works
+
+[rerere]
+  enabled = true           # remember how you resolved a conflict
+
+# Per-theme delta colours. GENERATED from theme/palettes/<name>.sh by
+# scripts/theme -- gitignored, never hand-edit. Switch with
+# `theme <name>`; the next git command picks it up.
+#
+# Must stay last: git applies includes where they appear, so anything
+# set above can be overridden here, but not the reverse.
+#
+# The path is absolute on purpose. A relative include resolves against
+# the config file's own directory as git *opened* it -- and git opens
+# this through the ~/.gitconfig symlink without resolving it, so
+# `path = theme.gitconfig` looks for ~/theme.gitconfig and is silently
+# skipped.
+[include]
+  path = ~/.config/git/theme.gitconfig
