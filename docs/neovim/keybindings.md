@@ -45,6 +45,7 @@ If you memorise nine things, memorise these.
 | ++space++ ++s++ ++m++ | Marks |
 | ++space++ ++s++ ++d++ | Workspace diagnostics |
 | ++space++ ++s++ ++q++ | Quickfix list |
+| ++space++ ++s++ `:` | Command history |
 
 Inside any picker: ++ctrl+q++ sends all matches to the quickfix list,
 ++ctrl+slash++ toggles help, ++ctrl+d++ / ++ctrl+u++ scroll the preview.
@@ -65,6 +66,8 @@ Inside any picker: ++ctrl+q++ sends all matches to the quickfix list,
 | ++space++ ++c++ ++shift+c++ | Outgoing calls — what does this call? |
 | ++space++ ++c++ ++d++ | Line diagnostics |
 | `]d` / `[d` | Next / previous diagnostic |
+| ++space++ ++o++ | Symbol outline (sidebar) |
+| ++space++ ++c++ ++shift+o++ | Symbol nav — the outline as a floating picker |
 
 ### Scanning a file
 
@@ -132,6 +135,9 @@ These operate on the syntax tree, not on lines.
 | ++space++ ++s++ ++shift+r++ | Start a substitution |
 | ++space++ ++c++ ++x++ | `chmod +x` the current file |
 | ++space++ ++c++ ++shift+r++ | Re-source the current file |
+| ++alt+j++ / ++alt+k++ | Move the line — or the selection — down / up |
+| `<` / `>` | Indent left / right in visual, keeping the selection |
+| `p` | Paste over a selection *without* yanking what you replaced |
 
 ## Completion
 
@@ -157,10 +163,15 @@ blink.cmp, `default` preset. ++tab++ and ++enter++ are deliberately left alone.
 | ++space++ ++b++ ++o++ | Close all others |
 | ++space++ ++b++ ++s++ | Pick a buffer by letter |
 | ++space++ ++b++ ++p++ | Pin / unpin |
+| ++space++ ++b++ ++shift+p++ | Close every unpinned buffer |
+| ++space++ ++b++ `<` / `>` | Move this buffer left / right in the bar |
 | ++space++ ++1++ … ++5++ | Jump to tab position |
+| ++space++ ++9++ | Jump to the last buffer in the bar |
 | ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ | Move between windows |
 | ++space++ ++minus++ | Split below |
 | ++space++ ++bar++ | Split right |
+| ++ctrl+up++ / ++ctrl+down++ | Taller / shorter window |
+| ++ctrl+left++ / ++ctrl+right++ | Narrower / wider window |
 
 ## Git
 
@@ -171,7 +182,9 @@ blink.cmp, `default` preset. ++tab++ and ++enter++ are deliberately left alone.
 | ++space++ ++g++ ++h++ | Stage hunk (works on a visual selection) |
 | ++space++ ++g++ ++shift+h++ | Reset hunk |
 | ++space++ ++g++ ++u++ | Undo stage hunk |
-| ++space++ ++g++ ++s++ | Stage buffer / git status picker |
+| ++space++ ++g++ ++shift+s++ | Stage the whole buffer |
+| ++space++ ++g++ ++shift+r++ | Reset the whole buffer |
+| ++space++ ++g++ ++s++ | Git status picker (fzf — note the lowercase) |
 | ++space++ ++g++ ++p++ | Preview hunk inline |
 | ++space++ ++g++ ++b++ | Blame this line, full message |
 | ++space++ ++g++ ++shift+b++ | Blame the whole buffer |
@@ -197,9 +210,12 @@ Full detail in [AI workflow](ai.md).
 | ++space++ ++a++ ++a++ | **Accept** the proposed diff |
 | ++space++ ++a++ ++d++ | **Deny** the proposed diff |
 | ++space++ ++a++ ++q++ | Close all diffs |
+| ++space++ ++a++ ++question++ | Connection status — is Claude actually attached? |
 | ++space++ ++n++ ++n++ | CodeCompanion chat |
 | ++space++ ++n++ ++i++ | CodeCompanion inline |
 | ++space++ ++n++ ++a++ | CodeCompanion action palette |
+| ++space++ ++n++ ++d++ | Add the selection to the CodeCompanion chat |
+| ++space++ ++n++ ++c++ | Generate a `:command` from a description |
 
 ## Toggles
 
@@ -247,11 +263,34 @@ gets toggled.
 | ++space++ ++o++ | Symbol outline |
 | ++ctrl+backslash++ | Floating terminal |
 | ++space++ ++w++ / ++space++ ++q++ | Write / quit |
+| ++space++ ++shift+q++ | Quit **all** windows |
 | ++escape++ | Clear search highlight |
+| ++n++ / ++shift+n++ | Next / previous search hit, re-centred |
 | ++g++ ++x++ | Open the URL under the cursor |
 | ++space++ ++shift+l++ | Lazy (plugin manager) |
 | ++space++ ++question++ | Bindings for this buffer |
 | ++s++ / ++shift+s++ | Flash jump / flash treesitter |
+
+### Quickfix
+
+++space++ ++s++ ++q++ above opens it as a fuzzy picker; these are the plain
+list.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++x++ ++q++ | Open the quickfix window |
+| `]q` / `[q` | Next / previous quickfix item |
+
+### Terminal mode
+
+The floating terminal is ++ctrl+backslash++. Once you are inside it, the
+normal-mode window bindings would otherwise be swallowed by the shell, so they
+are re-bound for terminal mode too.
+
+| Keys | Does |
+|---|---|
+| ++ctrl+slash++ | Leave terminal mode (back to normal mode) |
+| ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ | Move out to another window directly |
 
 !!! warning "++s++ is taken by flash"
     It no longer substitutes a character. Use ++c++ ++l++ for that.

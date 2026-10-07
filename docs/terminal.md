@@ -94,25 +94,63 @@ starship matches Tokyo Night so the prompt and editor agree.
 
 ## Key repeat
 
-macOS defaults make `hjkl` feel sluggish. Current settings:
+macOS defaults make `hjkl` feel sluggish. Three steps, and the **order
+matters** — see [troubleshooting](troubleshooting.md#holding-j-or-k-crawls-one-line-at-a-time)
+for the full account.
+
+**1. System Settings → Keyboard.** *Key Repeat Rate* to the fastest notch,
+*Delay Until Repeat* to the shortest.
+
+**2. Then, in a terminal:**
 
 ```bash
-defaults write -g KeyRepeat -int 1          # ~15ms between repeats
-defaults write -g InitialKeyRepeat -int 15  # ~225ms before repeat starts
+defaults write -g KeyRepeat -int 1                      # ~15ms between repeats
+defaults write -g InitialKeyRepeat -int 15              # ~225ms before repeat starts
+defaults write -g ApplePressAndHoldEnabled -bool false  # no GUI equivalent
 ```
 
-Requires a **logout** to take effect — macOS reads these at login.
+**3. Log out and back in.** macOS reads the rate at login, so a terminal
+relaunch does nothing.
 
-!!! warning "The slider will overwrite these"
-    `KeyRepeat 1` is faster than System Settings can go (its minimum is 2).
-    Opening Settings → Keyboard and touching either slider resets them.
+!!! info "Why the slider first, and the commands second"
+    They are not alternatives — each does something the other cannot, and the
+    GUI has to go first.
+
+    `KeyRepeat 1` is faster than the slider can express (its floor is `2`), so
+    the commands have to come *after* it. Go the other way round and the slider
+    silently resets your `1` back to `2`. `ApplePressAndHoldEnabled` has no GUI
+    control at all, and while it is on, holding a key opens the accent-character
+    picker **instead of repeating** — no rate helps.
+
+    In practice the writes also do not take unless the pane has set the sliders
+    first, which is why step 1 is not optional.
+
+!!! warning "Touching the slider again undoes step 2"
+    Any later visit to Settings → Keyboard that nudges either slider resets
+    `KeyRepeat` to `2`. Re-run the commands if you do.
 
 Revert with:
 
 ```bash
 defaults delete -g KeyRepeat
 defaults delete -g InitialKeyRepeat
+defaults delete -g ApplePressAndHoldEnabled
 ```
+
+## Key bindings
+
+The terminals themselves add exactly one binding each — everything else is
+left stock deliberately, so the muscle memory transfers to a vanilla install.
+
+| Keys | Where | Does |
+|---|---|---|
+| ++shift+enter++ | Ghostty, Alacritty | Sends `ESC CR` instead of submitting |
+| ++ctrl+b++ ++shift+r++ | tmux | Reload `tmux.conf`, with a confirmation message |
+| ++cmd+shift+comma++ | Ghostty | Reload config — Ghostty has no CLI reload |
+
+++shift+enter++ is the one that matters day to day: Claude Code and most REPLs
+need a literal newline to add a line without submitting the prompt, and the
+default behaviour submits. Both terminals are configured to match.
 
 ## tmux
 
@@ -124,4 +162,6 @@ if [[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]; then
 fi
 ```
 
-See `tmux-commands` for the cheatsheet.
+Every binding is stock apart from ++ctrl+b++ ++shift+r++ above, so anything you
+learn here works on a tmux you have never configured. See `tmux-commands` for
+the cheatsheet.
