@@ -66,6 +66,35 @@ Inside any picker: ++ctrl+q++ sends all matches to the quickfix list,
 | ++space++ ++c++ ++d++ | Line diagnostics |
 | `]d` / `[d` | Next / previous diagnostic |
 
+### Scanning a file
+
+Holding ++j++ is one line per keypress regardless of how fast the key repeat is
+set, so a 600-line file is always 600 presses. Folding is the one that changes
+how the file feels: treesitter folds are enabled per-buffer wherever a parser
+exists, so `zM` collapses every function to its signature. On this repo's
+`lua/plugins/lsp.lua` that turns 183 lines into 11 screen rows.
+
+| Keys | Does |
+|---|---|
+| `zM` | Collapse everything — the file's shape on one screen |
+| `zR` | Expand everything again |
+| `za` | Toggle the fold under the cursor |
+| `zo` / `zc` | Open / close the fold under the cursor |
+| ++ctrl+d++ / ++ctrl+u++ | Half a page, cursor re-centred |
+| `12j` / `8k` | Jump by the number in the gutter — numbers are relative |
+| ++ctrl+o++ / ++ctrl+i++ | Back / forward through the jumplist |
+| `H` / `M` / `L` | Top / middle / bottom of the screen |
+| ++space++ ++s++ ++b++ | Fuzzy-search the lines of this buffer only |
+
+!!! tip "Files open expanded"
+    `foldlevel` is 99, so nothing is folded until you ask. `zM` is the
+    deliberate "show me the shape" gesture rather than a state you live in.
+
+!!! example "Finding your way around an unfamiliar file"
+    `zM` to collapse it, then ++j++ / ++k++ down the list of signatures — now
+    one press really is one function — then `za` to open the one you want.
+    ++space++ ++o++ does the same job as a sidebar if you prefer it persistent.
+
 ### Syntax-aware motion
 
 These operate on the syntax tree, not on lines.

@@ -100,7 +100,59 @@ Move between splits (tmux-compatible):
 Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l
 
 Clear search highlight:
-<Space>h
+<Esc>
+
+---
+
+## 🏃 Looking Through A File Fast
+
+Holding j is the slow way. It is one line per keypress no matter how
+fast the key repeat is set, so a 600-line file is always 600 presses.
+Use these instead — roughly in order of how much they pay off.
+
+Collapse every function to one line, see the whole file's shape:
+zM
+
+Expand it all again:
+zR
+
+Toggle just the fold under the cursor:
+za
+
+Open / close the fold under the cursor:
+zo / zc
+
+Half a page at a time, cursor stays centred:
+Ctrl-d / Ctrl-u
+
+Jump to any visible line by number — line numbers are relative, so
+read the gutter and type the number you see:
+12j / 8k
+
+Jump to any visible character — press s, type 2 characters, then the
+label that appears:
+s
+
+Next / previous function:
+]f / [f
+
+Next / previous class:
+]c / [c
+
+Symbol outline of the file, navigate it like a table of contents:
+<Space>o
+
+Fuzzy-search the lines of just this buffer:
+<Space>sb
+
+Back / forward through where you have jumped from:
+Ctrl-o / Ctrl-i
+
+Top / middle / bottom of the visible screen:
+H / M / L
+
+Start / end of file:
+gg / G
 
 ---
 
