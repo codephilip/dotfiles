@@ -136,3 +136,26 @@ keybind = shift+enter=text:\x1b\r
 # No theme-cycling binding here on purpose: a `text:` keybind types
 # into whatever has focus, so it would insert "theme next" into nvim
 # or a REPL. Use the `theme` command, then ⌘⇧, to reload.
+
+
+# --- Per-machine overrides -------------------------------
+# MUST STAY LAST. Ghostty applies keys in the order it reads them, so
+# the last assignment wins -- an include here can override anything
+# above it, but one at the top could not.
+#
+# Gitignored, so each machine keeps its own and a fresh clone has none
+# (the leading ? makes it optional, as with theme.conf).
+#
+# The case this exists for: background-blur above is the numeric 20,
+# which renders identically everywhere. The macos-glass-* materials
+# are better -- real NSVisualEffectView backing rather than a gaussian
+# blur of the wallpaper -- but need macOS 26+, and they fail silently
+# rather than loudly on older systems. So the shared config stays on
+# the value that works everywhere, and the machines that can do better
+# opt in locally:
+#
+#     # ~/.config/ghostty/local.conf on a macOS 26+ machine
+#     background-blur = macos-glass-regular
+#
+# Then ⌘⇧, to reload.
+config-file = ?local.conf

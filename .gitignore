@@ -32,3 +32,8 @@ bat/syntaxes.bin
 gh/hosts.yml
 cagent/
 
+# Per-machine Ghostty overrides, included last by ghostty/config.
+# Used to give macOS 26+ machines real macos-glass-* blur while the
+# shared config keeps the numeric radius that works everywhere.
+ghostty/local.conf
+
