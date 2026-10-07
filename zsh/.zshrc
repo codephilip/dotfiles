@@ -30,6 +30,13 @@ setopt PUSHD_SILENT
 
 setopt INTERACTIVE_COMMENTS   # allow # comments when typing commands
 
+# Emacs-style line editing. Selected here, before any plugin binds a
+# key, because zsh starts in vi mode when $EDITOR contains "vi" -- and
+# EDITOR=nvim does. Selected at the bottom instead, every earlier
+# plain `bindkey` (autosuggestions' Ctrl-Space) lands in the viins
+# keymap and silently vanishes when this switches to emacs.
+bindkey -e
+
 # -------------------------
 # Paths
 #
@@ -446,9 +453,8 @@ _source_first \
   ~/.config/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # -------------------------
-# Key bindings
+# Key bindings (emacs mode is selected near the top)
 # -------------------------
-bindkey -e                                  # emacs-style line editing
 bindkey '^[[A' history-search-backward      # Up  = prefix search, not plain history
 bindkey '^[[B' history-search-forward       # Down
 bindkey '^[[1;5C' forward-word              # Ctrl-Right
