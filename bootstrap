@@ -59,6 +59,16 @@ EXTERNAL_TOOLS=(
 # both are here — see ghostty/config.
 BREW_CASKS=(ghostty alacritty font-jetbrains-mono-nerd-font)
 
+# `./bootstrap --tools` prints the install lines straight from the
+# arrays above, so there is one source of truth for what to install.
+# The README used to carry its own copy of this list and drifted --
+# it was missing gh and k9s while claiming to be in sync.
+if [[ "${1:-}" == "--tools" ]]; then
+  printf 'brew install %s\n' "${BREW_FORMULAE[*]}"
+  printf 'brew install --cask %s\n' "${BREW_CASKS[*]}"
+  exit 0
+fi
+
 red()   { printf '\033[31m%s\033[0m\n' "$*"; }
 green() { printf '\033[32m%s\033[0m\n' "$*"; }
 dim()   { printf '\033[2m%s\033[0m\n' "$*"; }

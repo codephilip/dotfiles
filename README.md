@@ -22,9 +22,11 @@ them, so adopting this on a new machine is five steps, not one:
 # 2. Clone. The path matters — see "Cloning somewhere else" below.
 git clone https://github.com/codephilip/dotfiles.git ~/.config
 
-# 3. Tools. `make verify` prints this same list filtered to what you're missing.
-brew install bat delta eza fd fzf lazygit neovim ripgrep starship tmux \
-             zoxide zsh-autosuggestions zsh-syntax-highlighting
+# 3. Tools. `make tools` prints these from bootstrap's own list, so it is
+#    never out of date — pipe it to a shell, or paste it:
+#        cd ~/.config && make tools
+brew install bat delta eza fd fzf gh k9s lazygit neovim ripgrep starship \
+             tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 
 # 4. Symlinks + generated theme files
@@ -489,12 +491,20 @@ missing, so you can run it first and paste the command it gives you.
 
 ### macOS
 
-This is the same list `bootstrap` checks for, kept in sync with
-`BREW_FORMULAE` and `BREW_CASKS` in that file.
+Don't trust this copy — it has drifted before. `make tools` prints the lines
+straight from `BREW_FORMULAE` and `BREW_CASKS` in `bootstrap`, which is the
+only place the list actually lives:
 
 ```bash
-brew install bat delta eza fd fzf lazygit neovim ripgrep starship tmux \
-             zoxide zsh-autosuggestions zsh-syntax-highlighting
+cd ~/.config && make tools          # paste the output
+cd ~/.config && make tools | sh     # or just run it
+```
+
+For reference, at the time of writing:
+
+```bash
+brew install bat delta eza fd fzf gh k9s lazygit neovim ripgrep starship \
+             tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 ```
 
