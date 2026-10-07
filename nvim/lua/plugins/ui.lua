@@ -3,16 +3,79 @@
 -- dashboard, colour highlighting, keymap discovery.
 -- =========================================================
 
+local theme = require("config.theme")
+
 return {
-  -- Colorscheme ------------------------------------------------------------
+  -- Colorschemes -----------------------------------------------------------
+  -- All three are installed; `lazy` is driven by which one
+  -- ~/.config/theme/current names, so exactly one loads at startup with
+  -- priority 1000 and the other two sit on disk unloaded.
+  --
+  -- Switch with `theme <name>` in the shell, then restart nvim.
+  --
+  -- Every one of them is set transparent: the background comes from
+  -- Ghostty, which is what lets its blur show through the editor
+  -- instead of nvim painting an opaque rectangle over the glass.
+
+  -- Tokyo Night ------------------------------------------------------------
+  {
+    "folke/tokyonight.nvim",
+    lazy = not theme.is_active("tokyonight"),
+    priority = 1000,
+    opts = {
+      style = "night",
+      transparent = true,
+      styles = {
+        comments = { italic = true },
+        keywords = { italic = true },
+        functions = { bold = true },
+        -- Without these two the sidebar and float backgrounds stay
+        -- opaque and the transparency looks half-applied.
+        sidebars = "transparent",
+        floats = "transparent",
+      },
+    },
+    config = function(_, opts)
+      require("tokyonight").setup(opts)
+      if theme.is_active("tokyonight") then
+        vim.cmd.colorscheme(theme.current.colorscheme)
+      end
+    end,
+  },
+
+  -- Solarized Osaka --------------------------------------------------------
+  -- craftzdog's theme; a tokyonight fork, so it takes the same options.
+  {
+    "craftzdog/solarized-osaka.nvim",
+    lazy = not theme.is_active("solarized-osaka"),
+    priority = 1000,
+    opts = {
+      transparent = true,
+      styles = {
+        comments = { italic = true },
+        keywords = { italic = true },
+        functions = { bold = true },
+        sidebars = "transparent",
+        floats = "transparent",
+      },
+    },
+    config = function(_, opts)
+      require("solarized-osaka").setup(opts)
+      if theme.is_active("solarized-osaka") then
+        vim.cmd.colorscheme(theme.current.colorscheme)
+      end
+    end,
+  },
+
+  -- Catppuccin Mocha -------------------------------------------------------
   {
     "catppuccin/nvim",
     name = "catppuccin",
-    lazy = false,
-    priority = 1000, -- load before everything else
+    lazy = not theme.is_active("catppuccin-mocha"),
+    priority = 1000,
     opts = {
       flavour = "mocha",
-      transparent_background = true, -- let alacritty's background + opacity show
+      transparent_background = true,
       styles = {
         comments = { "italic" },
         keywords = { "italic" },
@@ -44,7 +107,9 @@ return {
     },
     config = function(_, opts)
       require("catppuccin").setup(opts)
-      vim.cmd.colorscheme("catppuccin")
+      if theme.is_active("catppuccin-mocha") then
+        vim.cmd.colorscheme(theme.current.colorscheme)
+      end
     end,
   },
 
@@ -58,7 +123,7 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
     opts = {
       options = {
-        theme = "catppuccin",
+        theme = theme.current.lualine,
         globalstatus = true,
         component_separators = { left = "│", right = "│" },
         section_separators = { left = "", right = "" },
@@ -239,6 +304,7 @@ return {
         { "<leader>c", group = "code" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },
+        { "<leader>m", group = "markdown" },
         { "<leader>n", group = "ai chat" },
         { "<leader>s", group = "search" },
         { "<leader>u", group = "ui/toggle" },

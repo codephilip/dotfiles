@@ -16,6 +16,11 @@ local SERVERS = {
   "yamlls",
   "terraformls",
   "dockerls",
+  -- marksman: markdown. Completion for `[](relative/path)` links and
+  -- `#heading` anchors, go-to-definition on a link, and document symbols
+  -- (`gO`) as a heading outline. That is what makes a 20-file
+  -- cross-linked mkdocs site navigable.
+  "marksman",
 }
 
 return {
