@@ -47,6 +47,11 @@ export SCRIPTS="$HOME/.config/scripts"
 
 path=(
   $HOME/bin
+  # Claude Code's native installer drops its binary here, as do uv, pipx
+  # and `cargo install --root ~/.local`. Without this, `claude` is
+  # installed and still "command not found" -- which is exactly what
+  # happened on mac-mini-1.
+  $HOME/.local/bin
   $SCRIPTS
   /opt/homebrew/bin
   /opt/homebrew/sbin
