@@ -51,3 +51,5 @@ zsh/plugins/zsh-autosuggestions/
 zsh/plugins/zsh-syntax-highlighting/
 # scoop writes its config to $XDG_CONFIG_HOME/scoop — machine state
 scoop/
+# zsh completion cache
+zsh/.zcompdump*

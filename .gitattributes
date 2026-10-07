@@ -1,0 +1,8 @@
+# Everything here is read by Unix shells and tools, on every OS. With
+# core.autocrlf=true (Git for Windows' default) scripts and .zshrc would
+# be checked out CRLF, and bash/zsh choke on the \r.
+* text=auto eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary
