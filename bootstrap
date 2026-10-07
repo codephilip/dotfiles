@@ -193,6 +193,12 @@ fi
 #
 # Reported, not written: these are system-wide and need a logout to
 # apply, so they are yours to run. Same rule as the brew lists.
+#
+# NB: a green tick here only means the values are STORED. It cannot
+# tell you the running login session is using them -- `defaults read`
+# returns the new value the instant it is written, while the session
+# keeps the old rate until you log out. Verified the hard way: an
+# emulator launched 26 minutes after the write was still slow.
 if [[ $OSTYPE == darwin* ]]; then
   bold $'\nmacOS key repeat'
 
@@ -216,9 +222,13 @@ if [[ $OSTYPE == darwin* ]]; then
   check_default ApplePressAndHoldEnabled  0  "accent picker steals the repeat"
 
   if (( ${#macos_fixes[@]} == 0 )); then
-    green "  ✓ key repeat is set for holding j/k"
+    green "  ✓ key repeat values are stored"
+    dim   "    (stored ≠ active — if j/k still crawls, you have not logged out)"
   else
-    red "  ${#macos_fixes[@]} to fix — holding j/k in Neovim will crawl:"
+    red "  ${#macos_fixes[@]} to fix — holding j/k in Neovim will crawl."
+    dim "    FIRST: System Settings > Keyboard — drag 'Key Repeat Rate' to"
+    dim "    the fastest notch and 'Delay Until Repeat' to the shortest."
+    dim "    Writing the prefs without doing that does not take. Then run:"
     for fix in "${macos_fixes[@]}"; do
       key=${fix%%:*}; rest=${fix#*:}; target=${rest%%:*}; why=${rest#*:}
       dim "    $key ($why)"
@@ -228,7 +238,8 @@ if [[ $OSTYPE == darwin* ]]; then
         printf '    defaults write -g %s -int %s\n' "$key" "$target"
       fi
     done
-    dim "    then log out and back in"
+    dim "    FINALLY: log out and back in. Relaunching the terminal is"
+    dim "    not enough — macOS latches the rate for the login session."
   fi
 fi
 

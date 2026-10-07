@@ -2,6 +2,57 @@
 
 Failure modes that have actually happened in this setup, with the fix for each.
 
+## Holding ++j++ or ++k++ crawls one line at a time
+
+**Cause:** macOS key repeat. Not Neovim, not the terminal, and nothing in this
+repo — these are per-user macOS settings, which is why one machine feels fine
+and another feels broken with identical configs.
+
+All three steps below are required, **in this order**. Doing fewer is what makes
+this take an afternoon.
+
+**1. System Settings → Keyboard.** Drag *Key Repeat Rate* to the fastest notch
+and *Delay Until Repeat* to the shortest. Do this **first**. In practice,
+writing the preferences without having set them in the pane does not take
+effect.
+
+**2. Then, in a terminal:**
+
+```bash
+defaults write -g KeyRepeat -int 1
+defaults write -g InitialKeyRepeat -int 15
+defaults write -g ApplePressAndHoldEnabled -bool false
+```
+
+This step is *not* redundant with step 1. `KeyRepeat = 1` is faster than the
+slider's fastest position can express (the slider floors at `2`), and
+`ApplePressAndHoldEnabled` is not exposed in System Settings at all on current
+macOS. While that one is on, holding a key opens the accent-character picker
+**instead of repeating** — no repeat rate can rescue it.
+
+**3. Log out and back in.** A terminal relaunch is not enough. macOS latches the
+repeat rate for the login session, so a session that started before the settings
+changed keeps the old rate no matter how many times you quit the app. This was
+confirmed here the hard way: Ghostty was launched 26 minutes *after* the
+preferences were written and was still slow; only a logout fixed it.
+
+!!! warning "`defaults read` cannot confirm this worked"
+    It reports the *stored* value, which looks correct the instant you write it,
+    while the running session still uses the old one. `make verify` has the same
+    limitation — it reads the same stored prefs. The only test is holding ++j++
+    after a logout.
+
+!!! danger "The keys are case-sensitive"
+    `defaults write -g applepressandholdenabled` is silently accepted and does
+    **nothing** — it creates an unrelated key that macOS ignores. It must be
+    `ApplePressAndHoldEnabled`. Check for a stray lowercase copy with
+    `defaults read -g applepressandholdenabled` and remove it with
+    `defaults delete -g applepressandholdenabled`.
+
+Once repeat is fast, note that holding ++j++ is still the slow way to cross a
+file — see [scanning a file](neovim/keybindings.md#scanning-a-file) for `zM` and
+the rest.
+
 ## Icons render as blank boxes
 
 **Cause:** the terminal emulator is not using a Nerd Font.

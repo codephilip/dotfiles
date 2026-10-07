@@ -63,18 +63,30 @@ reports `not in repo, nothing to link` and carries on.
 
 **Key repeat** is the one that makes a new Mac feel broken in Neovim. These are
 per-user macOS defaults rather than files, so they cannot live in this repo and
-`make install` can only report them:
+`make install` can only report them. All three steps are needed, in order:
 
-```bash
-defaults write -g KeyRepeat -int 1                      # stock is 6, ~6x slower
-defaults write -g InitialKeyRepeat -int 15              # delay before repeating
-defaults write -g ApplePressAndHoldEnabled -bool false  # the real culprit
-# then log out and back in
-```
+1. **System Settings → Keyboard** — *Key Repeat Rate* to the fastest notch,
+   *Delay Until Repeat* to the shortest. Do this first; writing the prefs
+   without the pane having set them does not take.
+2. **Then run:**
+   ```bash
+   defaults write -g KeyRepeat -int 1                      # below the slider's floor of 2
+   defaults write -g InitialKeyRepeat -int 15              # delay before repeating
+   defaults write -g ApplePressAndHoldEnabled -bool false  # not in System Settings at all
+   ```
+3. **Log out and back in.** A terminal relaunch is not enough — macOS latches
+   the rate for the login session.
 
-`ApplePressAndHoldEnabled` matters more than the rate: while it is on, holding a
-key opens the accent-character picker **instead of repeating at all**, so `j`
-advances one line per press no matter how fast the repeat rate is set.
+Step 2 is not redundant with step 1: `KeyRepeat = 1` is faster than the slider
+can express, and `ApplePressAndHoldEnabled` has no GUI control. While that one
+is on, holding a key opens the accent-character picker **instead of repeating at
+all**, so `j` advances one line per press however fast the rate is set.
+
+Note that `defaults read` — and therefore `make verify` — reports the *stored*
+value, which looks correct immediately while the session still uses the old one.
+The only real test is holding `j` after a logout. Full detail, including the
+case-sensitivity trap, is in
+[docs/troubleshooting.md](docs/troubleshooting.md).
 
 ### Cloning somewhere else
 
