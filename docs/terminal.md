@@ -139,30 +139,52 @@ defaults delete -g ApplePressAndHoldEnabled
 
 ## Key bindings
 
-The terminals themselves add exactly one binding each — everything else is
-left stock deliberately, so the muscle memory transfers to a vanilla install.
+The terminals add exactly one key binding, so muscle memory transfers to a
+vanilla install. Ghostty's stock set is long and macOS-native; the ones worth
+knowing are below. `ghostty +list-keybinds --default` prints all of them.
 
-| Keys | Where | Does |
-|---|---|---|
-| ++shift+enter++ | Ghostty, Alacritty | Sends `ESC CR` instead of submitting |
-| ++ctrl+a++ ++shift+r++ | tmux | Reload `tmux.conf`, with a confirmation message |
-| ++cmd+shift+comma++ | Ghostty | Reload config — Ghostty has no CLI reload |
+=== "Ours"
 
-++shift+enter++ is the one that matters day to day: Claude Code and most REPLs
-need a literal newline to add a line without submitting the prompt, and the
-default behaviour submits. Both terminals are configured to match.
+    | Keys / setting | Where | Does |
+    |---|---|---|
+    | ++shift+enter++ | Ghostty, Alacritty | Sends `ESC CR`: a newline in Claude Code and most REPLs instead of submitting |
+    | Left ++option++ is ++alt++ | Ghostty | `macos-option-as-alt = left`. Right ++option++ still types accented characters |
+    | Copy on select | Ghostty | `copy-on-select = clipboard`: selecting text copies it, no ++cmd+c++ needed |
+    | Splits keep the directory | Ghostty | `window-inherit-working-directory`: new tabs and splits open where you were |
+
+=== "Stock"
+
+    Ghostty on macOS. Every one of these works on a fresh install.
+
+    | Keys | Does |
+    |---|---|
+    | ++cmd+t++ / ++cmd+n++ | New tab / new window |
+    | ++cmd+1++ … ++cmd+8++, ++cmd+9++ | Go to tab by number, last tab |
+    | ++cmd+shift+bracket-left++ / ++cmd+shift+bracket-right++ | Previous / next tab (also ++ctrl+shift+tab++ / ++ctrl+tab++) |
+    | ++cmd+d++ / ++cmd+shift+d++ | Split right / split down |
+    | ++cmd+alt+left++ (any arrow) | Move to the split in that direction |
+    | ++cmd+bracket-left++ / ++cmd+bracket-right++ | Previous / next split |
+    | ++cmd+ctrl+left++ (any arrow) | Resize the split |
+    | ++cmd+ctrl+equal++ | Equalize splits |
+    | ++cmd+shift+enter++ | Zoom the split (toggle) |
+    | ++cmd+w++ | Close the split or tab |
+    | ++cmd+plus++ / ++cmd+minus++ / ++cmd+0++ | Font bigger / smaller / reset |
+    | ++cmd+f++, ++cmd+g++ / ++cmd+shift+g++ | Search, next / previous match |
+    | ++cmd+up++ / ++cmd+down++ | Jump to the previous / next shell prompt |
+    | ++cmd+k++ | Clear the screen |
+    | ++cmd+shift+p++ | Command palette |
+    | ++cmd+comma++ / ++cmd+shift+comma++ | Open config / **reload config**. Ghostty has no CLI reload |
+    | ++cmd+enter++ | Fullscreen |
+
+    ++alt+left++ / ++alt+right++ move by word, and ++cmd+left++ /
+    ++cmd+right++ jump to the start / end of the line.
+
+Ghostty splits and tmux panes overlap. Use tmux on anything you might SSH
+into or want to detach from; Ghostty splits are fine for a quick side-by-side
+on this machine.
 
 ## tmux
 
-Auto-attaches on SSH only — local shells are left alone:
-
-```bash
-if [[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]; then
-  tmux attach || tmux new
-fi
-```
-
-The prefix is ++ctrl+a++ rather than ++ctrl+b++. After the prefix, every
-binding is stock apart from ++ctrl+a++ ++shift+r++ above, so on a tmux you have
-never configured you press ++ctrl+b++ and the rest is the same. The full key
-reference is on the [tmux](tmux.md) page.
+Auto-attaches on SSH only; local shells are left alone. The prefix is
+++ctrl+a++ rather than ++ctrl+b++, and every key after it is stock. The full
+reference, ours and stock, is on the [tmux](tmux.md) page.

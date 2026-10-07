@@ -70,7 +70,7 @@ theme/
 | `alacritty/theme-current.toml` | `[general] import` in `alacritty.toml` |
 | `git/theme.gitconfig` | `[include]` at the bottom of `git/gitconfig` |
 | `starship-current.toml` | `$STARSHIP_CONFIG`, set in `.zshrc` |
-| `k9s/skins/theme-current.yaml` | `ui.skin: theme-current` in `k9s/config.yaml` |
+| `k8s/k9s/skins/theme-current.yaml` | `ui.skin: theme-current` in `k8s/k9s/config.yaml` |
 
 **Read at startup** by the tool itself:
 
@@ -87,7 +87,7 @@ theme/
     k9s ignores XDG on macOS and looks in `~/Library/Application Support/k9s`,
     so without the export in `.zshrc` it reads neither the config nor the
     generated skin — and says nothing about it. `k9s info` prints the paths it
-    resolved; both should be under `~/.config/k9s`.
+    resolved; both should be under `~/.config/k8s/k9s`.
 
 ### Why Neovim does not use the hex values
 

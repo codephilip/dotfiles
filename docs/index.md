@@ -117,6 +117,18 @@ fresh clone — `make install` writes them. Never hand-edit them; see
 Keys are written as they are pressed. The Neovim leader is ++space++, so
 ++space++ ++f++ ++f++ means *press space, then f, then f* — not a chord.
 
+Every reference table is split into two tabs:
+
+- **Ours**: what this repo adds or changes, such as aliases, functions,
+  rebound keys and changed defaults. It only works on a machine with this
+  config.
+- **Stock**: what the tool does out of the box. It works everywhere: a server
+  you SSH into, a colleague's laptop, a fresh install.
+
+The tabs are linked, so picking **Stock** on one page switches every page to
+it. That makes it a quick way to rehearse what you'd have on a box without
+these dotfiles.
+
 Commands you run in a shell are shown without a prompt character so they can be
 copied directly:
 

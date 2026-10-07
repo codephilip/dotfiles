@@ -97,7 +97,7 @@ around editing a documentation site, not around note-taking.
 | Plugin | Role |
 |---|---|
 | `render-markdown.nvim` | draws headings, code blocks, tables, bullets, checkboxes and links as styled text **in the buffer** |
-| `vim-table-mode` | typing `\|` re-aligns the whole table as you go |
+| `vim-table-mode` | typing <code>&#124;</code> re-aligns the whole table as you go |
 | `marksman` (LSP) | link/heading completion, follow links, heading outline |
 | `markdownlint` | lint, tuned by `.markdownlint.json` at the repo root |
 

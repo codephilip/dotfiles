@@ -10,6 +10,43 @@ own pages:
 `alias` with no arguments lists everything defined in the current shell, and
 `type <name>` tells you what a single one expands to.
 
+Everything on this page is **ours**. The **Stock** tabs give what to type on
+a machine without this config.
+
+## Quick reference
+
+=== "Ours"
+
+    | Alias | Does |
+    |---|---|
+    | `ll` | Long listing with hidden files and git status |
+    | `lt` | Tree, 2 levels |
+    | `..` | Up one directory |
+    | `z <partial>` | Jump to a frequently used directory |
+    | `cdr` | Repo root |
+    | `mkcd <dir>` | Make a directory and enter it |
+    | `v <file>` | nvim |
+    | `fv` | Fuzzy-find a file, open it in nvim |
+    | `lg` / `ld` | lazygit / lazydocker |
+    | `ports` | Listening TCP ports |
+    | `killport <n>` | Kill whatever holds port `n` |
+    | `zreload` | Restart the shell after editing `.zshrc` |
+
+=== "Stock"
+
+    | Command | Does |
+    |---|---|
+    | `ls -lah` | Long listing with hidden files |
+    | `find . -maxdepth 2` | Rough tree, when `tree` isn't installed |
+    | `cd ..` | Up one directory |
+    | `cd -` | Previous directory |
+    | `cd "$(git rev-parse --show-toplevel)"` | Repo root |
+    | `mkdir -p dir && cd dir` | Make a directory and enter it |
+    | `vi <file>` | Whatever `vi` the machine has |
+    | `lsof -iTCP -sTCP:LISTEN -P` | Listening TCP ports |
+    | `kill -9 $(lsof -ti tcp:8080)` | Kill whatever holds port 8080 |
+    | `exec $SHELL` | Restart the shell |
+
 ## Files
 
 `ls` and friends use [eza](https://github.com/eza-community/eza) when it is
@@ -24,16 +61,22 @@ installed, and fall back to plain `ls` flags when it is not.
 | `lt` / `ltt` | Tree, 2 / 3 levels deep |
 | `llg` | Long listing that skips anything `.gitignore`d |
 
+Without eza, `ls`, `ll`, `la` and `l` still exist as plain `ls` flags; the
+tree and `llg` forms don't.
+
 The `--git` column in `ll` and `llg` is explained in
 [Shell](index.md#listing-files).
 
 ## TUIs
 
-| Alias | Opens |
-|---|---|
-| `lg` | lazygit, for the repo you're in |
-| `ld` | lazydocker. See [Docker and Kubernetes](../containers.md#lazydocker) |
-| `k9s` | k9s, for the current kube context |
+| Alias | Key | Opens |
+|---|---|---|
+| `lg` | ++ctrl+g++ | lazygit, for the repo you're in |
+| `ld` | ++ctrl+o++ | lazydocker. See [Docker and Kubernetes](../containers.md#lazydocker) |
+| `k9s` | | k9s, for the current kube context |
+
+The keys work from any prompt without typing anything; see
+[key bindings](keybindings.md#tuis).
 
 `ld` hides the system linker when you type it, but only then. Aliases never
 apply inside scripts, so compilers still find the real `ld`. Type `command ld`
@@ -80,6 +123,8 @@ Other places dotfiles do or don't appear:
 `rm`, `cp` and `mv` are aliased to their `-i` forms, so each one asks before
 deleting or overwriting a file. To skip the prompt for one command, call the
 real binary: `command rm file` or `\rm file`.
+
+Stock `rm` does **not** ask. On a server, `rm -i` is yours to remember.
 
 ## Editing
 
