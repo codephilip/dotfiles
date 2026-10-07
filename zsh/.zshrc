@@ -1,27 +1,62 @@
 # =========================================================
-# ZSHRC — clean, fast, senior-friendly
+# ZSHRC
+# Lives at ~/.config/zsh/.zshrc, symlinked from ~/.zshrc
+#
+# Load order matters in the plugin section at the bottom —
+# read the comments there before rearranging.
 # =========================================================
 
 # -------------------------
 # Performance first
 # -------------------------
-# Skip slow compaudit on startup
 ZSH_DISABLE_COMPFIX=true
 
-# Faster globbing
 setopt NO_CASE_GLOB
 setopt EXTENDED_GLOB
 
-# History behavior
+# History behaviour
 setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_SPACE      # a leading space keeps a command out of history
 setopt HIST_REDUCE_BLANKS
+setopt HIST_VERIFY            # expand !! and confirm before running
 setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 
+# Directory navigation
+setopt AUTO_CD                # `nvim/` instead of `cd nvim/`
+setopt AUTO_PUSHD             # every cd pushes onto the dir stack
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_SILENT
+
+setopt INTERACTIVE_COMMENTS   # allow # comments when typing commands
+
 # -------------------------
 # Paths
+#
+# Built as a zsh array rather than a string so that:
+#   typeset -U path   drops duplicates, keeping the FIRST occurrence —
+#                     which is what preserves the precedence below across
+#                     repeated `exec zsh` / sourcing of this file.
+#   $^path(N-/)       drops entries that aren't existing directories.
+#                     N = no-match-is-empty, - = follow symlinks, / = dirs.
+#
+# Order is precedence: these are prepended, so Homebrew's tools win over
+# the macOS system copies in /usr/bin.
 # -------------------------
-export PATH="$HOME/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+export SCRIPTS="$HOME/.config/scripts"
+
+path=(
+  $HOME/bin
+  $SCRIPTS
+  /opt/homebrew/bin
+  /opt/homebrew/sbin
+  /usr/local/bin
+  $path
+)
+
+typeset -U path
+path=($^path(N-/))
+export PATH
 
 # -------------------------
 # History config
@@ -36,67 +71,116 @@ export SAVEHIST=50000
 export EDITOR="nvim"
 export VISUAL="nvim"
 
+# =========================================================
+# Theme
+#
+# One palette drives zsh, nvim, ghostty, alacritty, bat and delta.
+# theme/palettes/<name>.sh holds the THEME_* values; theme/current
+# names the active one. Switch with `theme <name>` -- the wrapper
+# function near the bottom of this file re-execs the shell so the
+# change lands immediately.
+#
+# This must be sourced BEFORE the bat and fzf sections below, which
+# read THEME_* to build BAT_THEME and FZF_DEFAULT_OPTS.
+# =========================================================
+export THEME_CONFIG="$HOME/.config/theme"
+
+_load_theme() {
+  local name=''
+  if [[ -r "$THEME_CONFIG/current" ]]; then
+    name=${"$(<"$THEME_CONFIG/current")"//[[:space:]]/}
+  fi
+  [[ -z $name ]] && name='tokyonight'
+
+  local palette="$THEME_CONFIG/palettes/$name.sh"
+  # Fall back rather than leaving every THEME_* unset, which would
+  # silently produce an uncoloured prompt and empty fzf --color flags.
+  [[ -r $palette ]] || palette="$THEME_CONFIG/palettes/tokyonight.sh"
+  [[ -r $palette ]] && source "$palette"
+}
+_load_theme
+
 # -------------------------
-# Less (better paging)
+# Less / bat paging
 # -------------------------
 export LESS="-R --mouse --wheel-lines=3"
 export LESSOPEN="| bat --paging=never --style=plain %s"
+# Set from the active palette. Note that tokyonight_night is not a bat
+# built-in -- `theme` installs the .tmTheme and runs `bat cache
+# --build`. Before that existed this variable named a theme bat did not
+# have, so it was silently falling back to bat's default.
+export BAT_THEME="${THEME_BAT:-ansi}"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"   # syntax-highlighted man pages
+export MANROFFOPT="-c"
 
 # =========================================================
-# Prompt (git-aware, minimal, fast)
-# =========================================================
-
-# Built-in git integration (no plugins)
-autoload -Uz vcs_info
-
-# Run before each prompt
-precmd() {
-  vcs_info
-}
-
-# Enable git only
-zstyle ':vcs_info:*' enable git
-
-# Branch format: (main)
-zstyle ':vcs_info:git:*' formats '(%b)'
-
-# Allow variable expansion in prompt
-setopt PROMPT_SUBST
-
-# Prompt layout:
-# user@host path (git-branch)
-# ➜
-PROMPT='%F{cyan}%n@%m%f %F{yellow}%1~%f %F{magenta}${vcs_info_msg_0_}%f
-%F{green}➜%f '
-
-# -------------------------
 # Completion system
-# -------------------------
+# =========================================================
 autoload -Uz compinit
-compinit
 
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${LS_COLORS}"
+# Rebuild the completion cache at most once a day; otherwise load it as-is.
+# This is the single biggest zsh startup win.
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -n $_zcompdump(#qN.mh+24) ]]; then
+  compinit -d "$_zcompdump"
+else
+  compinit -C -d "$_zcompdump"
+fi
+unset _zcompdump
 
-# -------------------------
-# Aliases (core)
-# -------------------------
-alias ll='ls -lah'
-alias la='ls -A'
-alias l='ls -CF'
+zstyle ':completion:*' menu no                      # fzf-tab replaces the menu
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # case-insensitive
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:descriptions' format '[%d]'
+
+# Preview the directory you're about to cd into, and files you're completing.
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:z:*' fzf-preview 'eza -1 --color=always --icons $realpath'
+zstyle ':fzf-tab:complete:*:*' fzf-preview \
+  '[[ -d $realpath ]] && eza -1 --color=always --icons $realpath || bat --color=always --style=plain --line-range=:50 $realpath 2>/dev/null'
+zstyle ':fzf-tab:*' fzf-flags --height=60% --layout=reverse --border=rounded
+zstyle ':fzf-tab:*' switch-group ',' '.'
+
+# =========================================================
+# Aliases
+# =========================================================
+
+# --- eza: ls with icons, colour and git status ---
+if command -v eza &>/dev/null; then
+  alias ls='eza --icons --group-directories-first'
+  alias ll='eza -lah --icons --group-directories-first --git --time-style=relative'
+  alias la='eza -a  --icons --group-directories-first'
+  alias l='eza -1   --icons --group-directories-first'
+  alias lt='eza --tree --level=2 --icons --group-directories-first'
+  alias ltt='eza --tree --level=3 --icons --group-directories-first'
+  alias lg='eza -lah --icons --git --git-ignore --group-directories-first'
+else
+  alias ls='ls -G'
+  alias ll='ls -lahG'
+  alias la='ls -AG'
+  alias l='ls -CFG'
+fi
+
 alias cl='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
 
 # Safer defaults
 alias rm='rm -i'
 alias cp='cp -i'
 alias mv='mv -i'
 
-# -------------------------
-# Editor aliases (muscle memory)
-# -------------------------
+# Editor muscle memory
 alias vi='nvim'
 alias vim='nvim'
+alias v='nvim'
+
+# Config shortcuts
+alias zshrc='nvim ~/.config/zsh/.zshrc'
+alias zreload='exec zsh'
+alias nvimrc='nvim ~/.config/nvim/init.lua'
 
 # -------------------------
 # Git / Docker / K8s aliases
@@ -114,9 +198,10 @@ alias docker-commands='bat ~/.config/command-cheatsheets/docker.md'
 alias tmux-commands='bat ~/.config/command-cheatsheets/tmux.md'
 alias zsh-commands='bat ~/.config/command-cheatsheets/zsh.md'
 alias nvim-commands='bat ~/.config/command-cheatsheets/nvim.md'
-# -------------------------
-# Smart functions (beginner-safe, senior-useful)
-# -------------------------
+
+# =========================================================
+# Functions
+# =========================================================
 
 # mkdir + cd
 mkcd() {
@@ -139,6 +224,42 @@ killport() {
   lsof -ti tcp:"$1" | xargs kill -9
 }
 
+# Fuzzy-find a file and open it in nvim
+fv() {
+  local file
+  file=$(fzf --preview 'bat --color=always --style=numbers {}' --height=80% --layout=reverse --border=rounded) \
+    && [ -n "$file" ] && nvim "$file"
+}
+
+# Fuzzy-switch git branch
+fbr() {
+  local branch
+  branch=$(git branch --all | grep -v HEAD | sed 's/^[* ] //;s#remotes/origin/##' | sort -u \
+    | fzf --height=40% --layout=reverse --border=rounded) \
+    && [ -n "$branch" ] && git checkout "$branch"
+}
+
+# -------------------------
+# theme — wrapper around scripts/theme
+#
+# The script rewrites the generated config fragments, but BAT_THEME,
+# FZF_DEFAULT_OPTS and the prompt's colours were all expanded into
+# this shell's environment at startup. Re-exec so they are rebuilt;
+# read-only subcommands skip that.
+#
+# Other already-open shells need `exec zsh` themselves. Ghostty needs
+# ⌘⇧, and nvim needs a restart — it has no CLI config reload.
+# -------------------------
+theme() {
+  command theme "$@" || return $?
+
+  case "${1:-}" in
+    ''|current|list|ls|show|swatch|regen|-h|--help|help) return 0 ;;
+  esac
+
+  exec zsh
+}
+
 # -------------------------
 # Docker / K8s helpers
 # -------------------------
@@ -159,11 +280,112 @@ if command -v tmux &>/dev/null; then
   fi
 fi
 
+# =========================================================
+# Plugins & integrations
+#
+# ORDER IS LOAD-BEARING:
+#   1. fzf            — defines the widgets fzf-tab builds on
+#   2. fzf-tab        — must come after compinit, before autosuggestions
+#   3. autosuggestions
+#   4. syntax-highlighting — MUST BE LAST, it wraps every preceding widget
+# =========================================================
+
+# --- 1. fzf: Ctrl-R history, Ctrl-T files, Alt-C cd ---
+if command -v fzf &>/dev/null; then
+  # Derived from the active palette rather than hardcoded. The old
+  # values mixed two themes -- #719cd6 and #9d7cd8 are nordfox, on a
+  # tokyonight #c0caf5 foreground.
+  #
+  # bg:-1 and gutter:-1 mean "terminal default", i.e. keep fzf's own
+  # background transparent so Ghostty's blur shows through it instead
+  # of fzf painting an opaque panel over the glass.
+  export FZF_DEFAULT_OPTS="
+    --height=60% --layout=reverse --border=rounded --info=inline
+    --color=bg:-1,gutter:-1,bg+:$THEME_BG_HL
+    --color=fg:$THEME_FG,fg+:$THEME_BR_WHITE
+    --color=hl:$THEME_BR_BLUE,hl+:$THEME_BR_BLUE
+    --color=pointer:$THEME_BR_BLUE,spinner:$THEME_BR_BLUE,header:$THEME_BR_BLUE
+    --color=info:$THEME_ACCENT,prompt:$THEME_ACCENT
+    --color=marker:$THEME_BR_GREEN,border:$THEME_GREY"
+
+  if command -v fd &>/dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+  export FZF_CTRL_T_OPTS="--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+  export FZF_ALT_C_OPTS="--preview 'eza --tree --level=2 --color=always --icons {}'"
+  export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window=down:3:hidden:wrap --bind '?:toggle-preview'"
+
+  # fzf >= 0.48 ships `fzf --zsh`; fall back to the shipped scripts.
+  if fzf --zsh &>/dev/null; then
+    source <(fzf --zsh)
+  else
+    [ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ] && source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
+    [ -f /opt/homebrew/opt/fzf/shell/completion.zsh ]   && source /opt/homebrew/opt/fzf/shell/completion.zsh
+  fi
+fi
+
+# --- 2. fzf-tab: fuzzy tab completion with previews ---
+[ -f ~/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh ] \
+  && source ~/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
+
+# --- 3. autosuggestions: ghost text from history, -> to accept ---
+if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+  ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=${THEME_GREY:-#565f89}"
+  ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+  bindkey '^ ' autosuggest-accept        # Ctrl-Space accepts the whole suggestion
+fi
+
+# --- 4. zoxide: `z <partial>` jumps to frecent dirs ---
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+
+# --- 5. prompt: starship ---
+# Bracketed-segment style with Nerd Font icons — see starship.toml, which
+# is generated (icons are Private Use Area codepoints; the generator
+# emits them as \uXXXX escapes so the file stays ASCII and diffable).
+#
+# STARSHIP_CONFIG points at the GENERATED copy, not starship.toml itself:
+# `theme <name>` writes starship-current.toml with the palette line
+# swapped, so switching themes never dirties the tracked file.
+#
+# Styles are foreground-only, no backgrounds — a styled background is an
+# opaque cell and would punch a solid strip through Ghostty's blur.
+#
+# Cost: ~17ms per prompt in a git repo (~5ms outside one) plus ~5ms init,
+# against ~9ms for the hand-rolled zsh/prompt.zsh. Per `starship timings`
+# that is almost entirely git_status + git_branch; the language chips are
+# under 1ms each. To go back to the fast prompt, comment out this block
+# and uncomment the prompt.zsh line below.
+if command -v starship &>/dev/null; then
+  export STARSHIP_CONFIG="$HOME/.config/starship-current.toml"
+  # Fall back to the tracked config if `theme regen` has not run yet.
+  [ -r "$STARSHIP_CONFIG" ] || export STARSHIP_CONFIG="$HOME/.config/starship.toml"
+  eval "$(starship init zsh)"
+else
+  # starship missing — use the native prompt rather than zsh's default.
+  [ -f ~/.config/zsh/prompt.zsh ] && source ~/.config/zsh/prompt.zsh
+fi
+
+# The fast fallback: a hand-rolled powerline prompt in pure zsh, one git
+# subprocess per prompt. Kept working and tested; swap the block above
+# for this line if starship's 17ms ever starts to show.
+# [ -f ~/.config/zsh/prompt.zsh ] && source ~/.config/zsh/prompt.zsh
+
+# --- 6. syntax highlighting: MUST be the last plugin sourced ---
+if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
 # -------------------------
-# OS niceties (macOS)
+# Key bindings
 # -------------------------
-# Enable key repeat (disable press-and-hold)
-defaults write -g ApplePressAndHoldEnabled -bool false
+bindkey -e                                  # emacs-style line editing
+bindkey '^[[A' history-search-backward      # Up  = prefix search, not plain history
+bindkey '^[[B' history-search-forward       # Down
+bindkey '^[[1;5C' forward-word              # Ctrl-Right
+bindkey '^[[1;5D' backward-word             # Ctrl-Left
 
 # -------------------------
 # Local overrides (never commit)

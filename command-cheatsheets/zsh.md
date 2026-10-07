@@ -248,3 +248,86 @@ Zsh config lives in:
 
 Reload after changes:
 source ~/.zshrc
+
+---
+
+## ✨ New shell tooling
+
+### fzf — fuzzy everything
+Fuzzy search command history:
+Ctrl-R
+
+Insert a file path at the cursor:
+Ctrl-T
+
+Fuzzy cd into a subdirectory:
+Alt-C
+
+Fuzzy tab completion with preview (any command):
+<TAB>
+
+Fuzzy-find a file and open it in nvim:
+fv
+
+Fuzzy-switch git branch:
+fbr
+
+### zoxide — jump to directories you actually use
+Jump to the best match:
+z nvim
+z config
+
+Pick interactively from matches:
+zi
+
+### eza — ls with icons, colour and git status
+Long listing with git status:
+ll
+
+All files, no detail:
+la
+
+Tree, 2 levels deep:
+lt
+
+Tree, 3 levels deep:
+ltt
+
+Long listing, respecting .gitignore:
+lg
+
+Git column meanings:
+-N  new / untracked
+-M  modified
+-I  ignored
+--  unchanged
+
+### autosuggestions
+Accept the whole greyed-out suggestion:
+Right-arrow
+Ctrl-Space
+
+Accept one word of it:
+Alt-Right
+
+### History search
+Type a prefix, then walk matching history:
+Up / Down
+
+Keep a command OUT of history:
+(prefix it with a space)
+
+### delta — better git diffs
+Jump between files inside a diff:
+n
+N
+
+### Config shortcuts
+Edit this shell config:
+zshrc
+
+Reload the shell after editing:
+zreload
+
+Edit the nvim config:
+nvimrc
