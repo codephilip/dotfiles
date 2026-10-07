@@ -31,18 +31,32 @@ config-file = ?theme.conf
 
 # --- The glass -------------------------------------------
 # background-blur accepts a bool, an integer radius, or one of the
-# macOS material names. The materials are real NSVisualEffectView
-# backing rather than a gaussian blur of the wallpaper, which is what
-# makes text stay legible over a busy desktop.
+# macOS material names:
 #
-#   macos-glass-regular   frosted, dims and blurs what is behind
-#   macos-glass-clear     thinner, lets more colour through
-#   <integer>             plain blur radius, e.g. 20
+#   <integer>             blur radius; `true` == 20
+#   macos-glass-regular   frosted material, macOS 26+ ONLY
+#   macos-glass-clear     thinner material, macOS 26+ ONLY
+#
+# Deliberately numeric, not macos-glass-regular. The glass materials
+# need macOS 26.0 or later, and -- this is the trap -- the config
+# parser accepts them on older systems without complaint, so
+# `+validate-config` passes and `+show-config` echoes the value back
+# while the window silently renders a fallback. The result is a
+# terminal that looks different on every machine depending on its
+# macOS version, which is exactly what it did here: glass on 26+,
+# something else on 15.x.
+#
+# 20 is the documented default radius and renders identically on every
+# supported macOS, so both machines match. If every machine you use
+# ends up on 26+, switching back to macos-glass-regular is a real
+# upgrade -- the materials are NSVisualEffectView backing rather than
+# a gaussian blur of the wallpaper, which keeps text legible over a
+# busy desktop in a way a radius cannot.
 #
 # opacity and blur are a pair: blur does nothing at opacity = 1.0,
 # and below about 0.80 comments start to fight the wallpaper.
 background-opacity = 0.86
-background-blur = macos-glass-regular
+background-blur = 20
 
 # Splits: dim the ones you are not in. Subtle -- this reads as depth
 # rather than as a disabled pane.
@@ -90,6 +104,20 @@ scrollback-limit = 10000000
 copy-on-select = clipboard
 mouse-hide-while-typing = true
 confirm-close-surface = false
+
+# Scroll speed. Ghostty tracks the two input classes separately:
+#
+#   precision:  trackpads and the Magic Mouse -- continuous deltas
+#   discrete:   a notched wheel -- one click at a time
+#
+# The defaults are precision:1 and discrete:3. On a Mac trackpad that
+# leaves precision at 1x, which is why a long `git log` feels like
+# wading -- the wheel path was already 3x and the trackpad path never
+# was. 3 matches them up and is what makes a flick actually travel.
+#
+# Drop to 2 if it overshoots; the units are a plain multiplier, and
+# fractions are allowed (precision:0.5 to slow it down).
+mouse-scroll-multiplier = precision:3,discrete:3
 
 # Left option stays Alt so zsh's Alt-C / Alt-B bindings work; right
 # option is left alone for typing accented characters.
