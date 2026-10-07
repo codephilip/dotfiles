@@ -22,10 +22,45 @@ installed, and fall back to plain `ls` flags when it is not.
 | `la` | All files, no detail |
 | `l` | One per line |
 | `lt` / `ltt` | Tree, 2 / 3 levels deep |
-| `lg` | Long listing that skips anything `.gitignore`d |
+| `llg` | Long listing that skips anything `.gitignore`d |
 
-The `--git` column in `ll` and `lg` is explained in
+The `--git` column in `ll` and `llg` is explained in
 [Shell](index.md#listing-files).
+
+## TUIs
+
+| Alias | Opens |
+|---|---|
+| `lg` | lazygit, for the repo you're in |
+| `ld` | lazydocker. See [Docker and Kubernetes](../containers.md#lazydocker) |
+| `k9s` | k9s, for the current kube context |
+
+`ld` hides the system linker when you type it, but only then. Aliases never
+apply inside scripts, so compilers still find the real `ld`. Type `command ld`
+if you ever need it by hand.
+
+## Hidden files
+
+Dotfiles (`.env`, `.github/`, `.zshrc`) are hidden by default in plain `ls`
+and shown by the long forms:
+
+| Command | Dotfiles |
+|---|---|
+| `ls`, `l`, `lt`, `ltt` | Hidden |
+| `ll`, `la`, `llg` | Shown |
+| `ls -a`, `lt -a` | Shown. `-a` works with any of them |
+| `ls -A` | Shown, without `.` and `..` (with plain `ls`, not eza) |
+
+`llg` also drops anything matched by `.gitignore`, so a gitignored `.env` stays
+out of it even though it's a dotfile.
+
+Other places dotfiles do or don't appear:
+
+- **fzf** (++ctrl+t++, ++alt+c++, `fv`) includes them, but skips `.git` and
+  gitignored files. That comes from `fd --hidden` in `FZF_DEFAULT_COMMAND`.
+- **Globs** don't match them. `rm *` leaves `.env` alone, and `ls *.yml` misses
+  `.pre-commit-config.yml`. Write the dot explicitly: `ls .*.yml`.
+- **Tab completion** only offers them once you've typed the leading `.`.
 
 ## Moving around
 

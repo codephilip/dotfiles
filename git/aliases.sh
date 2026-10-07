@@ -52,3 +52,6 @@ alias gshl="git stash list"
 
 # ---- Cleanup ----
 alias gprune="git fetch --prune"
+
+# ---- TUI ----
+alias lg="lazygit"

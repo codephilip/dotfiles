@@ -294,7 +294,7 @@ Tree, 3 levels deep:
 ltt
 
 Long listing, respecting .gitignore:
-lg
+llg
 
 Git column meanings:
 -N  new / untracked

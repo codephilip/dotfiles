@@ -117,6 +117,12 @@ after an alias is appended: `gcm "fix typo"` runs `git commit -m "fix typo"`.
     Push is `gpo`. And `gpm` pushes to `main` directly, whatever branch you are
     on.
 
+### TUI
+
+| Alias | Runs |
+|---|---|
+| `lg` | `lazygit`. The same tool as ++space++ ++g++ ++g++ in Neovim |
+
 ### Rebase and stash
 
 | Alias | Runs |

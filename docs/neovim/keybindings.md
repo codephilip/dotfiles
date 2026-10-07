@@ -47,6 +47,20 @@ If you memorise nine things, memorise these.
 | ++space++ ++s++ ++q++ | Quickfix list |
 | ++space++ ++s++ `:` | Command history |
 
+### Hidden and ignored files
+
+| Where | Dotfiles | Gitignored | Toggle |
+|---|---|---|---|
+| Find files (++space++ ++space++) | Shown | Hidden | ++alt+h++ hidden, ++alt+i++ ignored |
+| Live grep (++space++ ++slash++) | Searched | Not searched | ++alt+h++ hidden, ++alt+i++ ignored |
+| Find git files (++space++ ++f++ ++g++) | Shown if tracked | Hidden | — |
+| File tree (++space++ ++e++) | Shown | Shown, dimmed | `H` dotfiles, `I` gitignored |
+
+`.git/` never appears in a picker. The tree also hides `.git`, `node_modules`
+and `.DS_Store` by name. `U` in the tree toggles that list. Use ++alt+i++ when
+you need to look inside something gitignored, like a vendored dependency or a
+generated file. Use the **left** ++option++ key for ++alt++, as in the terminal.
+
 ### Inside a picker
 
 | Keys | Does |
@@ -340,7 +354,7 @@ tree's root instead of opening it in a tab.
 | `x` / `c` / `p` | Cut / copy / paste |
 | `y` / `Y` / `gy` | Copy the name / relative path / absolute path |
 | `i` | File info: size, dates, path |
-| `H` / `I` | Show / hide dotfiles / gitignored files |
+| `H` / `I` / `U` | Toggle dotfiles / gitignored files / the hidden-by-name list (`.git`, `node_modules`, `.DS_Store`) |
 | `f` / `F` | Filter the tree / clear the filter |
 | `E` / `W` | Expand / collapse everything |
 | `R` | Refresh |

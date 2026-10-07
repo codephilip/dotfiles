@@ -25,7 +25,7 @@ git clone https://github.com/codephilip/dotfiles.git ~/.config
 # 3. Tools. `make tools` prints these from bootstrap's own list, so it is
 #    never out of date — pipe it to a shell, or paste it:
 #        cd ~/.config && make tools
-brew install bat delta eza fd fzf gh k9s lazygit neovim ripgrep starship \
+brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
              tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 
@@ -289,13 +289,13 @@ visual jump.
 - On Linux, you may need to ensure `TERM=tmux-256color` is set
 
 **Keybindings:**
-- Prefix: `Ctrl-a` (changed from default `Ctrl-b`)
-- `|` - Split window vertically
-- `-` - Split window horizontally
-- `h/j/k/l` - Navigate panes (vim-style)
-- `H/J/K/L` - Resize panes
-- `r` - Reload config
-- `q` - Detach session
+- Prefix: `Ctrl-a` (changed from the default `Ctrl-b`)
+- Every other binding is stock tmux: `%` and `"` split, arrows move between
+  panes, `d` detaches. On a server's stock tmux, use `Ctrl-b` and the rest is
+  the same.
+- `Ctrl-a Ctrl-a` sends a literal `Ctrl-a` (go to line start in the shell)
+- `Ctrl-a R` reloads the config
+- Full reference: `tmux-commands`, or the tmux page in the docs
 
 **Features:**
 - Mouse support enabled
@@ -453,6 +453,24 @@ k9s inherits the terminal background instead of painting its own — the same
 reason tmux uses `bg=default` and the Neovim themes are transparent. Ghostty's
 blur stays visible behind it.
 
+### lazydocker (`lazydocker/`)
+
+Docker TUI — `lazydocker`, or `ld`. The Docker counterpart to k9s: every
+container, image, volume and Compose service in one screen, with live logs and
+stats. Start it inside a Compose project and a Services panel appears too.
+
+**Same XDG problem as k9s, different fix.** lazydocker defaults to
+`~/Library/Application Support/lazydocker` on macOS. Its override is an env
+var called plain `CONFIG_DIR`, which is too generic to export into every
+process, so `docker/aliases.sh` wraps `lazydocker` in a function that sets it
+for that one command. Check with `type lazydocker`; it should say "shell
+function".
+
+`lazydocker/config.yml` changes one thing: logs show the last 500 lines rather
+than the last 60 minutes. The default leaves the log pane empty for any
+container that crashed more than an hour ago. There is no generated skin: its
+colours are ANSI names, so they already follow the terminal's theme.
+
 ### SSH (`ssh/`) — not tracked
 
 `ssh/` is gitignored. The config was previously committed as an Ansible Vault
@@ -503,7 +521,7 @@ cd ~/.config && make tools | sh     # or just run it
 For reference, at the time of writing:
 
 ```bash
-brew install bat delta eza fd fzf gh k9s lazygit neovim ripgrep starship \
+brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
              tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 ```

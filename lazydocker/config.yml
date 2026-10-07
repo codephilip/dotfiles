@@ -1,0 +1,28 @@
+# =========================================================
+# lazydocker — Docker TUI
+#
+# Lives here only because of the CONFIG_DIR wrapper in
+# docker/aliases.sh. Like k9s, lazydocker ignores XDG on macOS and
+# defaults to ~/Library/Application Support/lazydocker, outside this
+# repo. Its override is an env var named plain CONFIG_DIR -- too
+# generic to export into every process -- so the wrapper sets it for
+# lazydocker alone.
+#
+# Colours are NOT set here, and there is no generated skin. The
+# defaults are ANSI colour *names* (green, blue), so they already
+# follow whatever palette `theme` has put in the terminal -- the same
+# reasoning as tmux's colour243/252.
+#
+# Deliberately minimal: lazydocker merges this over its defaults,
+# so anything absent stays as shipped. `lazydocker --config` prints
+# the full default config.
+#
+# Reference: https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md
+# =========================================================
+logs:
+  # The default is `since: 60m`, which shows an EMPTY log pane for any
+  # container that crashed more than an hour ago -- exactly the one you
+  # opened lazydocker to look at. Last 500 lines regardless of age
+  # instead, matching k9s's logger.tail.
+  since: ''
+  tail: '500'

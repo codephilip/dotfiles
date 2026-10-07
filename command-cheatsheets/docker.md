@@ -2,6 +2,7 @@
 
 d         → docker
 dc        → docker compose
+ld        → lazydocker (TUI: x lists keys, q quits)
 
 ## Containers
 dps       → docker ps

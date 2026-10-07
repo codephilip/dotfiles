@@ -191,7 +191,8 @@ if command -v eza &>/dev/null; then
   alias l='eza -1   --icons --group-directories-first'
   alias lt='eza --tree --level=2 --icons --group-directories-first'
   alias ltt='eza --tree --level=3 --icons --group-directories-first'
-  alias lg='eza -lah --icons --git --git-ignore --group-directories-first'
+  # llg, not lg: lg is lazygit (git/aliases.sh)
+  alias llg='eza -lah --icons --git --git-ignore --group-directories-first'
 else
   alias ls='ls -G'
   alias ll='ls -lahG'

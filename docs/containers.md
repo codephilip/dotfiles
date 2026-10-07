@@ -1,7 +1,8 @@
 # Docker and Kubernetes
 
-Shell shortcuts for `docker` and `kubectl`, plus [k9s](https://k9scli.io)
-for Kubernetes. The aliases live in `~/.config/docker/aliases.sh` and
+Shell shortcuts for `docker` and `kubectl`, plus two TUIs:
+[lazydocker](https://github.com/jesseduffield/lazydocker) for Docker and
+[k9s](https://k9scli.io) for Kubernetes. The aliases live in `~/.config/docker/aliases.sh` and
 `~/.config/k8s/aliases.sh`, and `.zshrc` sources both.
 
 Aliases expand into the start of a command, so anything you type after one
@@ -57,6 +58,78 @@ Three levels, each deleting more than the last:
 !!! danger "`dkclean` deletes data"
     A Postgres container that is stopped when you run it loses its volume,
     and everything in that database with it. Use `dclean` unless you mean it.
+
+## lazydocker
+
+A terminal UI for Docker: containers, images, volumes and networks in one
+screen, with logs, stats and env for whatever is selected. Run `lazydocker`,
+or `ld`. Start it inside a directory with a Compose file and it also shows
+that project's services.
+
+Use the aliases above for scripting and one-off commands. Use lazydocker when
+you're looking around: what's running, what died, and why.
+
+Its config lives in `~/.config/lazydocker/config.yml`. lazydocker on macOS
+would otherwise read `~/Library/Application Support/lazydocker`, so
+`lazydocker` is a shell function that points it at the repo copy. `type
+lazydocker` should say "shell function"; if it says a file path, the function
+isn't loaded and your config is being ignored.
+
+What this config changes from the default:
+
+- **Logs** show the last 500 lines. The default is the last 60 minutes, which
+  leaves the pane empty for a container that crashed earlier than that.
+- **Colours** aren't set. lazydocker uses ANSI colour names, so it follows the
+  terminal's [theme](theming.md) without a generated file.
+
+### Moving around
+
+| Keys | Does |
+|---|---|
+| `1` … `6` | Jump to a panel: projects, services, containers, images, volumes, networks |
+| ++up++ ++down++ | Move through the list |
+| ++left++ ++right++ | Previous / next panel |
+| `[` / `]` | Previous / next tab on the right: logs, stats, env, config, top |
+| ++enter++ | Focus the right-hand panel, to scroll it |
+| `/` | Filter the list |
+| `+` / `_` | Make the right-hand panel bigger / smaller: normal, half, fullscreen |
+| `x` | Every key for the current panel |
+| ++escape++ | Back |
+| `q` | Quit |
+
+### Containers (`3`)
+
+| Keys | Does |
+|---|---|
+| `m` | Follow the logs full-screen; ++ctrl+c++ to return |
+| `E` | Shell into the container |
+| `a` | Attach |
+| `s` / `r` | Stop / restart |
+| `p` | Pause / unpause |
+| `d` | Remove (asks first) |
+| `e` | Hide / show stopped containers |
+| `w` | Open the first published port in the browser |
+| `b` | Bulk commands, such as removing every stopped container |
+
+### Compose services (`2`)
+
+| Keys | Does |
+|---|---|
+| `u` / `U` | Up this service / up the whole project |
+| `S` / `s` | Start / stop |
+| `r` / `R` | Restart / restart options: rebuild, recreate |
+| `D` | Down the whole project |
+| `d` | Remove the service's containers |
+| `m` | Follow the logs |
+| `E` | Shell into the service's container |
+
+On the images and volumes panels, `d` removes the selected one and `b` offers
+bulk commands, including prune.
+
+!!! warning "`b` → down with volumes"
+    The services panel's bulk menu includes "down with volumes", which is the
+    lazydocker equivalent of `dkclean` for one project. It deletes the
+    project's database data.
 
 ## kubectl
 

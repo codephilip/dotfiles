@@ -41,7 +41,7 @@ la        # all files, no detail
 l         # one per line
 lt        # tree, 2 levels
 ltt       # tree, 3 levels
-lg        # long, respecting .gitignore
+llg       # long, respecting .gitignore
 ```
 
 The git column:
