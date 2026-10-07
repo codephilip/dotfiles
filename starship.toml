@@ -1,0 +1,296 @@
+# =========================================================
+# starship.toml  --  prompt configuration
+#
+# Style: the "bracketed segments" preset with icons from the
+# "nerd-font-symbols" preset. Everything after the directory is wrapped
+# in brackets, so the prompt reads as discrete chips rather than a
+# run-on line:
+#
+#   <folder> api [<branch> main] [!2+1?3] [<go> v1.24.0] [<clock> 3s]
+#   >
+#
+# (angle brackets stand in for icons -- no literal icon appears anywhere
+# in this file, deliberately; see below)
+#
+# ---------------------------------------------------------
+# GENERATED -- do not hand-edit
+#
+# Regenerate rather than patching. The reason it is generated: every icon
+# is a Private Use Area codepoint, and PUA characters get silently
+# dropped or substituted by editors, clipboards and diff tooling -- a
+# missing icon leaves no trace in a review. Emitting them as \uXXXX
+# escapes keeps this file pure ASCII.
+#
+# Two rules the generator exists to enforce:
+#
+#   * Escapes only work in TOML *basic* (double-quoted) strings. In a
+#     literal 'single-quoted' string, \uF418 is seven raw characters and
+#     starship rejects it with "expected escaped_char".
+#   * starship needs \[ for a literal bracket, and a basic string needs
+#     its backslash doubled, so the file contains \\[.
+#
+# Icons above U+FFFF (rust, kubernetes, package) use the eight-digit \U
+# form, because \u takes exactly four hex digits.
+#
+# ---------------------------------------------------------
+# Themes
+#
+# All three palettes are defined at the bottom; `palette` just below
+# selects one. scripts/theme rewrites that single line into the generated
+# starship-current.toml, so this file is untouched by a theme switch.
+#
+# It is a top-level key on purpose: TOML assigns a bare key to the most
+# recent [table], so a `palette` at the end of the file would silently
+# become memory_usage.palette.
+#
+# ---------------------------------------------------------
+# Cost
+#
+# ~17ms per prompt here against ~9ms for the hand-rolled zsh/prompt.zsh
+# it replaced, plus ~5ms of `starship init` per shell start. That is the
+# price of the language-version chips, which stat the directory looking
+# for marker files. A deliberate trade for the icons -- prompt.zsh is
+# kept as the fast fallback.
+#
+# scan_timeout and command_timeout bound the damage on a slow or network
+# filesystem, where those stats are what would hang the prompt.
+# =========================================================
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+palette = 'tokyonight'
+add_newline = true
+scan_timeout = 30
+command_timeout = 500
+
+# Two lines: content, then the prompt character alone. The typing line
+# stays clear no matter how many chips the directory earns.
+format = """
+$username$hostname$directory\
+$git_branch$git_state$git_status\
+$package\
+$golang$nodejs$python$rust$lua$java$c\
+$terraform$kubernetes$docker_context$helm$aws\
+$cmd_duration\
+$line_break\
+$character"""
+
+# --- Prompt character ------------------------------------
+# The only unbracketed module. Green on success, red on failure -- the
+# single most useful piece of state in the prompt.
+[character]
+success_symbol = "[\u276F](bold green)"
+error_symbol = "[\u276F](bold red)"
+vicmd_symbol = "[\u276E](bold yellow)"
+
+# --- Directory -------------------------------------------
+# Unbracketed and bold, so the thing you most need to read is the thing
+# that stands out. truncation_length = 4 matches what zsh/prompt.zsh did.
+#
+# truncate_to_repo is off on purpose: this repo IS ~/.config, so
+# truncating to the repo root would collapse every path to the one
+# component that tells you nothing about where you are.
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold blue"
+truncation_length = 4
+truncate_to_repo = false
+truncation_symbol = "\u2026/"
+read_only = " \uF023"
+read_only_style = "red"
+
+[directory.substitutions]
+"~/.config" = "\uF07B .config"
+
+# --- Git -------------------------------------------------
+[git_branch]
+format = "(\\[[$symbol$branch(:$remote_branch)]($style)\\] )"
+symbol = "\uF418 "
+style = "bold magenta"
+truncation_length = 24
+truncation_symbol = "\u2026"
+
+# A distinct mark per state, each with a count. This replaced a row of
+# identically-shaped coloured dots, which failed twice over: the meaning
+# lived entirely in hue, so it was unreadable in a screenshot and to a
+# colourblind reader, and with no count one stray file looked exactly
+# like forty. "!3" says what and how many without a legend.
+#
+#   =  conflict   ballot-x  deleted     guillemet  renamed
+#   !  modified   +         staged      ?          untracked
+#   inbox icon    stashed
+#
+# Colour still rides along as a second channel for whoever has learnt it.
+# Each symbol is itself a format string, which is what lets every one
+# carry its own colour inside a single module.
+#
+# Worktree state and divergence are separate chips because they answer
+# different questions -- "is my tree clean" versus "am I in sync" -- and
+# each disappears on its own when it has nothing to say.
+[git_status]
+format = "(\\[$all_status\\] )(\\[$ahead_behind\\] )"
+conflicted = "[=${count}](bold red)"
+up_to_date = ""
+untracked = "[?${count}](bold muted)"
+stashed = "[\uF01C${count}](bold cyan)"
+modified = "[!${count}](bold yellow)"
+staged = "[+${count}](bold green)"
+renamed = "[\u00BB${count}](bold magenta)"
+deleted = "[\u2717${count}](bold red)"
+ahead = "[\u2191${count}](bold cyan)"
+behind = "[\u2193${count}](bold cyan)"
+diverged = "[\u2191${ahead_count}](bold cyan) [\u2193${behind_count}](bold cyan)"
+
+[git_state]
+format = "\\[[$state( $progress_current/$progress_total)]($style)\\] "
+style = "bold red"
+
+# --- Command duration ------------------------------------
+# Only past 2s -- the same threshold prompt.zsh used, so the prompt stays
+# quiet for the hundreds of fast commands.
+[cmd_duration]
+format = "(\\[[\uF017 $duration]($style)\\] )"
+style = "bold orange"
+min_time = 2000
+
+# --- Identity --------------------------------------------
+# Only over SSH or as root. Locally it is noise you already know.
+[username]
+format = "(\\[[$user]($style)\\] )"
+style_user = "bold green"
+style_root = "bold red"
+show_always = false
+
+[hostname]
+format = "(\\[[$hostname]($style)\\] )"
+style = "bold green"
+ssh_only = true
+
+# --- Toolchains ------------------------------------------
+# Version chips, shown only in a directory that actually uses the
+# language. Near-free: `starship timings` puts each under 1ms,
+# because a directory with no marker file short-circuits at once.
+[golang]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE627 "
+style = "bold cyan"
+
+[nodejs]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE718 "
+style = "bold green"
+
+[python]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE235 "
+style = "bold yellow"
+
+[rust]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\U000F1617 "
+style = "bold orange"
+
+[lua]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE620 "
+style = "bold blue"
+
+[java]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE738 "
+style = "bold red"
+
+[c]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE61E "
+style = "bold blue"
+
+[terraform]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE69A "
+style = "bold magenta"
+
+[helm]
+format = "(\\[[$symbol($version)]($style)\\] )"
+symbol = "\uE7FB "
+style = "bold cyan"
+
+[package]
+format = "(\\[[$symbol$version]($style)\\] )"
+symbol = "\U000F03D7 "
+style = "bold yellow"
+
+[docker_context]
+format = "(\\[[$symbol$context]($style)\\] )"
+symbol = "\uF308 "
+style = "bold blue"
+only_with_files = true
+
+[aws]
+format = "(\\[[$symbol($profile)(\\($region\\))]($style)\\] )"
+symbol = "\uF0EF "
+style = "bold orange"
+
+[kubernetes]
+format = "(\\[[$symbol$context( \\($namespace\\))]($style)\\] )"
+symbol = "\U000F10FE "
+style = "bold cyan"
+# Off by default. It reads ~/.kube/config on every prompt, and quietly
+# displaying a cluster you had stopped thinking about is how a command
+# ends up running against prod. Turn on when you want it.
+disabled = true
+
+# --- Noise control ---------------------------------------
+# Explicitly disabled rather than left alone: starship still probes for a
+# module it has not been told to skip.
+[battery]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[nix_shell]
+disabled = true
+
+[memory_usage]
+disabled = true
+
+[line_break]
+disabled = false
+
+# --- Palettes --------------------------------------------
+# Mirrors theme/palettes/*.sh. Selected by the top-level `palette`
+# key in the header, which scripts/theme rewrites.
+
+[palettes.tokyonight]
+fg = "#c0caf5"
+muted = "#565f89"
+blue = "#7aa2f7"
+cyan = "#7dcfff"
+green = "#9ece6a"
+yellow = "#e0af68"
+red = "#f7768e"
+magenta = "#bb9af7"
+orange = "#ff9e64"
+
+[palettes.solarized-osaka]
+fg = "#9fabad"
+muted = "#586e74"
+blue = "#309ce8"
+cyan = "#22d3c4"
+green = "#a3cc00"
+yellow = "#dba400"
+red = "#ea413e"
+magenta = "#d33682"
+orange = "#ca4c16"
+
+[palettes.catppuccin-mocha]
+fg = "#cdd6f4"
+muted = "#6c7086"
+blue = "#89b4fa"
+cyan = "#94e2d5"
+green = "#a6e3a1"
+yellow = "#f9e2af"
+red = "#f38ba8"
+magenta = "#cba6f7"
+orange = "#fab387"
