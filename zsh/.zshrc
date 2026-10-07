@@ -104,9 +104,10 @@ export VISUAL="nvim"
 
 # k9s ignores XDG on macOS and uses ~/Library/Application Support/k9s,
 # which would leave its config outside this repo -- unversioned, and
-# missing the generated skin. Point it back at ~/.config/k9s.
+# missing the generated skin. Point it at ~/.config/k8s/k9s, next to
+# the kubectl aliases.
 # Verify with `k9s info`, which prints the paths it resolved.
-export K9S_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/k9s"
+export K9S_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/k8s/k9s"
 
 # =========================================================
 # Theme
@@ -460,6 +461,19 @@ bindkey '^[[A' history-search-backward      # Up  = prefix search, not plain his
 bindkey '^[[B' history-search-forward       # Down
 bindkey '^[[1;5C' forward-word              # Ctrl-Right
 bindkey '^[[1;5D' backward-word             # Ctrl-Left
+
+# TUIs on a key, from any prompt. Whatever is half-typed stays put:
+# the widget runs the tool against the terminal and redraws the line
+# afterwards rather than going through BUFFER and history. The keys
+# they replace are dead weight in emacs mode -- ^G is send-break,
+# which Ctrl-C already does, and ^O is accept-line-and-down-history.
+# lg / ld (git/aliases.sh, docker/aliases.sh) still work when typed.
+_tui_lazygit()    { zle -I; lazygit    </dev/tty; zle reset-prompt; }
+_tui_lazydocker() { zle -I; lazydocker </dev/tty; zle reset-prompt; }
+zle -N _tui_lazygit
+zle -N _tui_lazydocker
+bindkey '^G' _tui_lazygit                   # Ctrl-G = lazygit
+bindkey '^O' _tui_lazydocker                # Ctrl-O = lazydocker
 
 # -------------------------
 # Local overrides (never commit)

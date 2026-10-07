@@ -1,5 +1,8 @@
 # Git Commands
 
+lg        → lazygit (TUI: ? lists keys, q quits)
+Ctrl-G    → lazygit, straight from the prompt
+
 ## Status
 gs        → git status -sb
 gss       → git status

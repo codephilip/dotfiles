@@ -235,6 +235,8 @@ Ctrl-r     → history search
 Ctrl-l     → clear screen  
 Ctrl-c     → cancel  
 Ctrl-d     → exit shell  
+Ctrl-g     → lazygit  
+Ctrl-o     → lazydocker  
 !!         → repeat last command  
 !$         → last argument  
 cd -       → previous directory  
@@ -309,6 +311,15 @@ Ctrl-Space
 
 Accept one word of it:
 Alt-Right
+
+### TUIs on a key
+Open lazygit (same as `lg`):
+Ctrl-G
+
+Open lazydocker (same as `ld`):
+Ctrl-O
+
+Whatever you had half-typed is still there when you quit.
 
 ### History search
 Type a prefix, then walk matching history:

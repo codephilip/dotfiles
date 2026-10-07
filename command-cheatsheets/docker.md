@@ -3,6 +3,7 @@
 d         → docker
 dc        → docker compose
 ld        → lazydocker (TUI: x lists keys, q quits)
+Ctrl-O    → lazydocker, straight from the prompt
 
 ## Containers
 dps       → docker ps
