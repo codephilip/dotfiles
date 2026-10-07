@@ -45,3 +45,9 @@ k8s/k9s/screen-dumps/
 # shared config keeps the numeric radius that works everywhere.
 ghostty/local.conf
 
+# Windows only — written/cloned by scripts/windows-setup
+alacritty/local.toml
+zsh/plugins/zsh-autosuggestions/
+zsh/plugins/zsh-syntax-highlighting/
+# scoop writes its config to $XDG_CONFIG_HOME/scoop — machine state
+scoop/

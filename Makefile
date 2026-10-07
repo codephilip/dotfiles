@@ -4,6 +4,7 @@
 #   make install   symlink configs into place, report missing tools
 #   make verify    dry-run of install; changes nothing
 #   make tools     print the brew install lines for a new machine
+#   make windows   install everything on Windows (scoop + MSYS2 zsh/tmux)
 #   make serve     live-reload docs at http://127.0.0.1:8000
 #   make docs      build the static site into ./site
 #   make pdf       render the executive brief to PDF
@@ -15,7 +16,7 @@ BRIEF_SRC  := brief/executive-brief.html
 BRIEF_PDF  := docs/assets/executive-brief.pdf
 CHROME     := /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 
-.PHONY: all install verify tools serve docs pdf clean check help
+.PHONY: all install verify tools windows serve docs pdf clean check help
 
 help:
 	@grep -E '^#   make' $(MAKEFILE_LIST) | sed 's/^#   //'
@@ -32,6 +33,10 @@ verify:
 # so there is nowhere for a second copy of the list to drift.
 tools:
 	@./bootstrap --tools
+
+# bootstrap is Homebrew/macOS-only; this is the Windows equivalent.
+windows:
+	@./scripts/windows-setup
 
 serve:
 	mkdocs serve

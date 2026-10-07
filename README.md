@@ -543,6 +543,19 @@ JetBrains Mono Nerd Font: download the patched build from
 <https://github.com/ryanoasis/nerd-fonts/releases> — the upstream JetBrains
 release is unpatched and will render icons as tofu.
 
+### Windows (optional)
+
+Separate from `make install`, which is macOS/Linux only and refuses to run
+on Windows. From Git Bash, with [scoop](https://scoop.sh) installed:
+
+```bash
+cd ~/.config && make windows
+```
+
+This installs the CLI tools, Alacritty and the Nerd Font with scoop. zsh and
+real tmux come from MSYS2, and Alacritty is set to open zsh. It's safe to
+re-run. How it works and why: [docs/windows.md](docs/windows.md).
+
 ## 🔗 Integration Notes
 
 ### Neovim + tmux Navigation

@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# =========================================================
+# windows-setup — the Windows counterpart to ./bootstrap
+#
+#   make windows        install/repair everything below
+#
+# bootstrap assumes Homebrew and macOS. On Windows the same toolset
+# comes from two places:
+#
+#   scoop   every CLI tool, Alacritty, the Nerd Font
+#   MSYS2   zsh and tmux -- there is no native build of either, and
+#           psmux (scoop's "tmux") is a clone that only half reads
+#           tmux.conf. MSYS2 gives the real thing.
+#
+# Safe to re-run: every step checks before it acts.
+# Run it from Git Bash.
+# =========================================================
+set -uo pipefail
+
+CONFIG="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MSYS_ROOT="$HOME/msys64"
+
+red()   { printf '\033[31m%s\033[0m\n' "$*"; }
+green() { printf '\033[32m%s\033[0m\n' "$*"; }
+dim()   { printf '\033[2m%s\033[0m\n' "$*"; }
+bold()  { printf '\033[1m%s\033[0m\n' "$*"; }
+
+case ${OSTYPE:-} in
+  msys*|cygwin*) ;;
+  *) red "windows-setup is for Git Bash on Windows; use 'make install' elsewhere"; exit 1 ;;
+esac
+command -v scoop >/dev/null || { red "scoop not found — install it from https://scoop.sh"; exit 1; }
+
+# Same set as bootstrap's BREW_FORMULAE/BREW_CASKS, in scoop's names.
+# Keep the two in step. Missing on purpose:
+#   tmux, zsh, zsh-*   come from MSYS2 below
+#   ghostty            no Windows build; Alacritty is the terminal here
+SCOOP_BUCKETS=(main extras nerd-fonts)
+SCOOP_APPS=(alacritty bat delta eza fd fzf gh k9s lazydocker lazygit make
+            ripgrep starship zig zoxide JetBrainsMono-NF)
+
+# The nvim config targets 0.11 (treesitter and aerial are pinned to
+# their 0.11 branches). Held so `scoop update *` cannot jump to 0.12.
+NVIM_VERSION=0.11.7
+
+# ---------------------------------------------------------
+bold "Scoop"
+for b in "${SCOOP_BUCKETS[@]}"; do
+  scoop bucket list 2>/dev/null | grep -q "^$b\b" || scoop bucket add "$b"
+done
+
+installed=$(scoop list 2>/dev/null | awk 'NR>3 {print $1}')
+missing=()
+for app in "${SCOOP_APPS[@]}"; do
+  grep -qx "$app" <<<"$installed" || missing+=("$app")
+done
+if (( ${#missing[@]} )); then
+  scoop install "${missing[@]}"
+else
+  green "  ✓ all ${#SCOOP_APPS[@]} apps present"
+fi
+
+current_nvim=$(nvim --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+if [[ $current_nvim != "$NVIM_VERSION" ]]; then
+  scoop uninstall neovim >/dev/null 2>&1
+  scoop install "neovim@$NVIM_VERSION"
+fi
+scoop hold neovim >/dev/null 2>&1
+green "  ✓ neovim $NVIM_VERSION (held)"
+
+# ---------------------------------------------------------
+# Unpacked with tar rather than `scoop install msys2`: scoop extracts
+# it with 7-Zip, and 7z.exe is blocked from running on managed machines
+# ("Access is denied"). Git Bash's tar handles .tar.xz fine.
+bold $'\nMSYS2 (zsh, tmux)'
+if [[ ! -x $MSYS_ROOT/usr/bin/pacman.exe ]]; then
+  url=$(scoop info msys2 2>/dev/null | grep -oE 'https://[^ ]+\.tar\.xz' | head -1)
+  url=${url:-https://repo.msys2.org/distrib/msys2-x86_64-latest.tar.xz}
+  tmp=$(mktemp -d)
+  dim "  downloading $url"
+  curl -fsSL "$url" -o "$tmp/msys2.tar.xz" \
+    && tar -xJf "$tmp/msys2.tar.xz" --force-local -C "$HOME" \
+    || { red "  ! MSYS2 download/extract failed"; exit 1; }
+  rm -rf "$tmp"
+  "$MSYS_ROOT/usr/bin/bash.exe" -lc 'true'   # first-run init (keys, etc.)
+fi
+
+# $HOME inside MSYS2 defaults to /home/<user>, which would hide every
+# dotfile. Pinned to C:\Users\<user> (same as Git Bash) by path rather
+# than "db_home: windows", which asks AD -- and on this domain account
+# that lookup fails and silently falls back to /home/<user>.
+sed -i "s|^db_home:.*|db_home: /c/Users/%U|" "$MSYS_ROOT/etc/nsswitch.conf"
+
+"$MSYS_ROOT/usr/bin/bash.exe" -lc 'pacman -S --noconfirm --needed zsh tmux git >/dev/null' \
+  && green "  ✓ $("$MSYS_ROOT/usr/bin/zsh.exe" --version | cut -d' ' -f1-2), $("$MSYS_ROOT/usr/bin/tmux.exe" -V)" \
+  || red "  ! pacman install failed"
+
+# ---------------------------------------------------------
+# .zshrc already falls back to zsh/plugins/<name> when there is no
+# brew or distro copy; on Windows that is the only copy.
+bold $'\nzsh plugins'
+for repo in zsh-users/zsh-autosuggestions zsh-users/zsh-syntax-highlighting; do
+  dir="$CONFIG/zsh/plugins/${repo#*/}"
+  if [[ -d $dir/.git ]]; then
+    git -C "$dir" pull -q --ff-only && green "  ✓ ${repo#*/} (updated)"
+  else
+    git clone -q --depth 1 "https://github.com/$repo" "$dir" && green "  + ${repo#*/}"
+  fi
+done
+
+# ---------------------------------------------------------
+# No symlinks: Windows file symlinks need admin or Developer Mode.
+#   zsh   ~/.zshenv points ZDOTDIR at zsh/, so zsh/.zshrc is read in place
+#   tmux  3.1+ reads ~/.config/tmux/tmux.conf on its own
+bold $'\nShell entry points'
+zshenv_line='export ZDOTDIR="$HOME/.config/zsh"'
+if ! grep -qxF "$zshenv_line" "$HOME/.zshenv" 2>/dev/null; then
+  printf '%s\n' "$zshenv_line" >> "$HOME/.zshenv"
+  green "  + ~/.zshenv sets ZDOTDIR"
+else
+  green "  ✓ ~/.zshenv sets ZDOTDIR"
+fi
+
+# ---------------------------------------------------------
+# alacritty.toml imports alacritty/local.toml (gitignored) for exactly
+# this: per-machine settings that would break the Mac if shared.
+bold $'\nAlacritty'
+win_home=$(cygpath -m "$HOME")
+cat > "$CONFIG/alacritty/local.toml" <<EOF
+# GENERATED by scripts/windows-setup -- per-machine, gitignored.
+# Launches MSYS2's zsh as a login shell.
+
+[terminal.shell]
+program = "$win_home/msys64/usr/bin/zsh.exe"
+args = ["--login"]
+
+[env]
+# Keep the Windows PATH (scoop shims) instead of MSYS2's minimal one.
+MSYS2_PATH_TYPE = "inherit"
+# Start in the directory Alacritty was opened in, not \$HOME.
+CHERE_INVOKING = "1"
+MSYSTEM = "MSYS"
+# Preset so /etc/profile skips running hostname.exe, which application
+# control blocks here ("permission denied: /usr/bin/hostname").
+HOSTNAME = "$(hostname)"
+EOF
+green "  ✓ alacritty/local.toml → zsh"
+
+# Alacritty on Windows reads %APPDATA%\alacritty, not ~/.config.
+appdata_dir="$(cygpath -u "$APPDATA")/alacritty"
+if [[ -e $appdata_dir ]]; then
+  green "  ✓ %APPDATA%\\alacritty exists"
+else
+  cmd //c mklink //J "$(cygpath -w "$appdata_dir")" "$(cygpath -w "$CONFIG/alacritty")" >/dev/null \
+    && green "  + %APPDATA%\\alacritty → ~/.config/alacritty (junction)"
+fi
+
+# ---------------------------------------------------------
+bold $'\nTheme'
+"$CONFIG/scripts/theme" regen >/dev/null 2>&1 \
+  && green "  ✓ theme files generated" \
+  || red "  ! theme regen failed"
+
+bold $'\nDone'
+dim "  open Alacritty — it should start in zsh; run tmux from there"

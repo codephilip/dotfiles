@@ -19,7 +19,12 @@
 # `import` lives under [general] as of Alacritty 0.14; this is 0.16.
 # Paths are relative to the config file.
 [general]
-import = ["~/.config/alacritty/theme-current.toml"]
+# local.toml is per-machine and gitignored (missing imports are skipped);
+# scripts/windows-setup writes one that launches MSYS2 zsh.
+import = [
+  "~/.config/alacritty/theme-current.toml",
+  "~/.config/alacritty/local.toml",
+]
 live_config_reload = true
 
 # =========================

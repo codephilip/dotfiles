@@ -114,6 +114,7 @@ nav:
   - Terminal: terminal.md
   - Theming: theming.md
   - Git: git.md
+  - Windows: windows.md
   - Troubleshooting: troubleshooting.md
 
 extra:

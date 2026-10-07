@@ -22,6 +22,15 @@ CONFIG="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 CHECK_ONLY=0
 [[ "${1:-}" == "--check" ]] && CHECK_ONLY=1
 
+# Everything below assumes Homebrew and real symlinks. Windows gets its
+# own installer instead of a screenful of brew lines that cannot work.
+case ${OSTYPE:-} in
+  msys*|cygwin*)
+    printf 'bootstrap is macOS/Linux only. On Windows run: make windows\n' >&2
+    printf '(scripts/windows-setup — scoop + MSYS2 zsh/tmux, see docs/windows.md)\n' >&2
+    exit 1 ;;
+esac
+
 # repo-relative source : absolute target
 LINKS=(
   "zsh/.zshrc:$HOME/.zshrc"
