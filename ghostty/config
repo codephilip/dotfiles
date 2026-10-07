@@ -1,0 +1,110 @@
+# =========================================================
+# Ghostty
+#
+# The reason this exists alongside alacritty.toml: Alacritty cannot
+# blur its background on macOS. It has `window.opacity`, which makes
+# the window see-through, but nothing behind it is ever blurred -- so
+# you get a muddy window, not frosted glass. Ghostty does the real
+# thing via native macOS material.
+#
+# Alacritty is kept as a working fallback and tracks the same palette
+# (see alacritty/theme-current.toml), so nothing is lost by having
+# both.
+#
+# Colours live in theme.conf, which is GENERATED from
+# theme/palettes/<name>.sh by scripts/theme. Switch with:
+#
+#     theme solarized-osaka
+#
+# then press ⌘⇧, to reload -- Ghostty has no CLI reload.
+#
+# Reference: https://ghostty.org/docs/config/reference
+# =========================================================
+
+
+# --- Palette ---------------------------------------------
+# Leading ? makes the include optional, so a fresh checkout that has
+# not run `theme regen` yet still starts (with Ghostty's defaults)
+# instead of refusing to launch.
+config-file = ?theme.conf
+
+
+# --- The glass -------------------------------------------
+# background-blur accepts a bool, an integer radius, or one of the
+# macOS material names. The materials are real NSVisualEffectView
+# backing rather than a gaussian blur of the wallpaper, which is what
+# makes text stay legible over a busy desktop.
+#
+#   macos-glass-regular   frosted, dims and blurs what is behind
+#   macos-glass-clear     thinner, lets more colour through
+#   <integer>             plain blur radius, e.g. 20
+#
+# opacity and blur are a pair: blur does nothing at opacity = 1.0,
+# and below about 0.80 comments start to fight the wallpaper.
+background-opacity = 0.86
+background-blur = macos-glass-regular
+
+# Splits: dim the ones you are not in. Subtle -- this reads as depth
+# rather than as a disabled pane.
+unfocused-split-opacity = 0.92
+
+
+# --- Window ----------------------------------------------
+# Matching alacritty.toml's padding = { x = 14, y = 12 }. The generous
+# padding is a large part of the look; text crammed against the window
+# edge reads as cheap no matter what the palette is.
+window-padding-x = 14
+window-padding-y = 12
+window-padding-balance = true
+
+# `hidden` is Ghostty's equivalent of Alacritty's decorations =
+# "buttonless": no title bar, traffic lights only on hover.
+macos-titlebar-style = hidden
+window-colorspace = display-p3
+
+# Inherit the working directory into new splits/tabs, not $HOME.
+window-inherit-working-directory = true
+window-inherit-font-size = true
+
+
+# --- Font ------------------------------------------------
+font-family = JetBrainsMono Nerd Font
+font-size = 13.5
+
+# Alacritty's [font.offset] y = 1 nudged the baseline for line
+# breathing room; adjust-cell-height is the Ghostty equivalent and
+# does it without clipping descenders.
+adjust-cell-height = 8%
+
+font-thicken = true
+
+
+# --- Cursor ----------------------------------------------
+# Beam + blink, as in alacritty.toml.
+cursor-style = bar
+cursor-style-blink = true
+
+
+# --- Behaviour -------------------------------------------
+scrollback-limit = 10000000
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+confirm-close-surface = false
+
+# Left option stays Alt so zsh's Alt-C / Alt-B bindings work; right
+# option is left alone for typing accented characters.
+macos-option-as-alt = left
+
+shell-integration = zsh
+shell-integration-features = cursor,sudo,title
+
+
+# --- Keybindings -----------------------------------------
+# Shift+Enter sends a literal newline rather than submitting -- the
+# same binding as alacritty.toml's "\r", needed by Claude Code
+# and most REPLs.
+keybind = shift+enter=text:\x1b\r
+
+# No theme-cycling binding here on purpose: a `text:` keybind types
+# into whatever has focus, so it would insert "theme next" into nvim
+# or a REPL. Use the `theme` command, then ⌘⇧, to reload.

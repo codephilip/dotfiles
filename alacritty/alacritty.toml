@@ -1,3 +1,26 @@
+# =========================================================
+# Alacritty — fallback terminal
+#
+# Ghostty is the daily driver (see ghostty/config); Alacritty is kept
+# because it is the one that works everywhere, including over X
+# forwarding and on Linux. It tracks the same palette, so switching
+# between the two is not a visual jump.
+#
+# Colours are NOT defined here. theme-current.toml is GENERATED from
+# theme/palettes/<name>.sh by scripts/theme — switch with:
+#
+#     theme solarized-osaka
+#
+# Alacritty live-reloads this file, so a switch applies to open
+# windows with no restart.
+# =========================================================
+
+# `import` lives under [general] as of Alacritty 0.14; this is 0.16.
+# Paths are relative to the config file.
+[general]
+import = ["~/.config/alacritty/theme-current.toml"]
+live_config_reload = true
+
 # =========================
 # WINDOW
 # =========================
@@ -5,8 +28,14 @@
 padding = { x = 14, y = 12 }
 dynamic_padding = false
 decorations = "buttonless"
-opacity = 0.97
 startup_mode = "Windowed"
+
+# Deliberately higher than Ghostty's 0.86. Alacritty has no blur on
+# macOS — it composites the raw desktop behind the text rather than a
+# frosted material — so the same opacity that looks like glass in
+# Ghostty just looks dirty here. 0.92 is about the floor before
+# comments stop being readable over a busy wallpaper.
+opacity = 0.92
 
 # =========================
 # FONT
@@ -15,15 +44,15 @@ startup_mode = "Windowed"
 size = 13.5
 
 [font.normal]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Regular"
 
 [font.bold]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Bold"
 
 [font.italic]
-family = "JetBrains Mono"
+family = "JetBrainsMono Nerd Font"
 style = "Italic"
 
 [font.offset]
@@ -59,28 +88,12 @@ multiplier = 3
 save_to_clipboard = true
 
 # =========================
-# COLORS — Tokyo Night
+# KEYBOARD
 # =========================
-[colors.primary]
-background = "#1a1b26"
-foreground = "#c0caf5"
-
-[colors.normal]
-black   = "#15161e"
-red     = "#f7768e"
-green   = "#9ece6a"
-yellow  = "#e0af68"
-blue    = "#7aa2f7"
-magenta = "#bb9af7"
-cyan    = "#7dcfff"
-white   = "#a9b1d6"
-
-[colors.bright]
-black   = "#414868"
-red     = "#f7768e"
-green   = "#9ece6a"
-yellow  = "#e0af68"
-blue    = "#7aa2f7"
-magenta = "#bb9af7"
-cyan    = "#7dcfff"
-white   = "#c0caf5"
+# Shift+Enter sends ESC CR — a literal newline instead of submitting.
+# Needed by Claude Code and most REPLs. Ghostty's equivalent is
+# `keybind = shift+enter=text:\x1b\r`.
+[[keyboard.bindings]]
+key = "Return"
+mods = "Shift"
+chars = "\u001B\r"
