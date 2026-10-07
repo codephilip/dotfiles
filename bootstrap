@@ -36,6 +36,11 @@ LINKS=(
 BREW_FORMULAE=(bat delta eza fd fzf lazygit neovim starship tmux zoxide
                zsh-autosuggestions zsh-syntax-highlighting)
 
+# Ghostty is the daily-driver terminal; Alacritty is the fallback. Only
+# Ghostty can blur its background on macOS, which is the whole reason
+# both are here — see ghostty/config.
+BREW_CASKS=(ghostty alacritty font-jetbrains-mono-nerd-font)
+
 red()   { printf '\033[31m%s\033[0m\n' "$*"; }
 green() { printf '\033[32m%s\033[0m\n' "$*"; }
 dim()   { printf '\033[2m%s\033[0m\n' "$*"; }
@@ -119,6 +124,55 @@ if (( ${#missing[@]} == 0 )); then
 else
   red "  ${#missing[@]} missing:"
   printf '    brew install %s\n' "${missing[*]}"
+fi
+
+bold $'\nCasks'
+missing_casks=()
+for cask in "${BREW_CASKS[@]}"; do
+  case $cask in
+    ghostty)                      probe=/Applications/Ghostty.app ;;
+    alacritty)                    probe=/Applications/Alacritty.app ;;
+    font-jetbrains-mono-nerd-font)
+      # Fonts land in one of two places depending on whether Homebrew
+      # installed them for the user or system-wide.
+      if [[ -n $(/bin/ls "$HOME/Library/Fonts" /Library/Fonts 2>/dev/null \
+                 | grep -i 'JetBrainsMonoNerdFont' | head -1) ]]; then
+        continue
+      fi
+      probe='' ;;
+  esac
+  [[ -n $probe && -e $probe ]] && continue
+  missing_casks+=("$cask")
+done
+
+if (( ${#missing_casks[@]} == 0 )); then
+  green "  ✓ all ${#BREW_CASKS[@]} casks present"
+else
+  red "  ${#missing_casks[@]} missing:"
+  printf '    brew install --cask %s\n' "${missing_casks[*]}"
+fi
+
+# --- Theme -----------------------------------------------
+# theme/palettes/*.sh is the single source of truth for colours; the
+# per-tool fragments (ghostty/theme.conf, alacritty/theme-current.toml,
+# git/theme.gitconfig) are generated from it and gitignored, so a fresh
+# clone has none of them. Generate them now, or Ghostty starts on its
+# own default palette and delta falls back to bat's.
+#
+# This also fetches the tokyonight .tmTheme that bat needs, since bat
+# ships Catppuccin and Solarized but not Tokyo Night.
+bold $'\nTheme'
+if [[ ! -x $CONFIG/scripts/theme ]]; then
+  red "  ! scripts/theme missing or not executable"
+elif (( CHECK_ONLY )); then
+  dim "  → would run 'theme regen' for $("$CONFIG/scripts/theme" current)"
+else
+  if "$CONFIG/scripts/theme" regen; then
+    green "  ✓ generated theme files for $("$CONFIG/scripts/theme" current)"
+    dim "    switch with: theme list / theme <name>"
+  else
+    red "  ! theme regen failed"
+  fi
 fi
 
 bold $'\nSummary'
