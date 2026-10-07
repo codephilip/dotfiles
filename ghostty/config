@@ -1,15 +1,11 @@
 # =========================================================
 # Ghostty
 #
-# The reason this exists alongside alacritty.toml: Alacritty cannot
-# blur its background on macOS. It has `window.opacity`, which makes
-# the window see-through, but nothing behind it is ever blurred -- so
-# you get a muddy window, not frosted glass. Ghostty does the real
-# thing via native macOS material.
-#
-# Alacritty is kept as a working fallback and tracks the same palette
-# (see alacritty/theme-current.toml), so nothing is lost by having
-# both.
+# The daily driver. alacritty.toml is styled to match -- same palette,
+# opacity, blur, padding, font and cursor -- and kept as the portable
+# fallback. Ghostty wins on the things Alacritty lacks: the macOS 26
+# glass material (see local.conf below), splits, tabs and shell
+# integration. Keep the two in step when changing either.
 #
 # Colours live in theme.conf, which is GENERATED from
 # theme/palettes/<name>.sh by scripts/theme. Switch with:

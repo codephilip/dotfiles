@@ -181,13 +181,12 @@ hand-edit them, and don't put colours in `ghostty/config` or
 
 ### Ghostty (`ghostty/`) — primary terminal
 
-Ghostty is the daily driver because it is the only emulator here that can
-**blur its background on macOS**. Alacritty has `window.opacity`, but
-nothing behind the window is blurred, so the same value that reads as
-frosted glass in Ghostty just looks muddy.
+Ghostty is the daily driver because it can use the macOS 26 **glass
+material** (via the per-machine `local.conf`), and it has splits, tabs and
+shell integration. Alacritty is styled to match it everywhere else.
 
 **Key Features:**
-- `background-opacity = 0.86` + `background-blur = macos-glass-regular`
+- `background-opacity = 0.86` + `background-blur = 20`; `macos-glass-regular` in `local.conf` on macOS 26+
 - Window padding: 14pt horizontal, 12pt vertical; titlebar hidden
 - `JetBrainsMono Nerd Font` at 13.5pt, `adjust-cell-height = 8%`
 - Beam cursor with blinking; `copy-on-select`
@@ -198,8 +197,8 @@ Reload config with ⌘⇧, — Ghostty has no CLI reload.
 ### Alacritty (`alacritty/`) — fallback
 
 Kept because it works everywhere, including over X forwarding and on
-Linux. Tracks the same palette, so switching between the two is not a
-visual jump.
+Linux. Styled to match Ghostty: same palette, opacity, blur, padding, font
+and cursor, so switching between the two is not a visual jump.
 
 **Font Requirements:**
 - **JetBrains Mono Nerd Font** must be installed
@@ -213,10 +212,11 @@ visual jump.
 
 **Key Features:**
 - Window padding: 14px horizontal, 12px vertical
-- Opacity: 0.92 — deliberately higher than Ghostty's 0.86, since without
-  blur a lower value is just hard to read
+- Opacity 0.86 with `blur = true`, the same glass as Ghostty's shared setting
+- Left Option is Alt (`option_as_alt = "OnlyLeft"`), as in Ghostty
+- Mouse cursor hides while typing
 - `live_config_reload`, so a theme switch applies without a restart
-- Scrollback history: 10,000 lines
+- Scrollback history: 100,000 lines (Alacritty's maximum)
 - Selection automatically copied to clipboard
 - Beam cursor with blinking enabled
 

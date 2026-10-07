@@ -4,11 +4,12 @@ Three emulators are installed. **Ghostty is the daily driver**
 (`ghostty/config`); Alacritty is the portable fallback; Warp is still on
 disk but no longer configured against.
 
-Ghostty is the primary for one specific reason: it is the only one of the
-three that can **blur its background on macOS**. Alacritty has
-`window.opacity`, but nothing behind the window is ever blurred, so the
-same setting that reads as frosted glass in Ghostty just looks muddy.
-See [Theming](theming.md) for the full picture.
+Alacritty is styled to match Ghostty: the same palette, opacity, blur,
+padding, font and cursor, so moving between them is not a visual jump.
+Ghostty stays primary because it can use the macOS 26 **glass material**,
+which keeps text legible over a busy wallpaper better than a plain blur,
+and because it has splits, tabs and shell integration. See
+[Theming](theming.md) for the full picture.
 
 !!! danger "They do not share settings"
     Setting a font in `alacritty.toml` does nothing for Ghostty or Warp, and
@@ -148,8 +149,8 @@ knowing are below. `ghostty +list-keybinds --default` prints all of them.
     | Keys / setting | Where | Does |
     |---|---|---|
     | ++shift+enter++ | Ghostty, Alacritty | Sends `ESC CR`: a newline in Claude Code and most REPLs instead of submitting |
-    | Left ++option++ is ++alt++ | Ghostty | `macos-option-as-alt = left`. Right ++option++ still types accented characters |
-    | Copy on select | Ghostty | `copy-on-select = clipboard`: selecting text copies it, no ++cmd+c++ needed |
+    | Left ++option++ is ++alt++ | Ghostty, Alacritty | `macos-option-as-alt = left` / `option_as_alt = "OnlyLeft"`. Right ++option++ still types accented characters |
+    | Copy on select | Ghostty, Alacritty | `copy-on-select = clipboard` / `save_to_clipboard`: selecting text copies it, no ++cmd+c++ needed |
     | Splits keep the directory | Ghostty | `window-inherit-working-directory`: new tabs and splits open where you were |
 
 === "Stock"

@@ -13,7 +13,7 @@ actually installed and configured, not what could be.
 |---|---|---|
 | Editor | Neovim 0.11.2 | 27 plugins, tuned for reading unfamiliar code |
 | Shell | zsh | starship prompt, fzf, zoxide, autosuggestions |
-| Terminal | Ghostty (Alacritty as fallback) | only one that blurs its background on macOS |
+| Terminal | Ghostty (Alacritty as fallback) | macOS 26 glass material, splits and tabs |
 | Multiplexer | tmux | auto-attaches over SSH |
 | Theming | one palette, three themes | [`theme <name>`](theming.md) switches every tool at once |
 | AI | Claude Code + CodeCompanion | diff-reviewed edits inside the editor |

@@ -3,8 +3,9 @@
 #
 # Ghostty is the daily driver (see ghostty/config); Alacritty is kept
 # because it is the one that works everywhere, including over X
-# forwarding and on Linux. It tracks the same palette, so switching
-# between the two is not a visual jump.
+# forwarding and on Linux. It is styled to match Ghostty -- same
+# palette, glass, padding, font and cursor -- so switching between the
+# two is not a visual jump. Keep the two in step when changing either.
 #
 # Colours are NOT defined here. theme-current.toml is GENERATED from
 # theme/palettes/<name>.sh by scripts/theme — switch with:
@@ -30,12 +31,22 @@ dynamic_padding = false
 decorations = "buttonless"
 startup_mode = "Windowed"
 
-# Deliberately higher than Ghostty's 0.86. Alacritty has no blur on
-# macOS — it composites the raw desktop behind the text rather than a
-# frosted material — so the same opacity that looks like glass in
-# Ghostty just looks dirty here. 0.92 is about the floor before
-# comments stop being readable over a busy wallpaper.
-opacity = 0.92
+# The glass, matching Ghostty's background-opacity = 0.86 and
+# background-blur = 20. Older Alacritty had no blur on macOS and
+# composited the raw desktop behind the text, which is why this used to
+# sit at a muddier-but-readable 0.92; 0.16 (installed here) blurs. opacity and blur
+# are a pair: blur does nothing at 1.0.
+#
+# What Alacritty cannot do is Ghostty's macos-glass-* material (see
+# ghostty/local.conf on macOS 26+ machines). This is the plain
+# gaussian blur, the same look as Ghostty's portable shared setting.
+opacity = 0.86
+blur = true
+
+# Left Option is Alt, so zsh's Alt-C / Alt-B / Alt-. work; right
+# Option still types accented characters. Same as Ghostty's
+# macos-option-as-alt = left.
+option_as_alt = "OnlyLeft"
 
 # =========================
 # FONT
@@ -78,7 +89,9 @@ blinking = "On"
 # SCROLLING
 # =========================
 [scrolling]
-history = 10000
+# Alacritty's ceiling. Ghostty's limit is in bytes and set far higher,
+# but 100k lines is more than you'll scroll by hand.
+history = 100000
 multiplier = 3
 
 # =========================
@@ -86,6 +99,13 @@ multiplier = 3
 # =========================
 [selection]
 save_to_clipboard = true
+
+# =========================
+# MOUSE
+# =========================
+# Matches Ghostty's mouse-hide-while-typing.
+[mouse]
+hide_when_typing = true
 
 # =========================
 # KEYBOARD

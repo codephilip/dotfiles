@@ -40,12 +40,12 @@ of them alone looks unfinished.
 Miss the last three and you get a blurred window with opaque rectangles
 floating on it.
 
-!!! warning "Alacritty cannot do this"
-    Alacritty has `window.opacity` but **no background blur on macOS** — it
-    composites the raw desktop behind your text rather than a frosted
-    material. That is why Ghostty is the daily driver and Alacritty's
-    opacity is set higher (`0.92`), where it still reads cleanly. Both
-    track the same palette, so moving between them is not a visual jump.
+!!! note "Alacritty matches, minus the glass material"
+    Alacritty uses the same `0.86` opacity with `window.blur = true`, the
+    same plain blur as Ghostty's shared setting. What it can't do is
+    Ghostty's macOS 26 `macos-glass-*` material, which is why Ghostty
+    stays the daily driver. Both track the same palette, so moving between
+    them is not a visual jump.
 
 ## How it fits together
 
