@@ -44,7 +44,12 @@
 
 set -euo pipefail
 
-CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}"
+# Resolve the repo from this script's own location rather than from
+# $XDG_CONFIG_HOME, matching bootstrap. The repo is normally ~/.config,
+# but a clone elsewhere (~/dotfiles, a worktree) then still regenerates
+# into its own tree instead of silently writing to ~/.config — or
+# failing with "unknown theme" when ~/.config isn't a clone at all.
+CONFIG="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 THEME_DIR="$CONFIG/theme"
 PALETTE_DIR="$THEME_DIR/palettes"
 CURRENT_FILE="$THEME_DIR/current"

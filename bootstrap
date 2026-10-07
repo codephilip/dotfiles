@@ -33,7 +33,7 @@ LINKS=(
 # Tools the configs actually reference. Missing ones degrade gracefully
 # (.zshrc guards every integration with `command -v`), so this reports
 # rather than installs — you stay in control of what lands on the machine.
-BREW_FORMULAE=(bat delta eza fd fzf lazygit neovim starship tmux zoxide
+BREW_FORMULAE=(bat delta eza fd fzf lazygit neovim ripgrep starship tmux zoxide
                zsh-autosuggestions zsh-syntax-highlighting)
 
 # Ghostty is the daily-driver terminal; Alacritty is the fallback. Only
@@ -108,6 +108,8 @@ for tool in "${BREW_FORMULAE[@]}"; do
     zsh-syntax-highlighting)  probe=/opt/homebrew/share/zsh-syntax-highlighting ;;
     neovim)                   probe=cmd:nvim ;;
     delta)                    probe=cmd:delta ;;
+    # Formula name and binary name differ.
+    ripgrep)                  probe=cmd:rg ;;
     *)                        probe="cmd:$tool" ;;
   esac
 
