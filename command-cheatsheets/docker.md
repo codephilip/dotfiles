@@ -1,5 +1,8 @@
 # Docker Commands
 
+d         → docker
+dc        → docker compose
+
 ## Containers
 dps       → docker ps
 dpa       → docker ps -a
@@ -29,4 +32,5 @@ dclf      → follow compose logs
 
 ## Cleanup
 dclean    → system prune
-dcleanf   → prune all (danger)
+dcleanf   → prune all unused images too (no prompt)
+dkclean   → …and unused VOLUMES — deletes data (no prompt)

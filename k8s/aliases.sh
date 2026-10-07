@@ -22,8 +22,11 @@ alias klp='kubectl logs -f --previous'
 
 # Exec
 alias kex='kubectl exec -it'
-alias ksh='kubectl exec -it -- /bin/sh'
-alias kbash='kubectl exec -it -- /bin/bash'
+# Functions, not aliases: an alias appends `ksh mypod` AFTER the `--`,
+# handing the pod name to /bin/sh instead of kubectl.
+#   ksh mypod            ksh mypod -c sidecar -n web
+ksh()   { kubectl exec -it "$@" -- /bin/sh; }
+kbash() { kubectl exec -it "$@" -- /bin/bash; }
 
 # Apply / Delete
 alias ka='kubectl apply -f'
