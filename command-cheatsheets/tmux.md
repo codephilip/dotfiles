@@ -1,16 +1,18 @@
 # tmux — Command Cheatsheet
 
-Prefix: **`Ctrl-b`** — stock tmux. Nothing in `tmux/tmux.conf` is remapped,
-so everything below also works on a vanilla tmux you ssh into.
+Prefix: **`Ctrl-a`** — the stock prefix is `Ctrl-b`. Only the prefix is
+changed: on a vanilla tmux you ssh into, press `Ctrl-b` and everything after
+it below is the same. `C-a C-a` sends a literal `Ctrl-a` (shell line-start).
 
-Notation: `C-b c` means press `Ctrl-b`, release, then `c`.
+Notation: `C-a c` means press `Ctrl-a`, release, then `c`.
 
-Two deviations from stock, and that is the whole list:
+Three deviations from stock, and that is the whole list:
 
+- the prefix is **`C-a`** (`C-b` is released)
 - windows and panes are numbered from **1**
-- `C-b R` reloads `~/.config/tmux/tmux.conf` (`R` is unbound in stock tmux)
+- `C-a R` reloads `~/.config/tmux/tmux.conf` (`R` is unbound in stock tmux)
 
-`C-b ?` lists every binding on any machine. That is the real cheatsheet —
+`C-a ?` lists every binding (`C-b ?` on a stock tmux). That is the real cheatsheet —
 this file is the subset worth memorising.
 
 ---
@@ -48,12 +50,12 @@ Detaching leaves everything running. That is the whole point of tmux.
 
 | Key | Does |
 |---|---|
-| `C-b d` | **detach** — the one to never forget |
-| `C-b s` | interactive session tree |
-| `C-b $` | rename session |
-| `C-b (` / `C-b )` | previous / next session |
-| `C-b L` | last session |
-| `C-b D` | choose a client to detach |
+| `C-a d` | **detach** — the one to never forget |
+| `C-a s` | interactive session tree |
+| `C-a $` | rename session |
+| `C-a (` / `C-a )` | previous / next session |
+| `C-a L` | last session |
+| `C-a D` | choose a client to detach |
 
 ---
 
@@ -61,16 +63,16 @@ Detaching leaves everything running. That is the whole point of tmux.
 
 | Key | Does |
 |---|---|
-| `C-b c` | new window |
-| `C-b n` / `C-b p` | next / previous window |
-| `C-b 1` … `C-b 9` | jump to window by number |
-| `C-b l` | last window |
-| `C-b w` | interactive window tree |
-| `C-b ,` | rename window |
-| `C-b &` | kill window (asks first) |
-| `C-b f` | find window by name |
-| `C-b .` | move window to another index |
-| `C-b '` | prompt for a window index to select |
+| `C-a c` | new window |
+| `C-a n` / `C-a p` | next / previous window |
+| `C-a 1` … `C-a 9` | jump to window by number |
+| `C-a l` | last window |
+| `C-a w` | interactive window tree |
+| `C-a ,` | rename window |
+| `C-a &` | kill window (asks first) |
+| `C-a f` | find window by name |
+| `C-a .` | move window to another index |
+| `C-a '` | prompt for a window index to select |
 
 ---
 
@@ -78,38 +80,38 @@ Detaching leaves everything running. That is the whole point of tmux.
 
 | Key | Does |
 |---|---|
-| `C-b %` | split into **left / right** |
-| `C-b "` | split into **top / bottom** |
-| `C-b ←↓↑→` | move between panes |
-| `C-b o` | cycle to next pane |
-| `C-b ;` | last pane |
-| `C-b q` | show pane numbers; press one to jump |
-| `C-b z` | **zoom** the pane full-screen (toggle) |
-| `C-b x` | kill pane (asks first) |
-| `C-b !` | break pane out into its own window |
-| `C-b {` / `C-b }` | swap pane with previous / next |
-| `C-b C-o` | rotate panes |
-| `C-b Space` | cycle layouts |
-| `C-b E` | spread panes out evenly |
+| `C-a %` | split into **left / right** |
+| `C-a "` | split into **top / bottom** |
+| `C-a ←↓↑→` | move between panes |
+| `C-a o` | cycle to next pane |
+| `C-a ;` | last pane |
+| `C-a q` | show pane numbers; press one to jump |
+| `C-a z` | **zoom** the pane full-screen (toggle) |
+| `C-a x` | kill pane (asks first) |
+| `C-a !` | break pane out into its own window |
+| `C-a {` / `C-a }` | swap pane with previous / next |
+| `C-a C-o` | rotate panes |
+| `C-a Space` | cycle layouts |
+| `C-a E` | spread panes out evenly |
 
 Avoid the words "horizontal" and "vertical" for the splits — tmux uses them
-backwards from how most people read them. `C-b %` runs `split-window -h` and
-gives you two panes side by side; `C-b "` runs `split-window -v` and stacks
+backwards from how most people read them. `C-a %` runs `split-window -h` and
+gives you two panes side by side; `C-a "` runs `split-window -v` and stacks
 them. Remember the glyphs and the result, not the flag names.
 
 ### Resizing
 
 | Key | Does |
 |---|---|
-| `C-b C-←↓↑→` | resize by 1 (repeatable — hold the arrow) |
-| `C-b M-←↓↑→` | resize by 5 (`M-` is Alt/Option) |
-| `C-b M-1` … `M-5` | even-horizontal, even-vertical, main-horizontal, main-vertical, tiled |
+| `C-a C-←↓↑→` | resize by 1 (repeatable — hold the arrow) |
+| `C-a M-←↓↑→` | resize by 5 (`M-` is Alt/Option) |
+| `C-a M-1` … `M-5` | even-horizontal, even-vertical, main-horizontal, main-vertical, tiled |
 
 ---
 
 ## 📋 Copy Mode
 
-`C-b [` enters copy mode (scrollback). `q` leaves it. `C-b ]` pastes.
+`C-a [` enters copy mode (scrollback). `q` leaves it. `C-a ]` pastes.
 
 `mode-keys` is deliberately left unset, so tmux chooses: **vi keys when
 `$EDITOR`/`$VISUAL` looks vi-ish, emacs keys otherwise.** Check with
@@ -157,10 +159,10 @@ them. Remember the glyphs and the result, not the flag names.
 
 | Key | Does |
 |---|---|
-| `C-b ]` | paste most recent buffer |
-| `C-b =` | choose a buffer to paste |
-| `C-b #` | list buffers |
-| `C-b -` | delete most recent buffer |
+| `C-a ]` | paste most recent buffer |
+| `C-a =` | choose a buffer to paste |
+| `C-a #` | list buffers |
+| `C-a -` | delete most recent buffer |
 
 `set-clipboard` is `external` (the tmux default), so copying in copy mode
 also forwards to the system clipboard via OSC 52 — which Alacritty supports,
@@ -173,14 +175,14 @@ copies into a tmux buffer the same way.
 
 | Key | Does |
 |---|---|
-| `C-b :` | command prompt |
-| `C-b ?` | list all key bindings |
-| `C-b /` | describe one key |
-| `C-b t` | clock |
-| `C-b i` | window info |
-| `C-b ~` | show recent messages (errors land here) |
-| `C-b C` | customize-mode — browse and change every option |
-| `C-b R` | reload this config *(the one added binding)* |
+| `C-a :` | command prompt |
+| `C-a ?` | list all key bindings |
+| `C-a /` | describe one key |
+| `C-a t` | clock |
+| `C-a i` | window info |
+| `C-a ~` | show recent messages (errors land here) |
+| `C-a C` | customize-mode — browse and change every option |
+| `C-a R` | reload this config *(the one added binding)* |
 
 Useful at the `:` prompt:
 
@@ -199,10 +201,10 @@ Useful at the `:` prompt:
 
 | Situation | Fix |
 |---|---|
-| Nested tmux (local + remote) | `C-b C-b` sends the prefix through to the inner one |
+| Nested tmux (local + remote) | the remote is stock, so `C-b` reaches it directly; if both use this config, `C-a C-a` |
 | Config suspected broken | `tmux -L test -f /dev/null` — clean server, no config |
-| Config changed | `C-b R`, or `tmux kill-server` for structural changes |
-| Pane stuck/garbled | `C-b r` refreshes the client |
+| Config changed | `C-a R`, or `tmux kill-server` for structural changes |
+| Pane stuck/garbled | `C-a r` refreshes the client |
 | Lost a session | `tmux ls`, then `tmux a -t <name>` |
 | Terminal colours wrong | check `echo $TERM` is `tmux-256color` inside tmux |
 
@@ -211,17 +213,17 @@ Useful at the `:` prompt:
 ## 📌 The Shortlist
 
 ```
-C-b d        detach
-C-b c        new window
-C-b n / p    next / prev window
-C-b 1..9     jump to window
-C-b %        split side by side
-C-b "        split stacked
-C-b ←↓↑→     move between panes
-C-b z        zoom pane
-C-b x        kill pane
-C-b [        scrollback
-C-b ?        list all keys
+C-a d        detach
+C-a c        new window
+C-a n / p    next / prev window
+C-a 1..9     jump to window
+C-a %        split side by side
+C-a "        split stacked
+C-a ←↓↑→     move between panes
+C-a z        zoom pane
+C-a x        kill pane
+C-a [        scrollback
+C-a ?        list all keys
 ```
 
 ---
@@ -243,4 +245,5 @@ tmux -L defaults -f /dev/null new-session -d
 diff <(tmux -L defaults list-keys | sort) <(tmux list-keys | sort)
 ```
 
-The only line should be `bind-key -T prefix R source-file …`.
+Expect only the prefix lines (`C-a` added, `C-b` gone) and
+`bind-key -T prefix R source-file …`.

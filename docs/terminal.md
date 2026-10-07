@@ -145,7 +145,7 @@ left stock deliberately, so the muscle memory transfers to a vanilla install.
 | Keys | Where | Does |
 |---|---|---|
 | ++shift+enter++ | Ghostty, Alacritty | Sends `ESC CR` instead of submitting |
-| ++ctrl+b++ ++shift+r++ | tmux | Reload `tmux.conf`, with a confirmation message |
+| ++ctrl+a++ ++shift+r++ | tmux | Reload `tmux.conf`, with a confirmation message |
 | ++cmd+shift+comma++ | Ghostty | Reload config — Ghostty has no CLI reload |
 
 ++shift+enter++ is the one that matters day to day: Claude Code and most REPLs
@@ -162,6 +162,7 @@ if [[ -z "$TMUX" && -n "$SSH_CONNECTION" ]]; then
 fi
 ```
 
-Every binding is stock apart from ++ctrl+b++ ++shift+r++ above, so anything you
-learn here works on a tmux you have never configured. The full key reference
-is on the [tmux](tmux.md) page.
+The prefix is ++ctrl+a++ rather than ++ctrl+b++. After the prefix, every
+binding is stock apart from ++ctrl+a++ ++shift+r++ above, so on a tmux you have
+never configured you press ++ctrl+b++ and the rest is the same. The full key
+reference is on the [tmux](tmux.md) page.
