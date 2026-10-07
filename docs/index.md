@@ -13,9 +13,23 @@ actually installed and configured, not what could be.
 |---|---|---|
 | Editor | Neovim 0.11.2 | 27 plugins, tuned for reading unfamiliar code |
 | Shell | zsh | starship prompt, fzf, zoxide, autosuggestions |
-| Terminal | Warp (Alacritty also installed) | Nerd Font required for icons |
+| Terminal | Ghostty (Alacritty as fallback) | only one that blurs its background on macOS |
 | Multiplexer | tmux | auto-attaches over SSH |
+| Theming | one palette, three themes | [`theme <name>`](theming.md) switches every tool at once |
 | AI | Claude Code + CodeCompanion | diff-reviewed edits inside the editor |
+
+## Setting this up on a new machine
+
+The install sequence lives in the
+[README](https://github.com/codephilip/dotfiles#-quick-start) rather than here,
+for the obvious reason that this site needs `mkdocs-material` installed before
+you can read it.
+
+The short version: install Homebrew, clone to `~/.config`, `brew install` the
+formulae and casks, `make install`, then open `nvim` and let lazy.nvim
+bootstrap. Four things are deliberately not in the repo and have to be restored
+by hand — `ssh/config`, `gh auth login`, a `~/.zshrc.local` holding
+`ANTHROPIC_API_KEY`, and the docs toolchain. The README has the table.
 
 ## Layout
 
@@ -23,13 +37,23 @@ actually installed and configured, not what could be.
 ~/.config/
 ├── nvim/              Neovim config — see the Neovim section
 ├── zsh/.zshrc         symlinked from ~/.zshrc
-├── starship.toml      prompt
+├── zsh/plugins/       vendored fzf-tab, so a clone needs nothing fetched
+├── starship.toml      prompt (theme/ generates starship-current.toml)
 ├── git/gitconfig      symlinked from ~/.gitconfig
-├── alacritty/         terminal (when using Alacritty)
+├── ghostty/           primary terminal
+├── alacritty/         fallback terminal
 ├── tmux/              multiplexer
+├── theme/             palettes + active theme; scripts/theme generates from these
+├── scripts/           theme switcher, starship generator
+├── bootstrap          symlinks + tool report; run via `make install`
 ├── command-cheatsheets/   quick `bat`-rendered references
 └── docs/              this site
 ```
+
+Generated files (`ghostty/theme.conf`, `alacritty/theme-current.toml`,
+`git/theme.gitconfig`, `starship-current.toml`) are gitignored and absent from a
+fresh clone — `make install` writes them. Never hand-edit them; see
+[Theming](theming.md).
 
 ## Start here
 

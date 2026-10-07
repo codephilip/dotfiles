@@ -10,22 +10,73 @@ This configuration setup is designed for macOS/Linux systems with a focus on min
 
 This repository *is* `~/.config`, so most tools (Neovim, Ghostty, Alacritty, tmux)
 already find their config at the XDG path with no setup. Only the few files that
-have to live outside `~/.config` need linking:
+have to live outside `~/.config` need linking.
+
+`make install` deliberately **reports** missing tools rather than installing
+them, so adopting this on a new machine is five steps, not one:
 
 ```bash
-git clone <this-repo> ~/.config
+# 1. Homebrew — nothing here installs it for you
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Clone. The path matters — see "Cloning somewhere else" below.
+git clone https://github.com/codephilip/dotfiles.git ~/.config
+
+# 3. Tools. `make verify` prints this same list filtered to what you're missing.
+brew install bat delta eza fd fzf lazygit neovim ripgrep starship tmux \
+             zoxide zsh-autosuggestions zsh-syntax-highlighting
+brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
+
+# 4. Symlinks + generated theme files
 cd ~/.config
 make verify    # dry run — show what would change
-make install   # create the symlinks, report any missing tools
+make install
+
+# 5. Pick up the new shell, then let the editor bootstrap itself
+exec zsh
+nvim           # lazy.nvim self-installs; then :Mason for the language servers
 ```
 
-`make install` is idempotent and never overwrites a real file — if
-`~/.zshrc` already exists as a regular file, it says so and leaves it alone.
-It links `~/.zshrc`, `~/.tmux.conf`, `~/.gitconfig` and `~/.ssh/config`, then
-lists any missing Homebrew formulae and casks as copy-pasteable `brew install`
-lines. Finally it runs `theme regen`, which writes the generated colour
-fragments — a fresh clone has none of them, since they are gitignored — and
-fetches the `bat` theme that Tokyo Night needs.
+`make install` is idempotent and never overwrites a real file — if `~/.zshrc`
+already exists as a regular file, it says so and leaves it alone. It links
+`~/.zshrc`, `~/.tmux.conf` and `~/.gitconfig`, lists any missing formulae and
+casks as copy-pasteable `brew install` lines, then runs `theme regen` to write
+the generated colour fragments (a fresh clone has none — they are gitignored)
+and fetch the `bat` theme Tokyo Night needs.
+
+### Four things `make install` can't do for you
+
+These are per-machine or secret, so they are not in the repo and nothing
+checks for them:
+
+| What | Command | Needed for |
+| --- | --- | --- |
+| SSH config | restore `ssh/config` from your password manager | the `github`, `prox-*`, `macmini*` and Hetzner hosts |
+| GitHub auth | `gh auth login` | `gh`; the token lives in the keychain, not here |
+| Secrets | create `~/.zshrc.local` with `export ANTHROPIC_API_KEY=…` | CodeCompanion in Neovim (inert without it) |
+| Docs toolchain | `pip install mkdocs-material` | `make serve` / `make docs` only |
+
+`ssh/config` is gitignored — it used to be an Ansible Vault blob in the repo,
+but it is local-only now, so a rebuild needs it from elsewhere. `bootstrap`
+reports `not in repo, nothing to link` and carries on.
+
+### Cloning somewhere else
+
+`git clone … ~/.config` fails if `~/.config` already exists with content,
+which is common on a machine that has been used. Adopt the directory in place
+instead:
+
+```bash
+git init ~/.config && cd ~/.config
+git remote add origin https://github.com/codephilip/dotfiles.git
+git fetch origin && git checkout -f main
+```
+
+Cloning to a path *other* than `~/.config` only half-works: `bootstrap` and
+`scripts/theme` both resolve the repo from their own location, so linking and
+theme generation are correct — but every tool that reads an XDG path (Neovim,
+Ghostty, Alacritty, starship) still looks in `~/.config` and will not see the
+clone. Symlink `~/.config` at it, or clone there in the first place.
 
 Per-tool details and manual steps are in the sections below.
 
@@ -34,7 +85,8 @@ Per-tool details and manual steps are in the sections below.
 ### Required System Tools
 
 - **Git** - Version control (required for Neovim plugins, git aliases, and various integrations)
-- **Neovim** (0.9+) - Modern Vim editor with Lua configuration
+- **Neovim** (0.11+) - Required, not just recommended: the LSP config uses the
+  native `vim.lsp.config` / `vim.lsp.enable` API added in 0.11
 - **tmux** - Terminal multiplexer
 - **Zsh** - Shell (uses built-in features, no Oh My Zsh required)
 - **ripgrep** (rg) - Fast text search (required for Neovim `:Rg` command)
@@ -311,24 +363,21 @@ Extensive git aliases for common operations:
 - Aliases are automatically sourced by zsh config if `~/.config/k8s/aliases.sh` exists
 - Requires kubectl to be installed
 
-### SSH (`ssh/`)
+### SSH (`ssh/`) — not tracked
 
-**Configuration:**
-- Config file is encrypted with Ansible Vault
-- Decrypt with: `ansible-vault decrypt ~/.config/ssh/config`
+`ssh/` is gitignored. The config was previously committed as an Ansible Vault
+blob, but the repo is public and the decrypted file contains host names and
+addresses, so it is local-only now. Keep a copy in your password manager.
 
-**Installation:**
-- Link config: `ln -s ~/.config/ssh/config ~/.ssh/config`
-- Ensure proper permissions: `chmod 600 ~/.ssh/config`
+**On a new machine:**
+```bash
+# restore ssh/config from your password manager, then:
+chmod 600 ~/.config/ssh/config
+make install        # links it to ~/.ssh/config
+```
 
-### PowerShell (`powershell/`)
-
-**Git Aliases (`powershell/git-aliases.ps1`):**
-Basic git aliases for PowerShell:
-- `gst`, `ga`, `gc`, `gp`, `gl`, `gco`, `gcb`, `gb`, `gd`, `glog`
-
-**Installation:**
-- Source in PowerShell profile if using Windows
+`make install` links `~/.ssh/config` when the file is present and reports
+`not in repo, nothing to link` when it isn't — it is never an error.
 
 ### Command Cheatsheets (`command-cheatsheets/`)
 
@@ -352,11 +401,17 @@ missing, so you can run it first and paste the command it gives you.
 
 ### macOS
 
+This is the same list `bootstrap` checks for, kept in sync with
+`BREW_FORMULAE` and `BREW_CASKS` in that file.
+
 ```bash
-brew install neovim tmux fzf ripgrep bat git delta eza fd lazygit \
-             starship zoxide zsh-autosuggestions zsh-syntax-highlighting
-brew install font-jetbrains-mono
+brew install bat delta eza fd fzf lazygit neovim ripgrep starship tmux \
+             zoxide zsh-autosuggestions zsh-syntax-highlighting
+brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 ```
+
+The font must be the **Nerd Font** build — plain JetBrains Mono has no glyphs
+for the icons in the Neovim statusline, file tree or prompt.
 
 ### Linux
 
@@ -368,8 +423,9 @@ sudo apt install neovim tmux fzf ripgrep bat fd-find git zsh
 #   delta eza lazygit starship zoxide
 ```
 
-JetBrains Mono: download from <https://www.jetbrains.com/lp/mono/> or install
-via your package manager.
+JetBrains Mono Nerd Font: download the patched build from
+<https://github.com/ryanoasis/nerd-fonts/releases> — the upstream JetBrains
+release is unpatched and will render icons as tofu.
 
 ## 🔗 Integration Notes
 
