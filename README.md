@@ -54,11 +54,27 @@ checks for them:
 | SSH config | restore `ssh/config` from your password manager | the `github`, `prox-*`, `macmini*` and Hetzner hosts |
 | GitHub auth | `gh auth login` | `gh`; the token lives in the keychain, not here |
 | Secrets | create `~/.zshrc.local` with `export ANTHROPIC_API_KEY=…` | CodeCompanion in Neovim (inert without it) |
+| Key repeat | see below — `make install` reports these | holding `j`/`k` in Neovim without it crawling |
 | Docs toolchain | `pip install mkdocs-material` | `make serve` / `make docs` only |
 
 `ssh/config` is gitignored — it used to be an Ansible Vault blob in the repo,
 but it is local-only now, so a rebuild needs it from elsewhere. `bootstrap`
 reports `not in repo, nothing to link` and carries on.
+
+**Key repeat** is the one that makes a new Mac feel broken in Neovim. These are
+per-user macOS defaults rather than files, so they cannot live in this repo and
+`make install` can only report them:
+
+```bash
+defaults write -g KeyRepeat -int 1                      # stock is 6, ~6x slower
+defaults write -g InitialKeyRepeat -int 15              # delay before repeating
+defaults write -g ApplePressAndHoldEnabled -bool false  # the real culprit
+# then log out and back in
+```
+
+`ApplePressAndHoldEnabled` matters more than the rate: while it is on, holding a
+key opens the accent-character picker **instead of repeating at all**, so `j`
+advances one line per press no matter how fast the repeat rate is set.
 
 ### Cloning somewhere else
 

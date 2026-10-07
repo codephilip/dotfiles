@@ -177,6 +177,61 @@ else
   fi
 fi
 
+# --- macOS key repeat ------------------------------------
+# Holding j/k in Neovim on a stock Mac crawls one line at a time. Two
+# separate causes, both per-user macOS defaults rather than files, so
+# neither can live in this repo and `make install` cannot carry them
+# between machines -- which is exactly how one machine ends up feeling
+# broken while another is fine.
+#
+#   KeyRepeat                 repeat interval; 1 is the fastest the UI
+#                             offers, stock is 6 (~6x slower)
+#   InitialKeyRepeat          delay before repeating starts
+#   ApplePressAndHoldEnabled  when true, holding a key opens the accent
+#                             picker INSTEAD of repeating -- this one is
+#                             the real culprit, not the rate
+#
+# Reported, not written: these are system-wide and need a logout to
+# apply, so they are yours to run. Same rule as the brew lists.
+if [[ $OSTYPE == darwin* ]]; then
+  bold $'\nmacOS key repeat'
+
+  # key:target:description — flagged when unset, or slower than target.
+  macos_fixes=()
+  check_default() {
+    local key=$1 target=$2 desc=$3 current
+    current=$(defaults read -g "$key" 2>/dev/null)
+
+    if [[ -z $current ]]; then
+      macos_fixes+=("$key:$target:unset — $desc")
+    elif [[ $key == ApplePressAndHoldEnabled ]]; then
+      [[ $current != 0 ]] && macos_fixes+=("$key:$target:enabled — $desc")
+    elif (( current > target )); then
+      macos_fixes+=("$key:$target:$current — $desc")
+    fi
+  }
+
+  check_default KeyRepeat                1  "repeat interval"
+  check_default InitialKeyRepeat         15  "delay before repeat"
+  check_default ApplePressAndHoldEnabled  0  "accent picker steals the repeat"
+
+  if (( ${#macos_fixes[@]} == 0 )); then
+    green "  ✓ key repeat is set for holding j/k"
+  else
+    red "  ${#macos_fixes[@]} to fix — holding j/k in Neovim will crawl:"
+    for fix in "${macos_fixes[@]}"; do
+      key=${fix%%:*}; rest=${fix#*:}; target=${rest%%:*}; why=${rest#*:}
+      dim "    $key ($why)"
+      if [[ $key == ApplePressAndHoldEnabled ]]; then
+        printf '    defaults write -g %s -bool false\n' "$key"
+      else
+        printf '    defaults write -g %s -int %s\n' "$key" "$target"
+      fi
+    done
+    dim "    then log out and back in"
+  fi
+fi
+
 bold $'\nSummary'
 printf '  %d already linked, %d created, %d skipped\n' "$linked" "$created" "$skipped"
 (( CHECK_ONLY )) && dim "  (--check: nothing was changed)"
