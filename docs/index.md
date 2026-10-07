@@ -77,6 +77,23 @@ fresh clone — `make install` writes them. Never hand-edit them; see
 
     [:octicons-arrow-right-24: Shell](shell/index.md)
 
+-   __tmux__
+
+    ---
+
+    Every key, stock prefix and all, plus the two things this config changes.
+
+    [:octicons-arrow-right-24: tmux](tmux.md)
+
+-   __Docker and Kubernetes__
+
+    ---
+
+    The `docker`, `kubectl` and k9s shortcuts, and which cleanup command
+    deletes your volumes.
+
+    [:octicons-arrow-right-24: Docker and Kubernetes](containers.md)
+
 -   __Terminal__
 
     ---

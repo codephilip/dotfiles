@@ -64,4 +64,65 @@ Full list in [Neovim key bindings](neovim/keybindings.md#git).
 | `cdr` | jump to repo root |
 | `git-commands` | the cheatsheet |
 
-Aliases live in `~/.config/git/aliases.sh`, sourced from `.zshrc`.
+## Aliases
+
+Defined in `~/.config/git/aliases.sh`, which `.zshrc` sources. Anything typed
+after an alias is appended: `gcm "fix typo"` runs `git commit -m "fix typo"`.
+
+### Status and history
+
+| Alias | Runs |
+|---|---|
+| `gs` | `git status -sb`: short, with the branch line |
+| `gss` | `git status` |
+| `gl` | `git log --oneline --decorate` |
+| `glg` | The same, as a graph of **all** branches |
+| `gla` | A graph with relative commit dates |
+| `gd` | `git diff`: unstaged changes |
+| `gds` | `git diff --staged`: what is about to be committed |
+
+### Branches
+
+| Alias | Runs |
+|---|---|
+| `gb` | `git branch` |
+| `gbv` | `git branch -vv`: shows each branch's upstream and ahead/behind |
+| `gbd` | `git branch -d` |
+| `gsw` / `gswc` | `git switch` / `git switch -c` |
+| `gco` / `gcob` | `git checkout` / `git checkout -b` |
+| `gm` | `git merge` |
+
+### Commit
+
+| Alias | Runs |
+|---|---|
+| `ga` | `git add .`: the current directory down |
+| `gaa` | `git add -A`: the whole repo, deletions included |
+| `gc` | `git commit` |
+| `gcm` | `git commit -m` |
+| `gca` | `git commit --amend` |
+| `gcan` | `git commit --amend --no-edit`: fold staged changes into the last commit |
+
+### Sync
+
+| Alias | Runs |
+|---|---|
+| `gf` | `git fetch` |
+| `gfa` / `gprune` | `git fetch --all --prune` / `git fetch --prune` |
+| `gp` | `git pull` (a rebase, because of `pull.rebase`) |
+| `gpo` | `git push origin HEAD`: push the current branch |
+| `gpm` | `git push origin main` |
+
+!!! warning "`gp` is pull, not push"
+    Push is `gpo`. And `gpm` pushes to `main` directly, whatever branch you are
+    on.
+
+### Rebase and stash
+
+| Alias | Runs |
+|---|---|
+| `grb` / `grbi` | `git rebase` / `git rebase -i` |
+| `grbc` / `grba` | `git rebase --continue` / `--abort` |
+| `gsh` | `git stash` |
+| `gshp` | `git stash pop` |
+| `gshl` | `git stash list` |

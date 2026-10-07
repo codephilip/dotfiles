@@ -163,5 +163,5 @@ fi
 ```
 
 Every binding is stock apart from ++ctrl+b++ ++shift+r++ above, so anything you
-learn here works on a tmux you have never configured. See `tmux-commands` for
-the cheatsheet.
+learn here works on a tmux you have never configured. The full key reference
+is on the [tmux](tmux.md) page.

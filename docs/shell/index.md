@@ -132,6 +132,9 @@ regress by accident.
 
 ## Functions
 
+Every alias and function, including the git, docker and kubectl sets, is
+listed on [Aliases and functions](aliases.md).
+
 | Command | Does |
 |---|---|
 | `mkcd <dir>` | mkdir + cd |

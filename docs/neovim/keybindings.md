@@ -47,8 +47,28 @@ If you memorise nine things, memorise these.
 | ++space++ ++s++ ++q++ | Quickfix list |
 | ++space++ ++s++ `:` | Command history |
 
-Inside any picker: ++ctrl+q++ sends all matches to the quickfix list,
-++ctrl+slash++ toggles help, ++ctrl+d++ / ++ctrl+u++ scroll the preview.
+### Inside a picker
+
+| Keys | Does |
+|---|---|
+| ++ctrl+j++ / ++ctrl+k++ | Next / previous result |
+| ++enter++ | Open |
+| ++ctrl+v++ / ++ctrl+s++ / ++ctrl+t++ | Open in a vertical split / horizontal split / new tab |
+| ++tab++ | Mark a result, for opening several at once |
+| ++ctrl+q++ | Send every match to the quickfix list |
+| ++shift+down++ / ++shift+up++ | Scroll the preview a page |
+| ++f4++ | Hide / show the preview |
+| ++ctrl+u++ | Clear the query |
+| ++ctrl+f++ / ++ctrl+b++ | Half a page down / up the results |
+| ++alt+a++ | Mark / unmark everything |
+| ++ctrl+slash++ or ++f1++ | Help: every key the picker accepts |
+| ++escape++ | Close |
+
+!!! info "++ctrl+d++ / ++ctrl+u++ only scroll some previews"
+    Files, grep, buffers and the LSP pickers preview through `bat`, and there
+    ++ctrl+u++ clears the query instead. ++ctrl+d++ / ++ctrl+u++ scroll only the
+    built-in previewer: marks, jumps, keymaps and quickfix. ++shift+down++ /
+    ++shift+up++ work in both.
 
 ## Understanding code
 
@@ -111,8 +131,10 @@ These operate on the syntax tree, not on lines.
 | `vaa` / `via` | Select an argument |
 | `vab` / `vib` | Select a block |
 | `va/` | Select a comment |
-| `]f` / `[f` | Next / previous function |
-| `]c` / `[c` | Next / previous class |
+| `]f` / `[f` | Next / previous function start |
+| `]F` / `[F` | Next / previous function end |
+| `]c` / `[c` | Next / previous class start |
+| `]C` / `[C` | Next / previous class end |
 | `[[` / `]]` | Previous / next symbol (aerial) |
 | `[x` | Jump up to the enclosing context |
 
@@ -138,6 +160,7 @@ These operate on the syntax tree, not on lines.
 | ++alt+j++ / ++alt+k++ | Move the line — or the selection — down / up |
 | `<` / `>` | Indent left / right in visual, keeping the selection |
 | `p` | Paste over a selection *without* yanking what you replaced |
+| ++alt+e++ | In insert mode, right after typing a bracket or quote: wrap the next word or expression in the pair |
 
 ## Completion
 
@@ -270,6 +293,8 @@ gets toggled.
 | ++space++ ++shift+l++ | Lazy (plugin manager) |
 | ++space++ ++question++ | Bindings for this buffer |
 | ++s++ / ++shift+s++ | Flash jump / flash treesitter |
+| `r` after an operator | Remote flash: act on text elsewhere without moving. `yr`, jump, then a motion (`iw`), yanks that word and leaves the cursor where it was |
+| ++q++ | Close help, man, quickfix, checkhealth and git-blame windows |
 
 ### Quickfix
 
@@ -291,6 +316,57 @@ are re-bound for terminal mode too.
 |---|---|
 | ++ctrl+slash++ | Leave terminal mode (back to normal mode) |
 | ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ | Move out to another window directly |
+
+## Inside plugin windows
+
+These only work while the cursor is in that plugin's window.
+
+### File tree (++space++ ++e++)
+
+nvim-tree's defaults, with four changes: `l` / `h` open and close like a
+directory browser, `i` shows file info, and ++ctrl+t++ makes a directory the
+tree's root instead of opening it in a tab.
+
+| Keys | Does |
+|---|---|
+| `l` / ++enter++ | Open the file, or expand the directory |
+| `h` | Collapse the directory, or jump to its parent |
+| ++ctrl+t++ | Make this directory the root of the tree |
+| `-` | Move the root up a level |
+| ++ctrl+v++ / ++ctrl+x++ | Open in a vertical / horizontal split |
+| `a` | Create a file. End the name with `/` for a directory |
+| `r` | Rename |
+| `d` | Delete (asks first) |
+| `x` / `c` / `p` | Cut / copy / paste |
+| `y` / `Y` / `gy` | Copy the name / relative path / absolute path |
+| `i` | File info: size, dates, path |
+| `H` / `I` | Show / hide dotfiles / gitignored files |
+| `f` / `F` | Filter the tree / clear the filter |
+| `E` / `W` | Expand / collapse everything |
+| `R` | Refresh |
+| `g?` | Every binding |
+| `q` | Close |
+
+++space++ ++a++ ++s++ in the tree adds the file under the cursor to Claude's
+context.
+
+### Symbol outline (++space++ ++o++)
+
+| Keys | Does |
+|---|---|
+| ++enter++ / `o` | Jump to the symbol |
+| `{` / `}` | Previous / next symbol |
+| `za` | Expand / collapse the symbol under the cursor |
+| `q` | Close |
+| `?` | Every binding |
+
+### CodeCompanion chat (++space++ ++n++ ++n++)
+
+| Keys | Does |
+|---|---|
+| ++enter++ (normal) / ++ctrl+s++ (insert) | Send the message |
+| `q` (normal) / ++ctrl+c++ (insert) | Close the chat |
+| `?` | Every binding |
 
 !!! warning "++s++ is taken by flash"
     It no longer substitutes a character. Use ++c++ ++l++ for that.

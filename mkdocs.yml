@@ -108,6 +108,9 @@ nav:
   - Shell:
       - shell/index.md
       - Key bindings: shell/keybindings.md
+      - Aliases and functions: shell/aliases.md
+  - tmux: tmux.md
+  - Docker and Kubernetes: containers.md
   - Terminal: terminal.md
   - Theming: theming.md
   - Git: git.md
