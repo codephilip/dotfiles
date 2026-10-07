@@ -33,8 +33,26 @@ LINKS=(
 # Tools the configs actually reference. Missing ones degrade gracefully
 # (.zshrc guards every integration with `command -v`), so this reports
 # rather than installs — you stay in control of what lands on the machine.
-BREW_FORMULAE=(bat delta eza fd fzf lazygit neovim ripgrep starship tmux zoxide
+BREW_FORMULAE=(bat delta eza fd fzf gh lazygit neovim ripgrep starship tmux zoxide
                zsh-autosuggestions zsh-syntax-highlighting)
+
+# Tools the config uses that Homebrew is not necessarily the source of.
+# Each can arrive by several routes -- a native installer, npm, pip,
+# uv, cargo, a direct download -- so there is no single `brew install`
+# line that fixes them and no `brew upgrade` that keeps them current.
+#
+# They get their own section because the failure mode is different.
+# A missing tool announces itself; a tool installed three different
+# ways on three machines does not, it just quietly runs three
+# different versions. So this prints the resolved path, the route it
+# implies, and the version -- run `make verify` on each machine and
+# the versions are there to compare.
+#
+#   label : binary : version flag : where to get it
+EXTERNAL_TOOLS=(
+  "Claude Code:claude:--version:https://claude.com/claude-code (native installer)"
+  "mkdocs:mkdocs:--version:brew install mkdocs-material — or pip, hence the drift"
+)
 
 # Ghostty is the daily-driver terminal; Alacritty is the fallback. Only
 # Ghostty can blur its background on macOS, which is the whole reason
@@ -211,6 +229,49 @@ else
   red "  ${#missing_casks[@]} missing:"
   printf '    brew install --cask %s\n' "${missing_casks[*]}"
 fi
+
+# --- External tools --------------------------------------
+# Classify an absolute binary path into the install route it implies.
+# Inferred from location, which is the only evidence available --
+# nothing records how a binary got there.
+install_route() {
+  local p=$1
+  case $p in
+    "${BREW_PREFIX:-/nonexistent}"/*) echo "homebrew" ;;
+    "$HOME"/.local/bin/*)             echo "native installer / pipx / uv" ;;
+    "$HOME"/.cargo/bin/*)             echo "cargo" ;;
+    "$HOME"/.bun/bin/*)               echo "bun" ;;
+    *) case $p in
+         */node_modules/*|*/.npm*/*|*/.nvm/*) echo "npm" ;;
+         /usr/local/bin/*)                    echo "direct install or Intel brew" ;;
+         /usr/bin/*|/bin/*)                   echo "macOS system copy" ;;
+         *)                                   echo "unknown" ;;
+       esac ;;
+  esac
+}
+
+bold $'\nExternal tools'
+dim "  not from this homebrew — compare versions across machines"
+for entry in "${EXTERNAL_TOOLS[@]}"; do
+  label=${entry%%:*}; rest=${entry#*:}
+  bin=${rest%%:*};    rest=${rest#*:}
+  vflag=${rest%%:*}
+  hint=${rest#*:}
+
+  resolved=$(command -v "$bin" 2>/dev/null)
+  if [[ -z $resolved ]]; then
+    red "  – $label: not found"
+    dim "      $hint"
+    continue
+  fi
+
+  # Only the first line, and only the first version-ish token — these
+  # tools disagree wildly about what `--version` should print.
+  ver=$("$bin" $vflag 2>/dev/null | head -1 \
+        | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)
+  green "  ✓ $label ${ver:-(version unknown)}"
+  dim   "      $resolved — $(install_route "$resolved")"
+done
 
 # --- Theme -----------------------------------------------
 # theme/palettes/*.sh is the single source of truth for colours; the

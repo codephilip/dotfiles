@@ -55,7 +55,7 @@ checks for them:
 | GitHub auth | `gh auth login` | `gh`; the token lives in the keychain, not here |
 | Secrets | create `~/.zshrc.local` with `export ANTHROPIC_API_KEY=…` | CodeCompanion in Neovim (inert without it) |
 | Key repeat | see below — `make install` reports these | holding `j`/`k` in Neovim without it crawling |
-| Docs toolchain | `pip install mkdocs-material` | `make serve` / `make docs` only |
+| Docs toolchain | `brew install mkdocs-material` (or `pip install`) | `make serve` / `make docs` only |
 
 `ssh/config` is gitignored — it used to be an Ansible Vault blob in the repo,
 but it is local-only now, so a rebuild needs it from elsewhere. `bootstrap`
@@ -87,6 +87,30 @@ value, which looks correct immediately while the session still uses the old one.
 The only real test is holding `j` after a logout. Full detail, including the
 case-sensitivity trap, is in
 [docs/troubleshooting.md](docs/troubleshooting.md).
+
+### Tools Homebrew doesn't own
+
+A few things the config uses can arrive by several routes — a native installer,
+npm, pip, uv, cargo, a direct download — so there is no `brew install` line that
+fixes them and no `brew upgrade` that keeps them current. `make verify` gives
+them their own section:
+
+```text
+External tools
+  not from this homebrew — compare versions across machines
+  ✓ Claude Code 2.1.220
+      /usr/local/bin/claude — direct install or Intel brew
+  ✓ mkdocs 1.6.1
+      /opt/homebrew/bin/mkdocs — homebrew
+```
+
+The route is inferred from the path, because nothing records how a binary
+actually got there. This matters because the failure mode is quiet: a *missing*
+tool announces itself, whereas the same tool installed three different ways on
+three machines just runs three different versions. Claude Code has already done
+this here — the native installer puts it in `~/.local/bin`, npm in the brew
+prefix, and a direct install in `/usr/local/bin`. Run `make verify` on each
+machine and compare the versions; nothing can do that comparison for you.
 
 ### Cloning somewhere else
 
