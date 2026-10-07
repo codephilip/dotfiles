@@ -1,0 +1,57 @@
+# =========================================================
+# k9s — Kubernetes TUI
+#
+# This file is only here because k9s does NOT use ~/.config on
+# macOS. It defaults to ~/Library/Application Support/k9s, which is
+# outside this repo and so unversioned and un-themed. `.zshrc` exports
+# K9S_CONFIG_DIR=~/.config/k9s to pull it back in; without that export
+# this file is simply ignored.
+#
+# Check which one k9s is actually reading with:
+#
+#     k9s info
+#
+# Colours are NOT set here. skins/theme-current.yaml is GENERATED from
+# theme/palettes/<name>.sh by scripts/theme and is gitignored — switch
+# with `theme <name>`, then restart k9s.
+#
+# Deliberately minimal: every key below is a considered departure from
+# the default, and anything absent is left as k9s ships it. k9s merges
+# this over its own defaults, so a short file stays correct across
+# upgrades instead of pinning stale values.
+#
+# Reference: https://k9scli.io/topics/config/
+# =========================================================
+k9s:
+  ui:
+    # theme-current is written by `theme regen`. If k9s falls back to
+    # its built-in colours, that file is missing — run `theme regen`.
+    skin: theme-current
+    # The logo is large and says nothing you don't know. The breadcrumb
+    # trail stays: it is the only on-screen indication of which
+    # namespace and resource you are looking at.
+    logoless: true
+    # Mouse off. k9s is keyboard-driven, and enabling it swallows the
+    # terminal's own selection so copying a pod name out stops working.
+    # Note this lives under `ui`, not at the top level — k9s 0.51
+    # validates against a schema and rejects the whole file with
+    # "Additional property enableMouse is not allowed" if it is
+    # misplaced, falling back to defaults with only a log warning.
+    enableMouse: false
+  # 2s is the default and is fine on a small cluster; raise it if you
+  # ever point this at something large enough that the API server
+  # notices.
+  refreshRate: 2
+  # k9s checks GitHub for a newer release on every start. Homebrew
+  # manages this install, so the check is a network round-trip that
+  # can only tell you something `brew outdated` already knows.
+  skipLatestRevCheck: true
+  logger:
+    # 100 lines is too short to see why a pod crashed before it was
+    # restarted.
+    tail: 500
+    buffer: 5000
+    # Wrap long lines rather than truncating them — stack traces and
+    # JSON log lines are the whole reason you are in the log view.
+    textWrap: true
+    showTime: false

@@ -33,8 +33,8 @@ LINKS=(
 # Tools the configs actually reference. Missing ones degrade gracefully
 # (.zshrc guards every integration with `command -v`), so this reports
 # rather than installs — you stay in control of what lands on the machine.
-BREW_FORMULAE=(bat delta eza fd fzf gh lazygit neovim ripgrep starship tmux zoxide
-               zsh-autosuggestions zsh-syntax-highlighting)
+BREW_FORMULAE=(bat delta eza fd fzf gh k9s lazygit neovim ripgrep starship tmux
+               zoxide zsh-autosuggestions zsh-syntax-highlighting)
 
 # Tools the config uses that Homebrew is not necessarily the source of.
 # Each can arrive by several routes -- a native installer, npm, pip,

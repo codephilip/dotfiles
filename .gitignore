@@ -19,6 +19,7 @@ ghostty/theme.conf
 alacritty/theme-current.toml
 git/theme.gitconfig
 starship-current.toml
+k9s/skins/theme-current.yaml
 
 # bat's compiled theme cache, built by `theme` after fetching
 # tokyonight_night.tmTheme.
@@ -31,6 +32,13 @@ bat/syntaxes.bin
 # token in the keychain, so hosts.yml is just the logged-in account.
 gh/hosts.yml
 cagent/
+
+# k9s writes per-cluster state and screen dumps next to its config.
+# The config and the generated skin are what we track; these are
+# machine- and cluster-specific.
+k9s/clusters/
+k9s/benchmarks/
+k9s/screen-dumps/
 
 # Per-machine Ghostty overrides, included last by ghostty/config.
 # Used to give macOS 26+ machines real macos-glass-* blur while the

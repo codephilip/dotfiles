@@ -95,6 +95,12 @@ export SAVEHIST=50000
 export EDITOR="nvim"
 export VISUAL="nvim"
 
+# k9s ignores XDG on macOS and uses ~/Library/Application Support/k9s,
+# which would leave its config outside this repo -- unversioned, and
+# missing the generated skin. Point it back at ~/.config/k9s.
+# Verify with `k9s info`, which prints the paths it resolved.
+export K9S_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/k9s"
+
 # =========================================================
 # Theme
 #
