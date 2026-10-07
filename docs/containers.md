@@ -87,10 +87,10 @@ project's services.
 Use the aliases above for scripting and one-off commands. Use lazydocker when
 you're looking around: what's running, what died, and why.
 
-Its config lives in `~/.config/lazydocker/config.yml`. lazydocker on macOS
-would otherwise read `~/Library/Application Support/lazydocker`, so
-`lazydocker` is a shell function that points it at the repo copy. `type
-lazydocker` should say "shell function"; if it says a file path, the function
+Its config lives in `~/.config/docker/lazydocker/config.yml`, next to the
+docker aliases. lazydocker on macOS would otherwise read `~/Library/Application
+Support/lazydocker`, so `lazydocker` is a shell function that points it at the
+repo copy. `type lazydocker` should say "shell function"; if it says a file path, the function
 isn't loaded and your config is being ignored.
 
 What this config changes from the default:

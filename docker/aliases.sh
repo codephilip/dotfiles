@@ -36,9 +36,9 @@ alias dcleanf='docker system prune -af'
 # TUI
 # lazydocker ignores XDG on macOS, and its override is an env var called
 # plain CONFIG_DIR -- too generic to export globally, so it is set for
-# this one command. See lazydocker/config.yml.
+# this one command. See docker/lazydocker/config.yml.
 lazydocker() {
-  CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/lazydocker" command lazydocker "$@"
+  CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/docker/lazydocker" command lazydocker "$@"
 }
 # Shadows the linker, but only when typed: aliases never apply inside
 # scripts or to the ld that compilers invoke. `command ld` reaches it.
