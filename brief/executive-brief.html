@@ -1,0 +1,883 @@
+<title>Neovim Config — Executive Brief</title>
+
+<style>
+/* ============================================================
+   TOKENS — Tokyo Night (dark) / Tokyo Night Day (light)
+   Matches the palette in ~/.config/alacritty/alacritty.toml
+   ============================================================ */
+:root {
+  --ground:   #e8eaf2;
+  --surface:  #ffffff;
+  --raised:   #f2f4fa;
+  --sunken:   #dfe3ee;
+  --line:     #c4cae0;
+  --line-soft:#dadff0;
+
+  --ink:      #272a3f;
+  --ink-2:    #4c5277;
+  --muted:    #70769b;
+
+  --blue:     #2e7de9;
+  --magenta:  #9854f1;
+  --green:    #437b24;
+  --yellow:   #8f5e15;
+  --red:      #c54054;
+  --cyan:     #007197;
+
+  --key-face: #ffffff;
+  --key-edge: #b9c0da;
+  --shadow:   0 1px 2px rgba(39,42,63,.07), 0 4px 14px rgba(39,42,63,.06);
+
+  --mono: "JetBrains Mono", "JetBrainsMono Nerd Font", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --maxw: 1180px;
+  --prose: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:   #13131a;
+    --surface:  #1a1b26;
+    --raised:   #1f2030;
+    --sunken:   #101017;
+    --line:     #2d3049;
+    --line-soft:#232538;
+
+    --ink:      #c7d0f0;
+    --ink-2:    #a4accd;
+    --muted:    #787c99;
+
+    --blue:     #7aa2f7;
+    --magenta:  #bb9af7;
+    --green:    #9ece6a;
+    --yellow:   #e0af68;
+    --red:      #f7768e;
+    --cyan:     #7dcfff;
+
+    --key-face: #262838;
+    --key-edge: #3b3f5c;
+    --shadow:   0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+}
+
+/* Viewer's explicit toggle must win over the OS preference, both ways. */
+:root[data-theme="dark"] {
+  --ground:#13131a; --surface:#1a1b26; --raised:#1f2030; --sunken:#101017;
+  --line:#2d3049; --line-soft:#232538;
+  --ink:#c7d0f0; --ink-2:#a4accd; --muted:#787c99;
+  --blue:#7aa2f7; --magenta:#bb9af7; --green:#9ece6a; --yellow:#e0af68; --red:#f7768e; --cyan:#7dcfff;
+  --key-face:#262838; --key-edge:#3b3f5c;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+}
+:root[data-theme="light"] {
+  --ground:#e8eaf2; --surface:#ffffff; --raised:#f2f4fa; --sunken:#dfe3ee;
+  --line:#c4cae0; --line-soft:#dadff0;
+  --ink:#272a3f; --ink-2:#4c5277; --muted:#70769b;
+  --blue:#2e7de9; --magenta:#9854f1; --green:#437b24; --yellow:#8f5e15; --red:#c54054; --cyan:#007197;
+  --key-face:#ffffff; --key-edge:#b9c0da;
+  --shadow:0 1px 2px rgba(39,42,63,.07), 0 4px 14px rgba(39,42,63,.06);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+code, .mono { font-family: var(--mono); font-variant-ligatures: none; }
+
+/* ---------- status strip: a lualine echo ---------- */
+.statusline {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: stretch;
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto; scrollbar-width: none;
+}
+.statusline::-webkit-scrollbar { display: none; }
+.statusline > span { padding: 7px 14px; white-space: nowrap; display: flex; align-items: center; gap: 7px; }
+.sl-mode   { background: var(--blue); color: var(--surface); font-weight: 700; }
+.sl-branch { color: var(--magenta); border-right: 1px solid var(--line); }
+.sl-file   { color: var(--ink-2); flex: 1; min-width: 0; }
+.sl-right  { color: var(--muted); border-left: 1px solid var(--line); }
+
+/* ---------- shell ---------- */
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px 120px; }
+
+.layout { display: grid; grid-template-columns: 184px minmax(0,1fr); gap: 56px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0,1fr); gap: 0; } .rail { display: none; } }
+
+.rail { position: sticky; top: 56px; padding-top: 8px; }
+.rail-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--muted);
+  padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line);
+}
+.rail a {
+  display: block; font-family: var(--mono); font-size: 12.5px;
+  color: var(--ink-2); text-decoration: none; padding: 5px 0 5px 12px;
+  border-left: 2px solid transparent; transition: color .12s, border-color .12s;
+}
+.rail a:hover { color: var(--blue); border-left-color: var(--blue); }
+.rail .rail-num { color: var(--muted); margin-right: 8px; }
+
+/* ---------- hero ---------- */
+.hero { padding: 68px 0 44px; }
+.eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--blue); margin: 0 0 18px;
+}
+h1 {
+  font-family: var(--mono); font-weight: 700;
+  font-size: clamp(30px, 5.2vw, 50px); line-height: 1.08;
+  letter-spacing: -.025em; margin: 0 0 22px; text-wrap: balance;
+}
+h1 .dim { color: var(--muted); font-weight: 400; }
+.lede { font-size: 18px; color: var(--ink-2); max-width: var(--prose); margin: 0; }
+
+/* ---------- stat row ---------- */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(128px,1fr));
+  gap: 1px; background: var(--line); border: 1px solid var(--line);
+  border-radius: 7px; overflow: hidden; margin: 40px 0 0;
+}
+.stat { background: var(--surface); padding: 16px 18px; }
+.stat-n {
+  font-family: var(--mono); font-size: 24px; font-weight: 700;
+  line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.stat-n.accent { color: var(--blue); }
+.stat-l {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-top: 6px;
+}
+
+/* ---------- sections ---------- */
+section { padding-top: 76px; scroll-margin-top: 60px; }
+.sec-head { border-top: 1px solid var(--line); padding-top: 18px; margin-bottom: 30px; }
+.sec-num {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em;
+  color: var(--muted); text-transform: uppercase;
+}
+h2 {
+  font-family: var(--mono); font-size: 25px; font-weight: 700;
+  letter-spacing: -.018em; margin: 8px 0 0; text-wrap: balance;
+}
+h3 {
+  font-family: var(--mono); font-size: 14px; font-weight: 700;
+  letter-spacing: .02em; margin: 40px 0 14px; color: var(--ink);
+}
+p { max-width: var(--prose); color: var(--ink-2); }
+p.tight { margin-top: 0; }
+
+/* ---------- diagram primitives ---------- */
+.diagram {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 9px; padding: 26px; margin: 26px 0;
+  overflow-x: auto;
+}
+.diagram-cap {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px dashed var(--line);
+}
+
+/* flow: horizontal chain of nodes */
+.flow { display: flex; align-items: stretch; gap: 0; min-width: 620px; }
+.node {
+  flex: 1; background: var(--raised); border: 1px solid var(--line);
+  border-radius: 6px; padding: 13px 15px; position: relative;
+}
+.node-t {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  color: var(--ink); margin-bottom: 5px; word-break: break-word;
+}
+.node-d { font-family: var(--mono); font-size: 10.5px; color: var(--muted); line-height: 1.5; }
+.arrow {
+  flex: 0 0 34px; display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-family: var(--mono); font-size: 15px;
+}
+
+/* stack: layered boxes */
+.stack { display: flex; flex-direction: column; gap: 10px; min-width: 460px; }
+.layer {
+  display: grid; grid-template-columns: 136px minmax(0,1fr);
+  gap: 18px; align-items: center;
+  background: var(--raised); border: 1px solid var(--line);
+  border-left: 3px solid var(--lc, var(--blue));
+  border-radius: 6px; padding: 14px 16px;
+}
+.layer-n { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--lc, var(--blue)); }
+.layer-d { font-family: var(--sans); font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+@media (max-width: 620px) { .layer { grid-template-columns: minmax(0,1fr); gap: 6px; } }
+
+/* loop diagram */
+.loop { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px,1fr)); gap: 14px; }
+.loop-step {
+  background: var(--raised); border: 1px solid var(--line);
+  border-radius: 6px; padding: 15px; position: relative;
+}
+.loop-step::before {
+  content: attr(data-step);
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  color: var(--surface); background: var(--magenta);
+  width: 19px; height: 19px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: absolute; top: -9px; left: 14px;
+}
+.loop-t { font-family: var(--mono); font-size: 12px; font-weight: 700; margin: 7px 0 6px; }
+.loop-d { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+/* eager/deferred split bar */
+.splitbar { display: flex; height: 36px; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); min-width: 420px; }
+.splitbar > div {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .04em;
+}
+.sb-eager { background: var(--blue); color: var(--surface); flex: 5; }
+.sb-lazy  { background: var(--raised); color: var(--ink-2); flex: 22; }
+.splitkey { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.splitkey i { font-style: normal; display: inline-flex; align-items: center; gap: 7px; }
+.dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+/* ---------- plugin grid ---------- */
+.group-head {
+  display: flex; align-items: baseline; gap: 12px;
+  margin: 38px 0 14px; padding-bottom: 9px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.group-name { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--gc, var(--blue)); }
+.group-note { font-family: var(--sans); font-size: 12.5px; color: var(--muted); }
+
+.pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px,1fr)); gap: 12px; }
+.plugin {
+  background: var(--surface); border: 1px solid var(--line);
+  border-left: 3px solid var(--gc, var(--blue));
+  border-radius: 6px; padding: 14px 16px;
+}
+.p-name {
+  font-family: var(--mono); font-size: 12.5px; font-weight: 700;
+  color: var(--ink); margin-bottom: 6px; word-break: break-all;
+}
+.p-desc { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+.p-key {
+  display: inline-block; margin-top: 9px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+}
+
+/* ---------- keycaps + tables ---------- */
+kbd {
+  font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+  background: var(--key-face); color: var(--ink);
+  border: 1px solid var(--key-edge); border-bottom-width: 2px;
+  border-radius: 4px; padding: 2px 6px; white-space: nowrap;
+  display: inline-block; line-height: 1.5;
+}
+kbd.lead { color: var(--magenta); }
+
+.keytable { width: 100%; border-collapse: collapse; margin: 6px 0 0; }
+.keytable td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.keytable td:first-child { width: 190px; white-space: nowrap; }
+.keytable td:last-child { font-size: 13.5px; color: var(--ink-2); }
+.keytable tr:last-child td { border-bottom: none; }
+.tscroll { overflow-x: auto; }
+
+.twocol { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px,1fr)); gap: 10px 44px; }
+
+/* ---------- callouts ---------- */
+.note {
+  border-left: 3px solid var(--cc, var(--yellow));
+  background: var(--surface); border-radius: 0 6px 6px 0;
+  padding: 15px 18px; margin: 24px 0; max-width: var(--prose);
+}
+.note-t {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--cc, var(--yellow)); margin-bottom: 7px; font-weight: 700;
+}
+.note p { margin: 0; font-size: 13.5px; }
+.note p + p { margin-top: 9px; }
+
+/* ---------- terminal mock ---------- */
+.term {
+  background: var(--sunken); border: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden; margin: 26px 0; box-shadow: var(--shadow);
+}
+.term-bar {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 13px; border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.term-dot { width: 10px; height: 10px; border-radius: 50%; }
+.term-title {
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+  margin-left: 8px; letter-spacing: .05em;
+}
+.term-body {
+  font-family: var(--mono); font-size: 12px; line-height: 1.75;
+  padding: 15px 17px; overflow-x: auto; white-space: pre;
+  color: var(--ink-2); margin: 0;
+}
+.c-blue{color:var(--blue)} .c-mag{color:var(--magenta)} .c-grn{color:var(--green)}
+.c-yel{color:var(--yellow)} .c-red{color:var(--red)} .c-cya{color:var(--cyan)}
+.c-mut{color:var(--muted)} .c-ink{color:var(--ink)}
+
+footer {
+  margin-top: 84px; padding-top: 22px; border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+  display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* ============================================================
+   PRINT — A4, light palette regardless of screen theme.
+   Printing the dark ground wastes ink and reads badly, so the
+   tokens are forced back to Tokyo Night Day here.
+   ============================================================ */
+@page {
+  size: A4;
+  margin: 15mm 14mm 16mm;
+}
+
+@media print {
+  :root, :root[data-theme="dark"], :root[data-theme="light"] {
+    --ground:#ffffff; --surface:#ffffff; --raised:#f6f7fb; --sunken:#f6f7fb;
+    --line:#c8cde0; --line-soft:#e0e4f0;
+    --ink:#15172a; --ink-2:#33384f; --muted:#5f6684;
+    --blue:#1f5fc0; --magenta:#7b3fd4; --green:#37661d; --yellow:#7a4f0e;
+    --red:#b02f44; --cyan:#005f80;
+    --key-face:#ffffff; --key-edge:#9aa2c0; --shadow:none;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body { font-size: 9.6pt; line-height: 1.5; background: #fff; }
+
+  /* Screen-only chrome */
+  .statusline, .rail { display: none !important; }
+  .layout { grid-template-columns: minmax(0,1fr) !important; gap: 0 !important; }
+  .wrap { max-width: none; padding: 0; }
+
+  /* Hero compresses — no need for a full screen of lead-in on paper */
+  .hero { padding: 0 0 14pt; }
+  h1 { font-size: 23pt; line-height: 1.12; }
+  .lede { font-size: 10.5pt; }
+  .stats { margin-top: 16pt; }
+  .stat-n { font-size: 15pt; }
+
+  /* Each numbered section starts a fresh page */
+  section { padding-top: 0; break-before: page; page-break-before: always; }
+  section:first-of-type { break-before: avoid; page-break-before: avoid; }
+
+  h2 { font-size: 15pt; }
+  h3 { font-size: 10.5pt; margin-top: 16pt; }
+  p  { max-width: none; }
+
+  /* Never split an atomic block across a page boundary */
+  .plugin, .note, .diagram, .loop-step, .layer, .node, .term, tr, .stat {
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  h2, h3 { break-after: avoid; page-break-after: avoid; }
+
+  /* Diagrams must fit the measure rather than scroll */
+  .diagram, .tscroll, .term-body { overflow: visible !important; }
+  .flow  { min-width: 0 !important; }
+  .stack { min-width: 0 !important; }
+  .splitbar { min-width: 0 !important; }
+  .node-d { font-size: 7.6pt; }
+  .term-body { font-size: 7.6pt; white-space: pre-wrap; }
+
+  .pgrid { grid-template-columns: repeat(2, 1fr) !important; }
+  .loop  { grid-template-columns: repeat(3, 1fr) !important; }
+
+  .keytable { font-size: 9pt; }
+  .keytable td { padding: 4pt 8pt 4pt 0; }
+  kbd { font-size: 8.2pt; border-bottom-width: 1px; }
+
+  a { color: var(--blue); text-decoration: none; }
+  footer { margin-top: 22pt; }
+}
+</style>
+
+<div class="statusline">
+  <span class="sl-mode">NORMAL</span>
+  <span class="sl-branch">⎇ main</span>
+  <span class="sl-file">~/.config/nvim — executive brief</span>
+  <span class="sl-right">27 plugins</span>
+  <span class="sl-right">nvim 0.11.2</span>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Configuration brief · October 2026</p>
+    <h1>Neovim, built for<br>reading code<span class="dim"> —</span><br><span class="dim">with Claude in the loop.</span></h1>
+    <p class="lede">
+      A 27-plugin Lua configuration targeting Neovim 0.11.2. The brief is organised
+      around the question the config was built to answer: how fast can you understand
+      code you did not write?
+    </p>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n accent">27</div><div class="stat-l">Plugins</div></div>
+      <div class="stat"><div class="stat-n">5</div><div class="stat-l">Loaded at startup</div></div>
+      <div class="stat"><div class="stat-n">22</div><div class="stat-l">Deferred</div></div>
+      <div class="stat"><div class="stat-n">9</div><div class="stat-l">LSP servers</div></div>
+      <div class="stat"><div class="stat-n">37</div><div class="stat-l">TS parsers</div></div>
+      <div class="stat"><div class="stat-n">2</div><div class="stat-l">AI integrations</div></div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <nav class="rail">
+      <div class="rail-label">Contents</div>
+      <a href="#architecture"><span class="rail-num">01</span>Architecture</a>
+      <a href="#loading"><span class="rail-num">02</span>Load model</a>
+      <a href="#intelligence"><span class="rail-num">03</span>Code intel</a>
+      <a href="#plugins"><span class="rail-num">04</span>Plugin inventory</a>
+      <a href="#keys"><span class="rail-num">05</span>Key bindings</a>
+      <a href="#ai"><span class="rail-num">06</span>AI workflow</a>
+      <a href="#risks"><span class="rail-num">07</span>Constraints</a>
+    </nav>
+
+    <main>
+
+      <!-- ================= 01 ================= -->
+      <section id="architecture">
+        <div class="sec-head">
+          <div class="sec-num">01 — Architecture</div>
+          <h2>How the config is assembled</h2>
+        </div>
+
+        <p class="tight">
+          Four plain Lua modules run in a fixed order, then <code>lazy.nvim</code> takes over and
+          imports one file per concern from <code>lua/plugins/</code>. Nothing is clever: each file
+          owns one subject, and the plugin manager resolves the rest.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-cap">Startup path — init.lua to first keystroke</div>
+          <div class="flow">
+            <div class="node">
+              <div class="node-t">options.lua</div>
+              <div class="node-d">Leader key, UI, folding, diagnostics. Must run first — leader is baked into every later mapping.</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <div class="node-t">keymaps.lua</div>
+              <div class="node-d">Editor-level bindings that need no plugin.</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <div class="node-t">autocmds.lua</div>
+              <div class="node-d">Yank highlight, cursor restore, disk-change reload, relative numbers.</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="node">
+              <div class="node-t">lazy.lua</div>
+              <div class="node-d">Bootstraps the manager, imports <code>plugins/</code>, disables unused built-ins.</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>One file per concern</h3>
+        <div class="term">
+          <div class="term-bar">
+            <span class="term-dot" style="background:var(--red)"></span>
+            <span class="term-dot" style="background:var(--yellow)"></span>
+            <span class="term-dot" style="background:var(--green)"></span>
+            <span class="term-title">~/.config/nvim</span>
+          </div>
+<pre class="term-body"><span class="c-blue">init.lua</span>                  <span class="c-mut">4 requires, nothing else</span>
+<span class="c-blue">lua/config/</span>
+  options · keymaps · autocmds · lazy
+<span class="c-blue">lua/plugins/</span>
+  <span class="c-ink">ui.lua</span>           <span class="c-mut">theme, statusline, tabs, dashboard, which-key</span>
+  <span class="c-ink">explore.lua</span>      <span class="c-mut">file tree, outline, motion, pairs</span>
+  <span class="c-ink">treesitter.lua</span>   <span class="c-mut">syntax, textobjects, sticky context</span>
+  <span class="c-ink">fzf-lua.lua</span>      <span class="c-mut">every picker</span>
+  <span class="c-ink">lsp.lua</span>          <span class="c-mut">mason + lspconfig + blink.cmp</span>
+  <span class="c-ink">lint.lua</span>         <span class="c-mut">nvim-lint</span>
+  <span class="c-ink">git.lua</span>          <span class="c-mut">gitsigns</span>
+  <span class="c-ink">terminal.lua</span>     <span class="c-mut">FTerm float + lazygit</span>
+  <span class="c-ink">ai.lua</span>           <span class="c-mut">claudecode + codecompanion</span></pre>
+        </div>
+      </section>
+
+      <!-- ================= 02 ================= -->
+      <section id="loading">
+        <div class="sec-head">
+          <div class="sec-num">02 — Load model</div>
+          <h2>Why 27 plugins still start instantly</h2>
+        </div>
+
+        <p class="tight">
+          Only five plugins load when Neovim opens. The other twenty-two sit dormant until
+          something asks for them — a keypress, a command, a filetype, or the
+          <code>VeryLazy</code> event that fires after the UI is already drawn.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-cap">Startup cost — eager vs deferred</div>
+          <div class="splitbar">
+            <div class="sb-eager">5 EAGER</div>
+            <div class="sb-lazy">22 DEFERRED</div>
+          </div>
+          <div class="splitkey">
+            <i><span class="dot" style="background:var(--blue)"></span> colorscheme · treesitter · nvim-tree · lazy · devicons</i>
+            <i><span class="dot" style="background:var(--line)"></span> loaded on demand</i>
+          </div>
+        </div>
+
+        <h3>The four triggers</h3>
+        <div class="diagram">
+          <div class="diagram-cap">What wakes a plugin</div>
+          <div class="stack">
+            <div class="layer" style="--lc:var(--blue)">
+              <div class="layer-n">keys</div>
+              <div class="layer-d">A mapping is registered as a stub. Press it once and the real plugin loads, then the key fires. This is how fzf-lua, aerial, flash and both AI tools stay out of startup.</div>
+            </div>
+            <div class="layer" style="--lc:var(--magenta)">
+              <div class="layer-n">cmd</div>
+              <div class="layer-d">A command name is reserved. Typing <code>:Mason</code> or <code>:Lazygit</code> pulls the plugin in on first use.</div>
+            </div>
+            <div class="layer" style="--lc:var(--green)">
+              <div class="layer-n">event</div>
+              <div class="layer-d"><code>BufReadPre</code> for LSP and gitsigns, <code>InsertEnter</code> for completion and autopairs — nothing loads before a real buffer exists.</div>
+            </div>
+            <div class="layer" style="--lc:var(--yellow)">
+              <div class="layer-n">VeryLazy</div>
+              <div class="layer-d">Fires after the first screen is painted. Statusline, bufferline and which-key appear a few milliseconds late and nobody notices.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 03 ================= -->
+      <section id="intelligence">
+        <div class="sec-head">
+          <div class="sec-num">03 — Code intelligence</div>
+          <h2>Three layers that understand your code</h2>
+        </div>
+
+        <p class="tight">
+          These are frequently confused. They solve different problems and run independently —
+          treesitter works with no language server attached, and the language server works
+          with no parser installed.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-cap">Separation of concerns</div>
+          <div class="stack">
+            <div class="layer" style="--lc:var(--green)">
+              <div class="layer-n">Treesitter</div>
+              <div class="layer-d"><strong>Structure of this file.</strong> Parses the buffer into a syntax tree on every keystroke. Gives you accurate highlighting, folding, the sticky function header, and the <code>vaf</code> / <code>]f</code> motions that operate on functions rather than lines. Instant, local, no network.</div>
+            </div>
+            <div class="layer" style="--lc:var(--blue)">
+              <div class="layer-n">LSP</div>
+              <div class="layer-d"><strong>Meaning across the project.</strong> A background server per language that resolves symbols. Everything that needs to know about <em>other</em> files — go-to-definition, references, rename, diagnostics, call hierarchy — comes from here.</div>
+            </div>
+            <div class="layer" style="--lc:var(--magenta)">
+              <div class="layer-n">blink.cmp</div>
+              <div class="layer-d"><strong>Presentation.</strong> Merges completion candidates from the language server, snippets, open buffers and file paths into one ranked menu. Owns no knowledge of its own.</div>
+            </div>
+            <div class="layer" style="--lc:var(--yellow)">
+              <div class="layer-n">nvim-lint</div>
+              <div class="layer-d"><strong>Opinions the server does not hold.</strong> Runs standalone linters — shellcheck, hadolint, golangci-lint — on write. Silently skips any whose binary is absent.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="note" style="--cc:var(--blue)">
+          <div class="note-t">Where servers come from</div>
+          <p><code>mason</code> downloads the binaries; <code>mason-lspconfig</code> enables them. The enable list is an
+          explicit allow-list in <code>lua/plugins/lsp.lua</code> — not <code>true</code> — because mason also holds
+          formatters, and a formatter started as a language server crashes on every launch.</p>
+        </div>
+      </section>
+
+      <!-- ================= 04 ================= -->
+      <section id="plugins">
+        <div class="sec-head">
+          <div class="sec-num">04 — Inventory</div>
+          <h2>Every plugin, and why it's there</h2>
+        </div>
+
+        <div class="group-head" style="--gc:var(--green)">
+          <span class="group-name">READING &amp; NAVIGATION</span>
+          <span class="group-note">The reason the config exists</span>
+        </div>
+        <div class="pgrid" style="--gc:var(--green)">
+          <div class="plugin"><div class="p-name">fzf-lua</div><div class="p-desc">Every picker: files, live grep, buffers, git, and all the LSP result lists. Wraps the fzf binary, so it stays fast on large repositories.</div><div class="p-key">&lt;leader&gt;ff · &lt;leader&gt;/</div></div>
+          <div class="plugin"><div class="p-name">nvim-treesitter</div><div class="p-desc">Syntax tree per buffer. Drives highlighting, indentation and folding.</div><div class="p-key">&lt;C-space&gt; to grow selection</div></div>
+          <div class="plugin"><div class="p-name">nvim-treesitter-textobjects</div><div class="p-desc">Turns functions, classes and arguments into things you can select and jump between.</div><div class="p-key">vaf · ]f · [c</div></div>
+          <div class="plugin"><div class="p-name">nvim-treesitter-context</div><div class="p-desc">Pins the enclosing function signature to the top of the window while you scroll. Quietly the highest-value plugin here.</div><div class="p-key">[x to jump up</div></div>
+          <div class="plugin"><div class="p-name">aerial.nvim</div><div class="p-desc">Symbol outline sidebar. The fastest way to get oriented in a long unfamiliar file.</div><div class="p-key">&lt;leader&gt;o</div></div>
+          <div class="plugin"><div class="p-name">nvim-tree.lua</div><div class="p-desc">Project file tree with git status and diagnostics shown per file.</div><div class="p-key">&lt;leader&gt;e</div></div>
+          <div class="plugin"><div class="p-name">flash.nvim</div><div class="p-desc">Type two characters plus a label to jump anywhere on screen. Replaces most searching.</div><div class="p-key">s</div></div>
+        </div>
+
+        <div class="group-head" style="--gc:var(--blue)">
+          <span class="group-name">CODE INTELLIGENCE</span>
+          <span class="group-note">Definitions, completion, diagnostics</span>
+        </div>
+        <div class="pgrid" style="--gc:var(--blue)">
+          <div class="plugin"><div class="p-name">nvim-lspconfig</div><div class="p-desc">Server definitions consumed by Neovim 0.11's native <code>vim.lsp.config</code> / <code>vim.lsp.enable</code>.</div><div class="p-key">gd · gr · &lt;leader&gt;cr</div></div>
+          <div class="plugin"><div class="p-name">mason.nvim</div><div class="p-desc">Installs language servers, linters and formatters without touching system package managers.</div><div class="p-key">&lt;leader&gt;cm</div></div>
+          <div class="plugin"><div class="p-name">mason-lspconfig.nvim</div><div class="p-desc">Bridges the two — installs the servers listed in <code>SERVERS</code> and enables exactly those.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">blink.cmp</div><div class="p-desc">Completion menu with a Rust fuzzy matcher. Pinned to v1 while v2 stabilises.</div><div class="p-key">&lt;C-y&gt; accepts</div></div>
+          <div class="plugin"><div class="p-name">friendly-snippets</div><div class="p-desc">Snippet corpus feeding blink's snippet source.</div><div class="p-key">&lt;Tab&gt; between fields</div></div>
+          <div class="plugin"><div class="p-name">nvim-lint</div><div class="p-desc">Async linters on write, filtered to those actually installed.</div><div class="p-key">&lt;leader&gt;cl</div></div>
+        </div>
+
+        <div class="group-head" style="--gc:var(--magenta)">
+          <span class="group-name">AI</span>
+          <span class="group-note">Two tools, deliberately separate</span>
+        </div>
+        <div class="pgrid" style="--gc:var(--magenta)">
+          <div class="plugin"><div class="p-name">claudecode.nvim</div><div class="p-desc">Runs the Claude CLI in a split using the same protocol as the VS Code extension. Sends selections as context; returns edits as reviewable Neovim diffs. Uses your subscription — no API key.</div><div class="p-key">&lt;leader&gt;ac</div></div>
+          <div class="plugin"><div class="p-name">codecompanion.nvim</div><div class="p-desc">Native chat buffer and inline assistant against the Anthropic API. Requires <code>ANTHROPIC_API_KEY</code>; billed per token.</div><div class="p-key">&lt;leader&gt;nn</div></div>
+        </div>
+
+        <div class="group-head" style="--gc:var(--yellow)">
+          <span class="group-name">GIT &amp; TERMINAL</span>
+          <span class="group-note">Change review and shell access</span>
+        </div>
+        <div class="pgrid" style="--gc:var(--yellow)">
+          <div class="plugin"><div class="p-name">gitsigns.nvim</div><div class="p-desc">Gutter signs, hunk staging and reset, inline blame, and a hunk text object.</div><div class="p-key">]h · &lt;leader&gt;gb</div></div>
+          <div class="plugin"><div class="p-name">FTerm.nvim</div><div class="p-desc">Floating terminal. Also hosts lazygit, which removes the need for a separate git-UI plugin.</div><div class="p-key">&lt;C-\&gt; · &lt;leader&gt;gg</div></div>
+        </div>
+
+        <div class="group-head" style="--gc:var(--cyan)">
+          <span class="group-name">INTERFACE</span>
+          <span class="group-note">Theme, chrome, discoverability</span>
+        </div>
+        <div class="pgrid" style="--gc:var(--cyan)">
+          <div class="plugin"><div class="p-name">catppuccin</div><div class="p-desc">Mocha flavour, transparent background so the terminal shows through.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">lualine.nvim</div><div class="p-desc">Statusline: mode, branch, diagnostics, relative path, attached LSP servers.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">barbar.nvim</div><div class="p-desc">Buffer tabs with pinning, reordering and jump-by-letter.</div><div class="p-key">&lt;S-h&gt; · &lt;S-l&gt;</div></div>
+          <div class="plugin"><div class="p-name">which-key.nvim</div><div class="p-desc">Press leader and pause — every binding appears, grouped. The config's own documentation.</div><div class="p-key">&lt;leader&gt;</div></div>
+          <div class="plugin"><div class="p-name">alpha-nvim</div><div class="p-desc">Start screen with direct routes into files, grep, tree, lazygit and Claude.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">nvim-colorizer.lua</div><div class="p-desc">Renders hex and rgb values as swatches inline.</div><div class="p-key">&lt;leader&gt;uc</div></div>
+          <div class="plugin"><div class="p-name">nvim-web-devicons</div><div class="p-desc">Filetype glyphs. Requires a Nerd Font in the terminal.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">nvim-autopairs</div><div class="p-desc">Closes brackets and quotes, treesitter-aware.</div><div class="p-key">—</div></div>
+          <div class="plugin"><div class="p-name">lazy.nvim</div><div class="p-desc">The plugin manager. Owns the lockfile and the deferred-loading model.</div><div class="p-key">&lt;leader&gt;L</div></div>
+          <div class="plugin"><div class="p-name">plenary.nvim</div><div class="p-desc">Shared Lua utility library. A dependency, never used directly.</div><div class="p-key">—</div></div>
+        </div>
+      </section>
+
+      <!-- ================= 05 ================= -->
+      <section id="keys">
+        <div class="sec-head">
+          <div class="sec-num">05 — Bindings</div>
+          <h2>The keys that matter</h2>
+        </div>
+
+        <p class="tight">
+          Leader is <kbd class="lead">Space</kbd>. You never need this table in practice —
+          press leader and wait, and which-key shows the same information in context.
+          These are the ones worth committing to muscle memory.
+        </p>
+
+        <h3>Finding things</h3>
+        <div class="tscroll">
+        <table class="keytable">
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>Spc</kbd></td><td>Find files</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>/</kbd></td><td>Live grep across the project</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>s</kbd> <kbd>w</kbd></td><td>Grep the word under the cursor</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>s</kbd> <kbd>r</kbd></td><td>Reopen the last picker, with its query</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>e</kbd></td><td>File tree</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>o</kbd></td><td>Symbol outline</td></tr>
+          <tr><td><kbd>s</kbd></td><td>Flash jump to anything visible</td></tr>
+        </table>
+        </div>
+
+        <h3>Understanding code</h3>
+        <div class="tscroll">
+        <table class="keytable">
+          <tr><td><kbd>g</kbd> <kbd>d</kbd></td><td>Go to definition</td></tr>
+          <tr><td><kbd>g</kbd> <kbd>r</kbd></td><td>Find all references</td></tr>
+          <tr><td><kbd>g</kbd> <kbd>I</kbd> · <kbd>g</kbd> <kbd>y</kbd></td><td>Implementation · type definition</td></tr>
+          <tr><td><kbd>K</kbd></td><td>Hover documentation</td></tr>
+          <tr><td><kbd class="lead">Spc</kbd> <kbd>c</kbd> <kbd>c</kbd></td><td>Incoming calls — who calls this?</td></tr>
+          <tr><td><kbd>C-Space</kbd></td><td>Grow selection by syntax node; repeat to widen</td></tr>
+          <tr><td><kbd>v</kbd> <kbd>a</kbd> <kbd>f</kbd></td><td>Select the whole enclosing function</td></tr>
+          <tr><td><kbd>]</kbd> <kbd>f</kbd> · <kbd>[</kbd> <kbd>f</kbd></td><td>Jump to next / previous function</td></tr>
+        </table>
+        </div>
+
+        <h3>Changing code</h3>
+        <div class="twocol">
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>c</kbd> <kbd>r</kbd></td><td>Rename symbol everywhere</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>c</kbd> <kbd>a</kbd></td><td>Code action</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>c</kbd> <kbd>f</kbd></td><td>Format buffer</td></tr>
+          </table>
+          </div>
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd>]</kbd> <kbd>d</kbd> · <kbd>[</kbd> <kbd>d</kbd></td><td>Next / previous diagnostic</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>s</kbd> <kbd>R</kbd></td><td>Start a substitution</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>?</kbd></td><td>Show this buffer's bindings</td></tr>
+          </table>
+          </div>
+        </div>
+
+        <h3>Git</h3>
+        <div class="twocol">
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>g</kbd> <kbd>g</kbd></td><td>Lazygit, full screen</td></tr>
+            <tr><td><kbd>]</kbd> <kbd>h</kbd> · <kbd>[</kbd> <kbd>h</kbd></td><td>Next / previous changed hunk</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>g</kbd> <kbd>h</kbd></td><td>Stage the hunk under the cursor</td></tr>
+          </table>
+          </div>
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>g</kbd> <kbd>b</kbd></td><td>Blame this line, with the full message</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>g</kbd> <kbd>C</kbd></td><td>This file's commit history</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>g</kbd> <kbd>d</kbd></td><td>Diff against the index</td></tr>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 06 ================= -->
+      <section id="ai">
+        <div class="sec-head">
+          <div class="sec-num">06 — AI workflow</div>
+          <h2>The review loop</h2>
+        </div>
+
+        <p class="tight">
+          The design principle is that Claude never silently rewrites a buffer. Every edit it
+          proposes surfaces as a diff you explicitly accept or reject, in the same window where
+          you were already reading the code.
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-cap">claudecode.nvim — context in, diff out</div>
+          <div class="loop">
+            <div class="loop-step" data-step="1">
+              <div class="loop-t">Select</div>
+              <div class="loop-d"><code>vaf</code> grabs a function, or just put the cursor somewhere. The plugin tracks your selection continuously.</div>
+            </div>
+            <div class="loop-step" data-step="2">
+              <div class="loop-t">Send</div>
+              <div class="loop-d"><kbd class="lead">Spc</kbd><kbd>a</kbd><kbd>s</kbd> sends the selection; <kbd class="lead">Spc</kbd><kbd>a</kbd><kbd>b</kbd> sends the whole buffer.</div>
+            </div>
+            <div class="loop-step" data-step="3">
+              <div class="loop-t">Propose</div>
+              <div class="loop-d">Claude answers in the split. Any file edit opens as a vertical diff against your version.</div>
+            </div>
+            <div class="loop-step" data-step="4">
+              <div class="loop-t">Review</div>
+              <div class="loop-d">Read the diff as code, not as chat output. Nothing has been written yet.</div>
+            </div>
+            <div class="loop-step" data-step="5">
+              <div class="loop-t">Decide</div>
+              <div class="loop-d"><kbd class="lead">Spc</kbd><kbd>a</kbd><kbd>a</kbd> accepts, <kbd class="lead">Spc</kbd><kbd>a</kbd><kbd>d</kbd> denies. Only now does disk change.</div>
+            </div>
+          </div>
+        </div>
+
+        <h3>The full binding set</h3>
+        <div class="twocol">
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>c</kbd></td><td>Toggle the Claude split</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>s</kbd></td><td>Send selection — or, in the tree, add that file</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>b</kbd></td><td>Add the current buffer as context</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>r</kbd></td><td>Resume an earlier session</td></tr>
+          </table>
+          </div>
+          <div class="tscroll">
+          <table class="keytable">
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>a</kbd></td><td>Accept the proposed diff</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>d</kbd></td><td>Deny the proposed diff</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>a</kbd> <kbd>m</kbd></td><td>Switch model</td></tr>
+            <tr><td><kbd class="lead">Spc</kbd> <kbd>n</kbd> <kbd>n</kbd></td><td>CodeCompanion chat <span style="color:var(--yellow)">(needs API key)</span></td></tr>
+          </table>
+          </div>
+        </div>
+
+        <div class="note" style="--cc:var(--green)">
+          <div class="note-t">Why buffers reload on their own</div>
+          <p>Claude and lazygit both write to disk, not to your open buffer. An autocommand runs
+          <code>checktime</code> on focus and cursor-hold so the buffer refreshes and announces it.
+          Without that, your next <code>:w</code> would overwrite their work with stale text.</p>
+        </div>
+      </section>
+
+      <!-- ================= 07 ================= -->
+      <section id="risks">
+        <div class="sec-head">
+          <div class="sec-num">07 — Constraints</div>
+          <h2>What will break, and when</h2>
+        </div>
+
+        <p class="tight">
+          Three plugins are pinned to older branches because their defaults now require
+          Neovim 0.12. These are not arbitrary version locks — unpinning them on 0.11.2
+          breaks the editor on launch.
+        </p>
+
+        <div class="tscroll">
+        <table class="keytable">
+          <tr><td style="width:280px"><code>nvim-treesitter</code></td><td><code>branch = "master"</code> — <code>main</code> is a full rewrite with an incompatible API. Migrate, don't unpin.</td></tr>
+          <tr><td><code>nvim-treesitter-textobjects</code></td><td><code>branch = "master"</code> — same rewrite.</td></tr>
+          <tr><td><code>aerial.nvim</code></td><td><code>branch = "nvim-0.11"</code> — the maintained compatibility branch.</td></tr>
+          <tr><td><code>blink.cmp</code></td><td><code>version = "1.*"</code> — v2 is still landing breaking changes.</td></tr>
+        </table>
+        </div>
+
+        <div class="note" style="--cc:var(--red)">
+          <div class="note-t">Known rough edges</div>
+          <p><strong>No formatter.</strong> <code>&lt;leader&gt;cf</code> uses LSP formatting, which is good for Go and Lua
+          and weak for JS, TS and Python. <code>conform.nvim</code> would close this gap.</p>
+          <p><strong>CodeCompanion is inert</strong> until <code>ANTHROPIC_API_KEY</code> is exported. Claude Code
+          needs no key and covers most of the same ground.</p>
+          <p><strong><kbd>s</kbd> is taken</strong> by flash. Use <kbd>c</kbd><kbd>l</kbd> for the old substitute-character behaviour.</p>
+        </div>
+
+        <div class="note" style="--cc:var(--yellow)">
+          <div class="note-t">Icons depend on the terminal, not the config</div>
+          <p>Every glyph in the statusline, tree and completion menu requires a Nerd Font set in
+          the terminal emulator itself. Warp reads <code>[appearance.text] font_name</code> in
+          <code>~/.warp/settings.toml</code>; Alacritty reads <code>alacritty.toml</code>. Setting one does
+          nothing for the other.</p>
+        </div>
+      </section>
+
+      <footer>
+        <span>~/.config/nvim · 27 plugins · Neovim 0.11.2</span>
+        <span>Palette: Tokyo Night</span>
+      </footer>
+
+    </main>
+  </div>
+</div>

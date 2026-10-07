@@ -1,0 +1,255 @@
+/* =========================================================
+   Tokyo Night palette for Material for MkDocs
+   Matches ~/.config/alacritty/alacritty.toml and starship.toml
+   ========================================================= */
+
+/* ---------- Light: Tokyo Night Day ---------- */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color:        #2e7de9;
+  --md-primary-fg-color--light: #4b8ff0;
+  --md-primary-fg-color--dark:  #1f5fc0;
+  --md-accent-fg-color:         #9854f1;
+
+  --md-default-bg-color:        #ffffff;
+  --md-default-fg-color:        #272a3f;
+  --md-default-fg-color--light: #4c5277;
+  --md-default-fg-color--lighter: #70769b;
+
+  --md-code-bg-color:           #f2f4fa;
+  --md-code-fg-color:           #343b58;
+  --md-typeset-a-color:         #2e7de9;
+
+  --tn-green:   #437b24;
+  --tn-yellow:  #8f5e15;
+  --tn-red:     #c54054;
+  --tn-magenta: #9854f1;
+  --tn-cyan:    #007197;
+  --tn-line:    #c4cae0;
+}
+
+/* ---------- Dark: Tokyo Night ---------- */
+[data-md-color-scheme="slate"] {
+  --md-hue: 236;
+
+  --md-primary-fg-color:        #7aa2f7;
+  --md-primary-fg-color--light: #9bb8f9;
+  --md-primary-fg-color--dark:  #5a86e0;
+  --md-accent-fg-color:         #bb9af7;
+
+  --md-default-bg-color:        #1a1b26;
+  --md-default-bg-color--light: #1f2030;
+  --md-default-fg-color:        #c7d0f0;
+  --md-default-fg-color--light: #a4accd;
+  --md-default-fg-color--lighter: #787c99;
+
+  --md-code-bg-color:           #16161e;
+  --md-code-fg-color:           #c0caf5;
+  --md-typeset-a-color:         #7aa2f7;
+
+  --md-footer-bg-color:         #16161e;
+  --md-footer-bg-color--dark:   #13131a;
+
+  --tn-green:   #9ece6a;
+  --tn-yellow:  #e0af68;
+  --tn-red:     #f7768e;
+  --tn-magenta: #bb9af7;
+  --tn-cyan:    #7dcfff;
+  --tn-line:    #2d3049;
+}
+
+/* Header + sidebar follow the editor chrome rather than a flat primary bar */
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #16161e;
+  color: var(--md-default-fg-color);
+}
+[data-md-color-scheme="slate"] .md-header {
+  border-bottom: 1px solid var(--tn-line);
+}
+
+/* ---------- Typography ---------- */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.md-typeset h1 { font-size: 1.85rem; }
+.md-typeset h2 {
+  font-size: 1.3rem;
+  border-top: 1px solid var(--tn-line);
+  padding-top: 1.2rem;
+  margin-top: 2.4rem;
+}
+.md-typeset h3 { font-size: 1.02rem; }
+
+/* ---------- Keyboard keys (pymdownx.keys) ---------- */
+.md-typeset kbd,
+.md-typeset .keys kbd {
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.12em 0.42em;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 1px var(--tn-line);
+  background: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
+  white-space: nowrap;
+}
+/* The leader key is the spine of the whole config — make it legible at a glance */
+.md-typeset .keys .key-space,
+.md-typeset .keys kbd.key-space {
+  color: var(--tn-magenta);
+}
+
+/* ---------- Tables ---------- */
+.md-typeset table:not([class]) {
+  font-size: 0.74rem;
+  border: 1px solid var(--tn-line);
+}
+.md-typeset table:not([class]) th {
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--md-code-bg-color);
+}
+.md-typeset table:not([class]) td:first-child {
+  white-space: nowrap;
+}
+
+/* ---------- Code ---------- */
+.md-typeset code,
+.md-typeset pre > code {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-ligatures: none;
+}
+.md-typeset pre > code { font-size: 0.72rem; line-height: 1.65; }
+
+/* ---------- Admonitions keyed to the palette ---------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 6px;
+  border-left-width: 3px;
+  font-size: 0.74rem;
+}
+
+/* ---------- Small touches ---------- */
+.md-typeset a.headerlink { opacity: 0.35; }
+.md-typeset a.headerlink:hover { opacity: 1; }
+
+.md-nav__title { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; font-size: 0.68rem; letter-spacing: 0.06em; }
+.md-nav__link { font-size: 0.74rem; }
+
+/* Numeric columns line up in the plugin/version tables */
+.md-typeset table:not([class]) td { font-variant-numeric: tabular-nums; }
+
+/* =========================================================
+   Diagrams
+   Self-contained CSS — no mermaid, no CDN, renders offline.
+   Markup pattern is documented in docs/README-diagrams.md
+   ========================================================= */
+.dg {
+  background: var(--md-code-bg-color);
+  border: 1px solid var(--tn-line);
+  border-radius: 6px;
+  padding: 1.1rem;
+  margin: 1.2rem 0;
+  overflow-x: auto;
+}
+.dg-cap {
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--md-default-fg-color--lighter);
+  margin-bottom: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--tn-line);
+}
+
+/* horizontal chain */
+.dg-flow { display: flex; align-items: stretch; min-width: 560px; }
+.dg-node {
+  flex: 1;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--tn-line);
+  border-top: 2px solid var(--nc, var(--md-primary-fg-color));
+  border-radius: 5px;
+  padding: 0.6rem 0.7rem;
+}
+.dg-node b {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color);
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+.dg-node span {
+  font-size: 0.62rem;
+  line-height: 1.5;
+  color: var(--md-default-fg-color--lighter);
+}
+.dg-arrow {
+  flex: 0 0 1.7rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--md-default-fg-color--lighter);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.85rem;
+}
+
+/* vertical layered stack */
+.dg-stack { display: flex; flex-direction: column; gap: 0.5rem; min-width: 420px; }
+.dg-layer {
+  display: grid; grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 0.9rem; align-items: center;
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--tn-line);
+  border-left: 3px solid var(--nc, var(--md-primary-fg-color));
+  border-radius: 5px;
+  padding: 0.65rem 0.8rem;
+}
+.dg-layer b {
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.68rem;
+  color: var(--nc, var(--md-primary-fg-color));
+}
+.dg-layer span { font-size: 0.68rem; line-height: 1.5; color: var(--md-default-fg-color--light); }
+
+/* decision fork */
+.dg-fork { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.6rem; }
+.dg-out {
+  border: 1px solid var(--tn-line);
+  border-left: 3px solid var(--nc, var(--tn-green));
+  border-radius: 5px;
+  padding: 0.6rem 0.7rem;
+  background: var(--md-default-bg-color);
+}
+.dg-out b {
+  display: block;
+  font-family: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-size: 0.68rem; color: var(--nc, var(--tn-green)); margin-bottom: 0.2rem;
+}
+.dg-out span { font-size: 0.62rem; color: var(--md-default-fg-color--lighter); }
+
+@media screen and (max-width: 48rem) {
+  .dg-layer { grid-template-columns: minmax(0, 1fr); gap: 0.2rem; }
+}
+
+/* Light header matches the dark one: a quiet surface with a rule,
+   rather than Material's default flat primary-colour bar. */
+[data-md-color-scheme="default"] .md-header {
+  background-color: #ffffff;
+  color: var(--md-default-fg-color);
+  border-bottom: 1px solid var(--tn-line);
+  box-shadow: none;
+}
+[data-md-color-scheme="default"] .md-search__form {
+  background-color: #eef0f7;
+}
+[data-md-color-scheme="default"] .md-search__input::placeholder,
+[data-md-color-scheme="default"] .md-search__icon {
+  color: var(--md-default-fg-color--lighter);
+}

@@ -1,0 +1,42 @@
+{
+  "//": [
+    "markdownlint config for this repo. Read by the `markdownlint` entry in",
+    "nvim/lua/plugins/lint.lua (via nvim-lint) and by the binary directly.",
+    "",
+    "Default rules produce 443 violations across docs/ here, and almost all",
+    "of them are markdownlint judging mkdocs-material syntax by CommonMark",
+    "rules. Each disable below is because the rule is WRONG for this repo,",
+    "not because it was inconvenient -- re-check if docs/ ever stops being",
+    "a mkdocs site.",
+    "",
+    "Rules NOT disabled on purpose: MD040 (fenced blocks need a language,",
+    "or they lose syntax highlighting) and MD030 (list marker spacing).",
+    "Those catch real mistakes."
+  ],
+
+  "default": true,
+
+  "MD060": false,
+  "//MD060": "table-column-style: wants every table's delimiter row padded to the column width. 229 hits, purely cosmetic, and `theme` regenerates some of these tables.",
+
+  "MD033": false,
+  "//MD033": "no-inline-html: mkdocs-material uses raw HTML for <kbd>, icons and grid cards. 87 hits, all intentional.",
+
+  "MD032": false,
+  "//MD032": "blanks-around-lists: admonition bodies are indented 4 spaces, which this rule reads as a list inside a code block. 41 false positives.",
+
+  "MD022": false,
+  "//MD022": "blanks-around-headings: same cause as MD032 -- headings nested inside `!!!` blocks and `===` content tabs.",
+
+  "MD046": false,
+  "//MD046": "code-block-style: wants one style throughout, but Material needs indented blocks inside admonitions and fenced blocks elsewhere. Both are correct here.",
+
+  "MD013": false,
+  "//MD013": "line-length: prose is soft-wrapped by the editor (see the 'prose' autocmd), and tables legitimately run long.",
+
+  "MD024": { "siblings_only": true },
+  "//MD024": "no-duplicate-heading: content tabs repeat the same heading under different parents, which is fine. Only flag true siblings.",
+
+  "MD041": false,
+  "//MD041": "first-line-heading: mkdocs pages may open with front matter or a Material grid directive rather than an h1."
+}
