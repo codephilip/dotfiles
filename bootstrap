@@ -99,26 +99,65 @@ for entry in "${LINKS[@]}"; do
   link_one "${entry%%:*}" "${entry#*:}"
 done
 
+# Homebrew's prefix differs per machine -- /opt/homebrew on Apple
+# Silicon, /usr/local on Intel, /home/linuxbrew/.linuxbrew on Linux --
+# and these tools are just as often installed by cargo, npm, a distro
+# package or a curl|sh script. Hardcoding one layout makes this report
+# confidently wrong in both directions: "missing" for something that is
+# installed elsewhere, or a silent pass on a copy brew cannot upgrade.
+BREW_PREFIX=${HOMEBREW_PREFIX:-}
+if [[ -z $BREW_PREFIX ]]; then
+  for p in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    [[ -x $p/bin/brew ]] && BREW_PREFIX=$p && break
+  done
+fi
+
 bold $'\nTools'
+if [[ -n $BREW_PREFIX ]]; then
+  dim "  homebrew prefix: $BREW_PREFIX"
+else
+  red "  ! no homebrew found — the install lines below will not work"
+fi
+
 missing=()
+foreign=()
 for tool in "${BREW_FORMULAE[@]}"; do
-  # The two zsh plugins are sourced by path, not run as commands.
+  # Formula name and binary name differ for some; the two zsh plugins
+  # are sourced by path and never run as commands at all.
   case $tool in
-    zsh-autosuggestions)      probe=/opt/homebrew/share/zsh-autosuggestions ;;
-    zsh-syntax-highlighting)  probe=/opt/homebrew/share/zsh-syntax-highlighting ;;
-    neovim)                   probe=cmd:nvim ;;
-    delta)                    probe=cmd:delta ;;
-    # Formula name and binary name differ.
-    ripgrep)                  probe=cmd:rg ;;
-    *)                        probe="cmd:$tool" ;;
+    neovim)  bin=nvim ;;
+    ripgrep) bin=rg ;;
+    *)       bin=$tool ;;
   esac
 
-  if [[ $probe == cmd:* ]]; then
-    command -v "${probe#cmd:}" &>/dev/null && continue
-  else
-    [[ -d $probe ]] && continue
+  case $tool in
+    zsh-autosuggestions|zsh-syntax-highlighting)
+      # Checked in the same order .zshrc sources them, so this agrees
+      # with what the shell will actually find.
+      found=""
+      for d in ${BREW_PREFIX:+$BREW_PREFIX/share/$tool} \
+               "/usr/share/$tool" \
+               "$CONFIG/zsh/plugins/$tool"; do
+        [[ -n $d && -d $d ]] && found=$d && break
+      done
+      [[ -z $found ]] && missing+=("$tool")
+      # A plugin outside the brew prefix is fine — .zshrc finds it —
+      # but `brew upgrade` will never touch it, so say so.
+      [[ -n $found && -n $BREW_PREFIX && $found != "$BREW_PREFIX"/* ]] \
+        && foreign+=("$tool → $found")
+      continue
+      ;;
+  esac
+
+  resolved=$(command -v "$bin" 2>/dev/null)
+  if [[ -z $resolved ]]; then
+    missing+=("$tool")
+    continue
   fi
-  missing+=("$tool")
+  # Installed, but not by the brew we found — cargo, npm, a direct
+  # download, or a system copy. Works, but is not brew-managed.
+  [[ -n $BREW_PREFIX && $resolved != "$BREW_PREFIX"/* ]] \
+    && foreign+=("$bin → $resolved")
 done
 
 if (( ${#missing[@]} == 0 )); then
@@ -128,22 +167,41 @@ else
   printf '    brew install %s\n' "${missing[*]}"
 fi
 
+# Present but installed some other way. Not a problem to fix — just the
+# thing you want to know before wondering why `brew upgrade` changed
+# nothing, or why two machines run different versions of the same tool.
+if (( ${#foreign[@]} > 0 )); then
+  dim "  ${#foreign[@]} not managed by this homebrew:"
+  printf '    %s\n' "${foreign[@]}"
+fi
+
 bold $'\nCasks'
 missing_casks=()
 for cask in "${BREW_CASKS[@]}"; do
   case $cask in
-    ghostty)                      probe=/Applications/Ghostty.app ;;
-    alacritty)                    probe=/Applications/Alacritty.app ;;
     font-jetbrains-mono-nerd-font)
-      # Fonts land in one of two places depending on whether Homebrew
-      # installed them for the user or system-wide.
-      if [[ -n $(/bin/ls "$HOME/Library/Fonts" /Library/Fonts 2>/dev/null \
-                 | grep -i 'JetBrainsMonoNerdFont' | head -1) ]]; then
+      # Fonts land in either the user or the system font directory,
+      # depending on how they were installed.
+      if /bin/ls "$HOME/Library/Fonts" /Library/Fonts 2>/dev/null \
+         | grep -qi 'JetBrainsMonoNerdFont'; then
         continue
       fi
-      probe='' ;;
+      missing_casks+=("$cask")
+      continue
+      ;;
+    ghostty)   app=Ghostty.app ;;
+    alacritty) app=Alacritty.app ;;
+    *)         app='' ;;
   esac
-  [[ -n $probe && -e $probe ]] && continue
+
+  # An app can be installed per-user as easily as system-wide, and a
+  # direct .dmg download lands wherever it was dragged. Check both of
+  # the standard locations before declaring it missing.
+  if [[ -n $app ]]; then
+    if [[ -d /Applications/$app || -d $HOME/Applications/$app ]]; then
+      continue
+    fi
+  fi
   missing_casks+=("$cask")
 done
 

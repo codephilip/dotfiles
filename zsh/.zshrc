@@ -45,6 +45,25 @@ setopt INTERACTIVE_COMMENTS   # allow # comments when typing commands
 # -------------------------
 export SCRIPTS="$HOME/.config/scripts"
 
+# Homebrew lives at a different prefix depending on the machine:
+# /opt/homebrew on Apple Silicon, /usr/local on Intel,
+# /home/linuxbrew/.linuxbrew on Linux. Hardcoding one means the other
+# silently gets nothing -- no error, just a shell quietly missing its
+# completions and plugins.
+#
+# Probed rather than asking `brew --prefix`, which spawns a subprocess
+# on every single shell start. `brew shellenv` exports HOMEBREW_PREFIX,
+# so a login profile that already ran it wins.
+if [[ -z ${HOMEBREW_PREFIX:-} ]]; then
+  for _p in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    if [[ -x $_p/bin/brew ]]; then
+      export HOMEBREW_PREFIX=$_p
+      break
+    fi
+  done
+  unset _p
+fi
+
 path=(
   $HOME/bin
   # Claude Code's native installer drops its binary here, as do uv, pipx
@@ -53,8 +72,8 @@ path=(
   # happened on mac-mini-1.
   $HOME/.local/bin
   $SCRIPTS
-  /opt/homebrew/bin
-  /opt/homebrew/sbin
+  ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/bin}
+  ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/sbin}
   /usr/local/bin
   $path
 )
@@ -323,11 +342,28 @@ if command -v fzf &>/dev/null; then
   export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window=down:3:hidden:wrap --bind '?:toggle-preview'"
 
   # fzf >= 0.48 ships `fzf --zsh`; fall back to the shipped scripts.
+  #
+  # NB: sourcing this under `zsh -ic` with no tty prints "can't change
+  # option: zle" twice. That is an artifact of there being no terminal
+  # to attach a line editor to -- it does not happen in a real shell,
+  # and is not worth guarding. Confirmed with `script -q /dev/null
+  # zsh -lic ...`, which is silent.
   if fzf --zsh &>/dev/null; then
     source <(fzf --zsh)
   else
-    [ -f /opt/homebrew/opt/fzf/shell/key-bindings.zsh ] && source /opt/homebrew/opt/fzf/shell/key-bindings.zsh
-    [ -f /opt/homebrew/opt/fzf/shell/completion.zsh ]   && source /opt/homebrew/opt/fzf/shell/completion.zsh
+    # Candidate layouts, in order: brew (either prefix, via
+    # HOMEBREW_PREFIX), a Debian/Ubuntu package, and the git-clone
+    # install that fzf's own install script produces.
+    for _d in ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/opt/fzf/shell} \
+              /usr/share/doc/fzf/examples \
+              $HOME/.fzf/shell; do
+      if [ -f "$_d/key-bindings.zsh" ]; then
+        source "$_d/key-bindings.zsh"
+        [ -f "$_d/completion.zsh" ] && source "$_d/completion.zsh"
+        break
+      fi
+    done
+    unset _d
   fi
 fi
 
@@ -335,9 +371,28 @@ fi
 [ -f ~/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh ] \
   && source ~/.config/zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
 
+# Source the first candidate that exists, so a plugin installed any of
+# the usual ways is found instead of only the one layout. Returns
+# non-zero if none matched, which lets the caller skip its config.
+_source_first() {
+  local f
+  for f in "$@"; do
+    if [ -n "$f" ] && [ -f "$f" ]; then
+      source "$f"
+      return 0
+    fi
+  done
+  return 1
+}
+
 # --- 3. autosuggestions: ghost text from history, -> to accept ---
-if [ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
-  source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# brew (either prefix) / distro package / a clone under zsh/plugins,
+# which is how fzf-tab is vendored here.
+if _source_first \
+     ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh} \
+     /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+     ~/.config/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+then
   ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=${THEME_GREY:-#565f89}"
   ZSH_AUTOSUGGEST_STRATEGY=(history completion)
   bindkey '^ ' autosuggest-accept        # Ctrl-Space accepts the whole suggestion
@@ -379,9 +434,10 @@ fi
 # [ -f ~/.config/zsh/prompt.zsh ] && source ~/.config/zsh/prompt.zsh
 
 # --- 6. syntax highlighting: MUST be the last plugin sourced ---
-if [ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi
+_source_first \
+  ${HOMEBREW_PREFIX:+$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh} \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  ~/.config/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # -------------------------
 # Key bindings
