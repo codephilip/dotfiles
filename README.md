@@ -26,7 +26,7 @@ git clone https://github.com/codephilip/dotfiles.git ~/.config
 #    never out of date — pipe it to a shell, or paste it:
 #        cd ~/.config && make tools
 brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
-             tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
+             tmux tree-sitter-cli zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 
 # 4. Symlinks + generated theme files
@@ -522,7 +522,7 @@ For reference, at the time of writing:
 
 ```bash
 brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
-             tmux zoxide zsh-autosuggestions zsh-syntax-highlighting
+             tmux tree-sitter-cli zoxide zsh-autosuggestions zsh-syntax-highlighting
 brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
 ```
 
