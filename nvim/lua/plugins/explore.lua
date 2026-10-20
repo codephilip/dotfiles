@@ -21,11 +21,6 @@ return {
         highlight_git = true,
         highlight_diagnostics = true,
         indent_markers = { enable = true },
-        icons = {
-          glyphs = {
-            git = { unstaged = "", staged = "", unmerged = "", renamed = "", untracked = "", deleted = "" },
-          },
-        },
       },
       diagnostics = { enable = true, show_on_dirs = true },
       actions = { open_file = { quit_on_open = false, window_picker = { enable = false } } },
@@ -46,6 +41,16 @@ return {
         vim.keymap.set("n", "<C-t>", api.tree.change_root_to_node, opts("CD into directory"))
       end,
     },
+    config = function(_, opts)
+      -- Review mode (<leader>gr) marks files changed vs main on top of the
+      -- builtin Git decorator; see lua/config/review.lua. Built here, not
+      -- in opts, because it needs nvim-tree on the runtimepath.
+      opts.renderer.decorators = {
+        "Git", require("config.review").decorator(), "Open", "Hidden",
+        "Modified", "Bookmark", "Diagnostics", "Copied", "Cut",
+      }
+      require("nvim-tree").setup(opts)
+    end,
     keys = {
       { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "File explorer" },
       { "<leader>E", "<cmd>NvimTreeFindFile<cr>", desc = "Reveal current file in tree" },

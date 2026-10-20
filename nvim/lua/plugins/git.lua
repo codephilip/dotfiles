@@ -10,18 +10,21 @@ return {
       signs = {
         add = { text = "▎" },
         change = { text = "▎" },
-        delete = { text = "" },
-        topdelete = { text = "" },
+        delete = { text = "▁" },
+        topdelete = { text = "▔" },
         changedelete = { text = "▎" },
         untracked = { text = "▎" },
       },
       signs_staged = {
         add = { text = "┋" },
         change = { text = "┋" },
-        delete = { text = "" },
-        topdelete = { text = "" },
+        delete = { text = "▁" },
+        topdelete = { text = "▔" },
         changedelete = { text = "┋" },
       },
+      -- Tint the line number too, so changes read at a glance, not just
+      -- from the thin bar.
+      numhl = true,
       current_line_blame_opts = { delay = 400, virt_text_pos = "eol" },
       on_attach = function(buffer)
         local gs = require("gitsigns")
@@ -60,6 +63,10 @@ return {
         map("n", "<leader>gd", gs.diffthis, "Diff against index")
         map("n", "<leader>gD", function() gs.diffthis("~") end, "Diff against last commit")
         map("n", "<leader>ub", gs.toggle_current_line_blame, "Toggle inline blame")
+
+        -- Review: diff the branch against main, and tint changed lines
+        map("n", "<leader>gr", require("config.review").toggle, "Toggle review mode (diff vs main)")
+        map("n", "<leader>gl", gs.toggle_linehl, "Toggle changed-line highlight")
 
         -- Text object: `vih` selects the hunk you're standing in
         map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<cr>", "Select git hunk")

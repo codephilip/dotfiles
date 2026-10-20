@@ -402,6 +402,13 @@ Toggle inline blame:
 Diff against index / against last commit:
 <Space>gd / <Space>gD
 
+Review mode — gutter shows everything the branch changed vs main
+(plus word-level diff); toggle off to go back to uncommitted changes:
+<Space>gr
+
+Toggle a soft background tint on changed lines:
+<Space>gl
+
 Pickers — commits (repo), commits (this file), status:
 <Space>gc / <Space>gC / <Space>gs
 
