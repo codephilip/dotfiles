@@ -15,12 +15,25 @@ return {
       update_focused_file = { enable = true, update_root = false },
       view = { width = 34, preserve_window_proportions = true },
       filters = { dotfiles = false, custom = { "^%.git$", "^node_modules$", "^%.DS_Store$" } },
-      git = { enable = true, ignore = false },
+      -- An open folder's files carry their own markers; don't repeat them on it.
+      git = { enable = true, ignore = false, show_on_open_dirs = false },
       renderer = {
         group_empty = true, -- collapse a/b/c chains into one line
-        highlight_git = true,
+        highlight_git = "name",
         highlight_diagnostics = true,
         indent_markers = { enable = true },
+        icons = {
+          -- One letter at the right edge instead of ✗/★/✓ before the name,
+          -- so filenames stay in a straight column. Same letters as review mode.
+          git_placement = "right_align",
+          glyphs = {
+            git = {
+              unstaged = "M", staged = "S", untracked = "U",
+              renamed = "R", deleted = "D", unmerged = "!",
+              ignored = "", -- the dimmed name already says it
+            },
+          },
+        },
       },
       diagnostics = { enable = true, show_on_dirs = true },
       actions = { open_file = { quit_on_open = false, window_picker = { enable = false } } },
