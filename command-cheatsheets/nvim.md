@@ -225,13 +225,6 @@ Jump to any visible line by number — line numbers are relative, so
 read the gutter and type the number you see:
 12j / 8k
 
-Jump to any visible character — press s, type 2 characters, then the
-label that appears:
-s
-
-Select a syntax node with labels (flash + treesitter):
-S
-
 Next / previous function:
 ]f / [f   (end of function: ]F / [F)
 

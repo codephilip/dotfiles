@@ -110,25 +110,6 @@ return {
     },
   },
 
-  -- flash.nvim — jump anywhere visible by typing 2 characters plus a label.
-  -- Replaces most `/`-searching when you can already see your target.
-  -- Note: this takes over `s` in normal mode; use `cl` for the old behaviour.
-  {
-    "folke/flash.nvim",
-    event = "VeryLazy",
-    opts = {
-      modes = {
-        char = { jump_labels = true }, -- label f/t/F/T targets too
-        search = { enabled = false },  -- don't hijack `/`
-      },
-    },
-    keys = {
-      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash jump" },
-      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash treesitter" },
-      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote flash" },
-    },
-  },
-
   -- Auto-close brackets and quotes, aware of treesitter context.
   {
     "windwp/nvim-autopairs",

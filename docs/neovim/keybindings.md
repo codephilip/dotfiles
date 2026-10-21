@@ -24,7 +24,6 @@ tab on the site.
     | ++g++ ++r++ | Find all references (picker) |
     | ++space++ ++o++ | Symbol outline |
     | ++space++ ++c++ ++r++ / ++space++ ++c++ ++a++ | Rename / code action |
-    | ++s++ | Jump anywhere visible (flash). Replaces stock `s` |
     | ++shift+h++ / ++shift+l++ | Previous / next buffer. Replace stock `H` / `L` |
     | ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ | Move between windows |
     | ++space++ ++e++ | File tree |
@@ -388,8 +387,6 @@ outline; both come from `marksman`.
     | ++ctrl+backslash++ | Floating terminal |
     | ++space++ ++w++ / ++space++ ++q++ / ++space++ ++shift+q++ | Write / quit / quit **all** |
     | ++escape++ | Clear search highlight |
-    | ++s++ / ++shift+s++ | Flash jump / flash treesitter. ++s++ no longer substitutes a character; use `cl` |
-    | `r` after an operator | Remote flash: `yr`, jump, then a motion (`iw`) yanks that word and leaves the cursor where it was |
     | ++space++ ++x++ ++q++ | Open the quickfix window |
     | ++ctrl+slash++ (terminal) | Leave terminal mode |
     | ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ (terminal) | Move straight out to another window |

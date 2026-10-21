@@ -11,7 +11,7 @@ For the same bindings sorted by *task* rather than by plugin, see
 
 | Area | Plugins | Spec file |
 |---|---|---|
-| Finding and navigating | fzf-lua, nvim-tree, aerial, flash | `fzf-lua.lua`, `explore.lua` |
+| Finding and navigating | fzf-lua, nvim-tree, aerial | `fzf-lua.lua`, `explore.lua` |
 | Syntax | nvim-treesitter, -textobjects, -context | `treesitter.lua` |
 | Code intelligence | nvim-lspconfig, mason, mason-lspconfig, blink.cmp, friendly-snippets, nvim-lint | `lsp.lua`, `lint.lua` |
 | Git | gitsigns, FTerm (hosts lazygit) | `git.lua`, `terminal.lua` |
@@ -105,18 +105,6 @@ sections.
 | `[[` / `]]` | Previous / next symbol |
 
 In the outline: ++enter++ or `o` jumps, `q` closes.
-
-### flash.nvim
-
-[`folke/flash.nvim`](https://github.com/folke/flash.nvim): type two characters,
-then a label, to jump anywhere on screen. It also adds labels to `f` / `t` /
-`F` / `T`. It leaves `/` alone.
-
-| Keys | Does |
-|---|---|
-| ++s++ | Jump. Replaces stock `s`; use `cl` instead |
-| ++shift+s++ | Select a treesitter node by label |
-| `r` (after an operator) | Remote: `yr`, jump, a motion, and you're back where you started |
 
 ---
 

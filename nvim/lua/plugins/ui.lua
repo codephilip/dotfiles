@@ -93,7 +93,6 @@ return {
         treesitter_context = true,
         which_key = true,
         mason = true,
-        flash = true,
         native_lsp = {
           enabled = true,
           underlines = {

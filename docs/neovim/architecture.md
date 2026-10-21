@@ -72,7 +72,7 @@ The other 27 wait for a trigger:
 === "keys"
 
     A mapping is registered as a stub. Press it once and the real plugin loads,
-    then the key fires. This is how `fzf-lua`, `aerial`, `flash` and both AI
+    then the key fires. This is how `fzf-lua`, `aerial` and both AI
     tools stay out of startup entirely.
 
     ```lua

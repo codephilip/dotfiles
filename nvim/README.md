@@ -25,7 +25,7 @@ init.lua
 lua/config/     options, keymaps, autocmds, lazy bootstrap
 lua/plugins/    one file per concern
   ui.lua          catppuccin, devicons, lualine, barbar, alpha, colorizer, which-key
-  explore.lua     nvim-tree, aerial, flash, autopairs
+  explore.lua     nvim-tree, aerial, autopairs
   treesitter.lua  treesitter + textobjects + context
   fzf-lua.lua     every picker
   lsp.lua         mason + lspconfig + blink.cmp
@@ -49,7 +49,6 @@ lua/plugins/    one file per concern
 | `<C-space>` | grow selection by syntax node (repeat to widen) |
 | `]f` `[f` `]c` `[c` | jump between functions / classes |
 | `vaf` `vif` `vac` `vaa` | select a function / its body / a class / an argument |
-| `s` | flash jump — type 2 chars + a label to go anywhere visible |
 | sticky header | treesitter-context shows the enclosing function as you scroll |
 | `<leader>gb` | blame the current line (full commit) |
 | `<leader>gC` | this file's commit history |
@@ -115,7 +114,6 @@ When you upgrade to Neovim 0.12, **migrate** these rather than just removing the
 
 - **Comment.nvim was intentionally left out** — Neovim 0.10+ ships `gc`/`gcc`
   commenting natively, so it would be dead weight.
-- `s` is taken over by flash.nvim. Use `cl` for the old `s` behaviour.
 - Formatters/linters are **not** auto-installed. `nvim-lint` is wired to skip any
   linter whose binary isn't on `$PATH`, so the list in `lint.lua` is safe even if
   you've installed none of them. Add the ones you want via `:Mason` (`<leader>cm`).
