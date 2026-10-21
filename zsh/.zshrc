@@ -237,6 +237,7 @@ alias docker-commands='bat ~/.config/command-cheatsheets/docker.md'
 alias tmux-commands='bat ~/.config/command-cheatsheets/tmux.md'
 alias zsh-commands='bat ~/.config/command-cheatsheets/zsh.md'
 alias nvim-commands='bat ~/.config/command-cheatsheets/nvim.md'
+alias vim-commands='bat ~/.config/command-cheatsheets/vim.md'
 
 # =========================================================
 # Functions

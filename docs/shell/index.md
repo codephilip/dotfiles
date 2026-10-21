@@ -152,7 +152,7 @@ The `command-cheatsheets/` directory is rendered with `bat`:
 
 ```bash
 zsh-commands  git-commands  k8s-commands
-docker-commands  tmux-commands  nvim-commands
+docker-commands  tmux-commands  nvim-commands  vim-commands
 ```
 
 ## Editing

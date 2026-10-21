@@ -341,7 +341,7 @@ The `plugins/` directory contains plugin folders, but no TPM configuration is pr
 - Git aliases: sourced from `~/.config/git/aliases.sh`
 - Docker aliases: sourced from `~/.config/docker/aliases.sh`
 - Kubernetes aliases: sourced from `~/.config/k8s/aliases.sh`
-- Cheatsheet commands: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`
+- Cheatsheet commands: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`, `vim-commands`
 
 **Functions:**
 - `mkcd <dir>` - Create directory and cd into it
@@ -495,10 +495,11 @@ Markdown cheatsheets for:
 - k8s.md
 - nvim.md
 - tmux.md
+- vim.md
 - zsh.md
 
 **Viewing:**
-- Use aliases: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`
+- Use aliases: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`, `vim-commands`
 - These use `bat` for syntax highlighting
 
 ## 📦 Installing Dependencies

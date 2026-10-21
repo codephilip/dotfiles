@@ -158,6 +158,7 @@ Each one prints a file from `~/.config/command-cheatsheets/` through `bat`:
 | `k8s-commands` | kubectl aliases |
 | `tmux-commands` | tmux keys |
 | `nvim-commands` | Neovim keys |
+| `vim-commands` | Standalone Vim guide, basic to advanced |
 
 ## Local additions
 
