@@ -53,3 +53,10 @@ zsh/plugins/zsh-syntax-highlighting/
 scoop/
 # zsh completion cache
 zsh/.zcompdump*
+
+# Per-machine tool state written into ~/.config by the tools themselves.
+# stripe/ holds the CLI login, including live API keys — never commit it.
+stripe/
+containers/
+configstore/
+btop/
