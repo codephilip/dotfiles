@@ -24,6 +24,9 @@ require("lazy").setup({
   defaults = { lazy = true },
   install = { colorscheme = { "tokyonight-night", "habamax" } },
   checker = { enabled = true, notify = false }, -- check for updates quietly
+  -- No plugin here needs luarocks; leaving it on makes :checkhealth report
+  -- a missing-luarocks ERROR that is pure noise.
+  rocks = { enabled = false },
   change_detection = { notify = false },
   ui = { border = "rounded" },
   performance = {
@@ -38,3 +41,11 @@ require("lazy").setup({
 })
 
 vim.keymap.set("n", "<leader>L", "<cmd>Lazy<cr>", { desc = "Lazy (plugin manager)" })
+
+-- :Doctor — health check scoped to what this config actually uses, so the
+-- report is short enough to read. Mason is lazy-loaded, and its healthcheck
+-- isn't found until it is, so load it first.
+vim.api.nvim_create_user_command("Doctor", function()
+  require("lazy").load({ plugins = { "mason.nvim" } })
+  vim.cmd("checkhealth lazy vim.lsp mason nvim-treesitter")
+end, { desc = "Health check for this config" })
