@@ -306,6 +306,7 @@ return {
         { "<leader>g", group = "git" },
         { "<leader>m", group = "markdown" },
         { "<leader>n", group = "ai chat" },
+        { "<leader>r", group = "review (octo)" },
         { "<leader>s", group = "search" },
         { "<leader>u", group = "ui/toggle" },
         { "<leader>x", group = "diagnostics/quickfix" },
