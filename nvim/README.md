@@ -8,7 +8,7 @@ Leader is `<Space>`. Press `<Space>` and wait — which-key lists everything.
 
 | Thing | Why | Status |
 |---|---|---|
-| Neovim >= 0.11 | native `vim.lsp.config` / `vim.lsp.enable` | ✅ 0.11.2 |
+| Neovim >= 0.11 | native `vim.lsp.config` / `vim.lsp.enable` | ✅ 0.12.5 — see [Pinned versions](#pinned-versions--do-not-unpin-casually) |
 | `ripgrep` | live grep | ✅ |
 | `fd` | fast file finding | ✅ |
 | `fzf` | picker backend | ✅ |
@@ -22,9 +22,10 @@ Leader is `<Space>`. Press `<Space>` and wait — which-key lists everything.
 
 ```
 init.lua
-lua/config/     options, keymaps, autocmds, lazy bootstrap
+lua/config/     options, keymaps, autocmds, lazy bootstrap (+ :Doctor),
+                theme resolution, review mode
 lua/plugins/    one file per concern
-  ui.lua          catppuccin, devicons, lualine, barbar, alpha, colorizer, which-key
+  ui.lua          colorschemes, devicons, lualine, barbar, alpha, colorizer, which-key
   explore.lua     nvim-tree, aerial, autopairs
   treesitter.lua  treesitter + textobjects + context
   fzf-lua.lua     every picker
@@ -33,6 +34,8 @@ lua/plugins/    one file per concern
   git.lua         gitsigns
   terminal.lua    FTerm (floating shell + lazygit)
   ai.lua          claudecode.nvim + CodeCompanion
+  markdown.lua    in-buffer rendering, tables, mkdocs
+  review.lua      diffview + octo (PR review)
 ```
 
 ## Reading code — the parts that matter
@@ -98,6 +101,119 @@ edit files outside your buffer.
 Line numbers go relative while you're moving and absolute while you're typing.
 Comment leaders are not continued onto new lines.
 
+## Maintenance
+
+Neovim doesn't maintain itself. Plugins and language servers update upstream,
+and Neovim itself moves on. Do the routine below **once a month**, and the health
+check **whenever something acts strange**. Each takes a few minutes.
+
+### Commands
+
+| Command | Does |
+|---|---|
+| `:Doctor` | **health check** for the parts this config uses (lazy, LSP, Mason, treesitter). Read the ❌ ERROR lines. ⚠️ warnings about languages you don't use (PHP, Java, Julia…) are noise |
+| `:checkhealth` | the full check across every plugin, for when `:Doctor` is clean but something still misbehaves |
+| `:checkhealth vim.lsp` | which language servers attached to this buffer, and why not |
+| `:messages` | errors that flashed past at startup |
+| `:Lazy` (`<leader>L`) | plugin manager. Opening it **installs nothing**, it only shows status |
+| `:Lazy check` | fetch and list available updates without applying them |
+| `:Lazy log` | the commits each pending update would pull in |
+| `:Lazy update` | apply the updates (rewrites `lazy-lock.json`) |
+| `:Lazy restore` | **roll back** every plugin to the commits in `lazy-lock.json` |
+| `:Mason` (`<leader>cm`) / `:MasonUpdate` | see and update the LSP servers and linters Mason installed |
+
+### Monthly routine
+
+1. **Start clean.** `cd ~/.config && git status`. Commit or stash anything
+   pending, so that afterwards the lockfile diff shows only the update.
+2. **Health check first.** Open `nvim` and run `:Doctor`. Fix any errors before
+   updating, or you won't know whether the update caused them.
+3. **See what's coming.** Run `:Lazy check`, then `:Lazy log`.
+4. **Vet it** using the checklist below. This step is your malware protection.
+5. **Update.** Run `:Lazy update`, then `:MasonUpdate`.
+6. **Check again.** Restart nvim, run `:Doctor`, and open a few real files (TS,
+   Lua, Markdown) to confirm highlighting, LSP and completion still work.
+7. **Keep it or undo it.**
+   - Works: `git -C ~/.config commit -am "nvim: update plugins"`. This
+     commits the new `lazy-lock.json`.
+   - Broken: `:Lazy restore` puts every plugin back on the committed lockfile.
+     If the lockfile was already overwritten, first run
+     `git -C ~/.config checkout nvim/lazy-lock.json` and then `:Lazy restore`.
+
+`lazy-lock.json` is the safety net. It records the exact commit of every plugin,
+so as long as it's committed after each good update, any bad update can be
+undone in one step.
+
+## Keeping plugins safe (supply-chain hygiene)
+
+**The risk.** A plugin is ordinary Lua that runs with your full user
+permissions. It can read `~/.ssh`, your env vars and API keys, and run any shell
+command. An update pulls whatever the author last pushed to GitHub, and nothing
+signs or reviews it. If a maintainer's account or repo is compromised, the next
+`:Lazy update` runs the attacker's code.
+
+**What's safe.** The "updates available" count in `:Lazy` is harmless. The
+background checker only runs `git fetch`. New code runs only after you press
+`U`/`S` or run `:Lazy update`.
+
+### Before every update: vet the log
+
+In `:Lazy log`, look at each plugin that's about to move.
+
+- **Normal:** commit messages like `fix(hunks): …` or `feat: …`, small and
+  in line with what the plugin does.
+- **Look closer if you see** a huge diff from a plugin that rarely changes, a
+  new or different author, vague messages ("update", "misc"), or a plugin that
+  suddenly gets a burst of activity after a long silence.
+
+To read the actual code before applying it, put the cursor on the plugin in
+`:Lazy` and press **`d`**. That shows the full diff the update would apply,
+including for pinned plugins.
+
+To search a big diff for red flags, use the shell. Every plugin is a git checkout:
+
+```sh
+cd ~/.local/share/nvim/lazy/<plugin>
+git log -p HEAD..origin/HEAD | grep -nE 'vim\.fn\.system|io\.popen|os\.execute|jobstart|curl|wget|base64|loadstring|\.ssh|getenv'
+```
+
+(`origin/HEAD` is the plugin's default branch, which is right for unpinned plugins.
+For a branch-pinned one, use that branch instead, e.g. `origin/nvim-0.11` for aerial.)
+
+Those calls are the red flags: running shell commands, network access,
+decoding hidden strings, and reading secrets. Some plugins use them
+legitimately. Lazygit's terminal runs a command, for example. So a hit means
+"read it," not "it's malware." What matters is a new one appearing in a plugin
+that has no reason for it.
+
+### Habits that reduce the risk
+
+- **Don't update on reflex.** Update on the monthly routine, or when you want a
+  specific fix. Don't update because a counter says so.
+- **Update a little late.** Bad releases usually get noticed and reverted within
+  days. Waiting a week costs you nothing.
+- **Pin what you depend on.** A `version = "1.*"` or `branch = …` pin (see
+  below) means you only get releases, not every commit pushed to main.
+- **Keep the plugin count low.** Each plugin is someone else's code you
+  trust. Before adding one, check that Neovim doesn't already do it (see Notes),
+  that it's actively maintained by someone with a track record, and that it's
+  widely used.
+- **Remove what you don't use.** Delete the spec, then run `:Lazy clean`.
+- **Mason binaries** (LSP servers, linters) download from each language
+  project's own releases. That's the same trust as `brew install`, and
+  `:MasonUpdate` is covered by the same "update late" habit.
+
+### If you think you pulled something bad
+
+1. Quit nvim. Don't keep running it.
+2. `git -C ~/.config checkout nvim/lazy-lock.json`, then start nvim and run
+   `:Lazy restore` to get back to the last committed commits.
+3. Delete the suspect plugin's checkout (`rm -rf ~/.local/share/nvim/lazy/<plugin>`)
+   so it's re-cloned clean.
+4. Treat anything nvim could reach as exposed. Rotate API keys in your env
+   (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, …) and any tokens in dotfiles, and
+   check `~/.ssh` and your shell rc files for changes you didn't make.
+
 ## Pinned versions — do not unpin casually
 
 Three plugins are pinned because their default branches now require **Neovim 0.12**:
@@ -108,7 +224,9 @@ Three plugins are pinned because their default branches now require **Neovim 0.1
 
 `blink.cmp` is pinned to `version = "1.*"` (v2 is still making breaking changes).
 
-When you upgrade to Neovim 0.12, **migrate** these rather than just removing the pins.
+Neovim is now **0.12**, so these pins are holding plugins on old branches. **Migrate**
+them (each has a 0.12 upgrade path) rather than just removing the pins. That's
+the outstanding maintenance job.
 
 ## Notes
 
