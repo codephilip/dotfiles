@@ -1,17 +1,18 @@
 # Neovim
 
-A 27-plugin Lua configuration for Neovim 0.11.2, built around one question: how
-fast can you understand code you did not write?
+A 33-plugin Lua configuration for Neovim 0.12, built around one question: how
+fast can you understand code you did not write? That now includes code someone
+wants merged: it doubles as a [PR review](review.md) client.
 
 ## At a glance
 
 | | |
 |---|---|
-| Plugins | 27 — 5 loaded at startup, 22 deferred |
-| Language servers | 9, installed through Mason |
-| Treesitter parsers | 37 |
-| Leader | ++space++ |
-| Colourscheme | Catppuccin Mocha, transparent background |
+| Plugins | 33, lazy-loaded by default |
+| Language servers | 10, installed through Mason |
+| Treesitter parsers | 34 up front, more on first use |
+| Leader | ++space++ (localleader too) |
+| Colourscheme | Whatever `~/.config/theme/current` names: tokyonight, solarized-osaka or catppuccin-mocha. Transparent |
 | Config root | `~/.config/nvim` |
 
 ## The design goal
@@ -29,9 +30,10 @@ plugins carry most of that weight:
 
 ## Sections
 
-- [Architecture](architecture.md) — how the config loads, and why 27 plugins start instantly
-- [Plugins](plugins.md) — the full inventory, grouped by role
-- [Key bindings](keybindings.md) — everything, in tables
+- [Architecture](architecture.md) — how the config loads, and why it starts instantly
+- [Plugins](plugins.md) — every plugin and its keys, grouped by role
+- [Key bindings](keybindings.md) — everything, by task
+- [PR review](review.md) — gh-dash → diffview → octo, and review mode
 - [AI workflow](ai.md) — the Claude review loop
 
 ## First run

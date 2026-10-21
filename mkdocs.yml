@@ -104,6 +104,7 @@ nav:
       - Architecture: neovim/architecture.md
       - Plugins: neovim/plugins.md
       - Key bindings: neovim/keybindings.md
+      - PR review: neovim/review.md
       - AI workflow: neovim/ai.md
   - Shell:
       - shell/index.md

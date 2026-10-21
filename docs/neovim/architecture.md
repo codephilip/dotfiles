@@ -34,15 +34,19 @@ time — set it late and half your bindings land on the wrong key.
     │   ├── options.lua     leader, UI, folding, diagnostics, providers
     │   ├── keymaps.lua     bindings that need no plugin
     │   ├── autocmds.lua    yank highlight, cursor restore, disk reload
-    │   └── lazy.lua        bootstrap + plugin import
+    │   ├── lazy.lua        bootstrap + plugin import
+    │   ├── theme.lua       reads ~/.config/theme/current, picks the colourscheme
+    │   └── review.lua      review mode: diff gutter + tree against main
     └── plugins/
-        ├── ui.lua          theme, statusline, tabs, dashboard, which-key
+        ├── ui.lua          themes, statusline, tabs, dashboard, which-key
         ├── explore.lua     file tree, outline, motion, pairs
         ├── treesitter.lua  syntax, textobjects, sticky context
         ├── fzf-lua.lua     every picker
         ├── lsp.lua         mason + lspconfig + blink.cmp
         ├── lint.lua        nvim-lint
         ├── git.lua         gitsigns
+        ├── review.lua      diffview + octo (PR review)
+        ├── markdown.lua    render-markdown, table mode, mkdocs serve
         ├── terminal.lua    FTerm float + lazygit
         └── ai.lua          claudecode + codecompanion
 ```
@@ -52,17 +56,18 @@ adding to the right file — there is no central registry to update.
 
 ## The load model
 
-Only **five** plugins load when Neovim opens:
+Only **six** of the 33 plugins load when Neovim opens:
 
 | Plugin | Why eager |
 |---|---|
 | `lazy.nvim` | the manager itself |
-| `catppuccin` | a colourscheme applied late causes a visible flash |
+| the active colourscheme | a colourscheme applied late causes a visible flash. Only the one `~/.config/theme/current` names; the other two stay on disk |
 | `nvim-treesitter` | does not support lazy-loading |
 | `nvim-tree.lua` | so `nvim some/dir/` opens the tree |
 | `nvim-web-devicons` | needed by whatever draws first |
+| `alpha-nvim` | the start screen, on `VimEnter` |
 
-The other 22 wait for a trigger:
+The other 27 wait for a trigger:
 
 === "keys"
 
@@ -152,7 +157,7 @@ explicit allow-list in `lua/plugins/lsp.lua`:
 ```lua
 local SERVERS = {
   "lua_ls", "gopls", "ts_ls", "pyright", "bashls",
-  "jsonls", "yamlls", "terraformls", "dockerls",
+  "jsonls", "yamlls", "terraformls", "dockerls", "marksman",
 }
 ```
 

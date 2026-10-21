@@ -306,6 +306,25 @@ All ours.
 | ++space++ ++g++ ++d++ / ++shift+d++ | Diff against the index / the last commit |
 | ++space++ ++g++ ++c++ / ++shift+c++ | Repo / this file's commit history |
 | `ih` | Hunk text object — `vih` selects the hunk you are in |
+| ++space++ ++g++ ++r++ | Review mode — gutter and tree diff against the merge-base with `main` |
+| ++space++ ++g++ ++l++ | Highlight whole changed lines |
+
+## Reviewing PRs
+
+All ours. The workflow is in [PR review](review.md); the keys inside diffview
+and octo buffers are in [Plugins](plugins.md#pr-review).
+
+| Keys | Does |
+|---|---|
+| ++space++ ++g++ ++v++ | Diffview: the whole branch against its base |
+| ++space++ ++g++ ++m++ | Diffview: the branch commit by commit |
+| ++space++ ++g++ ++f++ | Diffview: history of this file |
+| ++space++ ++g++ ++x++ or `q` | Close diffview |
+| ++space++ ++r++ ++l++ | Octo: list open PRs |
+| ++space++ ++r++ ++o++ | Octo: open this checkout's PR |
+| ++space++ ++r++ ++s++ / ++space++ ++r++ ++r++ | Octo: start / resume a review |
+| ++space++ ++r++ ++c++ | Octo: review a single commit |
+| ++space++ ++r++ ++b++ | Octo: open the PR in the browser |
 
 ## AI
 

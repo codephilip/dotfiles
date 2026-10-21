@@ -1,165 +1,604 @@
 # Plugins
 
-All 27, grouped by what they are for. Versions are pinned in `lazy-lock.json`.
+All 33, one at a time: what each is for, where it is configured, and the keys
+that drive it. Versions are pinned in `nvim/lazy-lock.json`.
 
-## Reading and navigation
+For the same bindings sorted by *task* rather than by plugin, see
+[Key bindings](keybindings.md). For how the review plugins fit together, see
+[PR review](review.md).
 
-The reason the config exists.
+## At a glance
 
-| Plugin | What it does | Key |
+| Area | Plugins | Spec file |
 |---|---|---|
-| [`fzf-lua`](https://github.com/ibhagwan/fzf-lua) | Every picker: files, live grep, buffers, git, and all LSP result lists. Wraps the `fzf` binary, so it stays fast on large repos. | ++space++ ++f++ ++f++ |
-| [`nvim-treesitter`](https://github.com/nvim-treesitter/nvim-treesitter) | Parses the buffer into a syntax tree on every keystroke. Drives highlighting, indentation and folding. | ++ctrl+space++ |
-| [`nvim-treesitter-textobjects`](https://github.com/nvim-treesitter/nvim-treesitter-textobjects) | Makes functions, classes and arguments selectable and jumpable. | `vaf` `]f` |
-| [`nvim-treesitter-context`](https://github.com/nvim-treesitter/nvim-treesitter-context) | Pins the enclosing function signature to the top of the window while you scroll. | `[x` |
-| [`aerial.nvim`](https://github.com/stevearc/aerial.nvim) | Symbol outline sidebar. Fastest way to get oriented in a long file. | ++space++ ++o++ |
-| [`nvim-tree.lua`](https://github.com/nvim-tree/nvim-tree.lua) | Project file tree with git status and diagnostics per file. | ++space++ ++e++ |
-| [`flash.nvim`](https://github.com/folke/flash.nvim) | Type two characters plus a label to jump anywhere visible. | ++s++ |
+| Finding and navigating | fzf-lua, nvim-tree, aerial, flash | `fzf-lua.lua`, `explore.lua` |
+| Syntax | nvim-treesitter, -textobjects, -context | `treesitter.lua` |
+| Code intelligence | nvim-lspconfig, mason, mason-lspconfig, blink.cmp, friendly-snippets, nvim-lint | `lsp.lua`, `lint.lua` |
+| Git | gitsigns, FTerm (hosts lazygit) | `git.lua`, `terminal.lua` |
+| PR review | diffview, octo | `review.lua` (+ `config/review.lua`) |
+| AI | claudecode, codecompanion | `ai.lua` |
+| Markdown | render-markdown, vim-table-mode | `markdown.lua` |
+| Interface | tokyonight, solarized-osaka, catppuccin, lualine, barbar, alpha, which-key, nvim-colorizer, nvim-web-devicons | `ui.lua` |
+| Editing | nvim-autopairs | `explore.lua` |
+| Plumbing | lazy.nvim, plenary | `config/lazy.lua` |
 
-!!! note "`nvim-treesitter-context` is the sleeper"
-    It looks like decoration. In practice it is the single highest-value plugin
-    here — scrolling through a 300-line function without losing the signature
-    changes how fast you can read.
+All spec files live in `nvim/lua/plugins/` unless prefixed `config/`.
+
+!!! tip "Leader and localleader are both ++space++"
+    That is why some plugin-window keys below look like they collide with
+    global ones. Plugin buffers (octo, diffview, nvim-tree) set *buffer-local*
+    maps, and buffer-local always wins. The collisions that actually bite are
+    listed in [Known clashes](#known-clashes).
+
+---
+
+## Finding and navigating
+
+### fzf-lua
+
+[`ibhagwan/fzf-lua`](https://github.com/ibhagwan/fzf-lua) handles every picker
+in the config: files, grep, buffers, git, and all LSP result lists. It also
+takes over `vim.ui.select`, so code actions open in fzf too. Previews go
+through `bat`.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++space++ / ++space++ ++f++ ++f++ | Find files (hidden included, `.git` excluded) |
+| ++space++ ++f++ ++g++ | Git-tracked files |
+| ++space++ ++f++ ++r++ | Recent files |
+| ++space++ ++f++ ++b++ | Buffers |
+| ++space++ ++f++ ++c++ | Files in the nvim config |
+| ++space++ ++slash++ / ++space++ ++s++ ++g++ | Live grep |
+| ++space++ ++s++ ++w++ | Grep word under cursor (visual: the selection) |
+| ++space++ ++s++ ++b++ | Grep current buffer |
+| ++space++ ++s++ ++h++ / ++k++ / ++m++ / ++j++ | Help / keymaps / marks / jumplist |
+| ++space++ ++s++ ++q++ | Quickfix list |
+| ++space++ ++s++ ++d++ | Workspace diagnostics |
+| ++space++ ++s++ `:` | Command history |
+| ++space++ ++s++ ++r++ | Resume the last picker, with its query |
+| ++space++ ++g++ ++c++ / ++shift+c++ | Commits: repo / this buffer |
+| ++space++ ++g++ ++s++ | Git status |
+
+Inside a picker: ++ctrl+j++ / ++ctrl+k++ move, ++tab++ marks, ++ctrl+q++
+sends everything to quickfix, ++shift+down++ / ++shift+up++ scroll the
+preview, ++ctrl+slash++ shows help.
+
+### nvim-tree.lua
+
+[`nvim-tree/nvim-tree.lua`](https://github.com/nvim-tree/nvim-tree.lua) is the
+project sidebar, with git status and diagnostics on each file. It loads at
+startup so `nvim some/dir` opens the tree. With [review mode](review.md#review-mode)
+on, it also marks every file the branch changed against `main`.
+
+Git status is a single letter at the right edge, and the filename takes the same
+colour. An open folder doesn't repeat the markers of the files inside it.
+
+| Marker | Means |
+|---|---|
+| `M` | Modified, not staged |
+| `S` | Staged |
+| `U` | Untracked (new) |
+| `R` / `D` | Renamed / deleted |
+| `!` | Merge conflict |
+| *(dimmed name)* | Gitignored |
+
+| Keys | Does |
+|---|---|
+| ++space++ ++e++ | Toggle the tree |
+| ++space++ ++shift+e++ | Reveal the current file in the tree |
+
+In the tree, these change the defaults: `l` opens, `h` closes / goes to parent,
+`i` shows file info, ++ctrl+t++ makes a directory the root.
+++space++ ++a++ ++s++ adds the file under the cursor to Claude. `g?` lists
+everything else.
+
+### aerial.nvim
+
+[`stevearc/aerial.nvim`](https://github.com/stevearc/aerial.nvim) shows a symbol
+outline of the current file, from LSP, treesitter, markdown headings or man
+sections.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++o++ | Outline sidebar |
+| ++space++ ++c++ ++shift+o++ | Outline as a floating nav window |
+| `[[` / `]]` | Previous / next symbol |
+
+In the outline: ++enter++ or `o` jumps, `q` closes.
+
+### flash.nvim
+
+[`folke/flash.nvim`](https://github.com/folke/flash.nvim): type two characters,
+then a label, to jump anywhere on screen. It also adds labels to `f` / `t` /
+`F` / `T`. It leaves `/` alone.
+
+| Keys | Does |
+|---|---|
+| ++s++ | Jump. Replaces stock `s`; use `cl` instead |
+| ++shift+s++ | Select a treesitter node by label |
+| `r` (after an operator) | Remote: `yr`, jump, a motion, and you're back where you started |
+
+---
+
+## Syntax
+
+### nvim-treesitter
+
+[`nvim-treesitter/nvim-treesitter`](https://github.com/nvim-treesitter/nvim-treesitter)
+on the **`main`** branch. On `main` the plugin only installs parsers. Highlighting,
+folding and indent are Neovim 0.12 built-ins, which `treesitter.lua` switches on
+in a `FileType` autocmd. It installs 34 parsers up front and fetches more the
+first time you open a new filetype. You need the `tree-sitter` CLI to build them.
+
+| Keys | Does |
+|---|---|
+| ++ctrl+space++ | Start / grow selection by syntax node |
+| ++backspace++ (visual) | Shrink it |
+
+Folding is treesitter-driven everywhere a parser exists: `zM` collapses a file
+to its signatures, `zR` opens it back up.
+
+### nvim-treesitter-textobjects
+
+[`nvim-treesitter/nvim-treesitter-textobjects`](https://github.com/nvim-treesitter/nvim-treesitter-textobjects),
+also on `main`, which has no keymap tables, so every map is written out in
+`treesitter.lua`.
+
+| Keys | Does |
+|---|---|
+| `af` / `if` | Function, outer / inner |
+| `ac` / `ic` | Class |
+| `aa` / `ia` | Parameter |
+| `ab` / `ib` | Block |
+| `a/` | Comment |
+| `]f` `[f` / `]F` `[F` | Next / prev function start / end |
+| `]c` `[c` / `]C` `[C` | Next / prev class start / end. **Shadows diff-mode `]c`**, see [Known clashes](#known-clashes) |
+| ++space++ ++c++ ++p++ / ++shift+p++ | Swap parameter with next / previous |
+
+Moves set the jumplist, so ++ctrl+o++ brings you back.
+
+### nvim-treesitter-context
+
+[`nvim-treesitter/nvim-treesitter-context`](https://github.com/nvim-treesitter/nvim-treesitter-context)
+pins the enclosing function, class or `if` to the top of the window, up to four
+lines.
+
+| Keys | Does |
+|---|---|
+| `[x` | Jump up to the context line |
+| ++space++ ++u++ ++t++ | Toggle it |
+
+---
 
 ## Code intelligence
 
-| Plugin | What it does | Key |
-|---|---|---|
-| [`nvim-lspconfig`](https://github.com/neovim/nvim-lspconfig) | Server definitions consumed by Neovim 0.11's native `vim.lsp.config` / `vim.lsp.enable`. | `gd` `gr` |
-| [`mason.nvim`](https://github.com/mason-org/mason.nvim) | Installs servers, linters and formatters without touching system package managers. | ++space++ ++c++ ++m++ |
-| [`mason-lspconfig.nvim`](https://github.com/mason-org/mason-lspconfig.nvim) | Bridges the two — installs the `SERVERS` list and enables exactly those. | — |
-| [`blink.cmp`](https://github.com/Saghen/blink.cmp) | Completion menu with a Rust fuzzy matcher. Pinned to v1. | ++ctrl+y++ |
-| [`friendly-snippets`](https://github.com/rafamadriz/friendly-snippets) | Snippet corpus feeding blink's snippet source. | ++tab++ |
-| [`nvim-lint`](https://github.com/mfussenegger/nvim-lint) | Async linters on write, filtered to those actually installed. | ++space++ ++c++ ++l++ |
+### nvim-lspconfig, mason, mason-lspconfig
 
-### Language servers
+[`neovim/nvim-lspconfig`](https://github.com/neovim/nvim-lspconfig) supplies the
+server definitions that Neovim's native `vim.lsp.config` / `vim.lsp.enable` use.
+[`mason.nvim`](https://github.com/mason-org/mason.nvim) installs them, and
+[`mason-lspconfig.nvim`](https://github.com/mason-org/mason-lspconfig.nvim)
+installs and enables **exactly** the `SERVERS` list in `lsp.lua`:
 
 `lua_ls` · `gopls` · `ts_ls` · `pyright` · `bashls` · `jsonls` · `yamlls` ·
 `terraformls` · `dockerls` · `marksman`
 
-!!! tip "`marksman` is what makes this repo's docs navigable"
-    It is the markdown server: completion for `[](relative/path)` links and
-    `#heading` anchors, `gd` to follow a link to the file it points at, and
-    `gO` for a heading outline. With 20 cross-linked files under `docs/`,
-    that is the difference between editing markdown and editing a site.
+The keys below are set on `LspAttach`, so they exist only in buffers with a
+running server. Most results open in fzf-lua.
 
-### Linters
+| Keys | Does |
+|---|---|
+| `gd` / `gD` | Definition / declaration |
+| `gr` | References. Stock `grr` `grn` `gra` `gri` still work if you type them without pausing |
+| `gI` / `gy` | Implementation / type definition |
+| `gO` | Document symbols (picker) |
+| ++space++ ++c++ ++s++ | Workspace symbols, live |
+| ++space++ ++c++ ++c++ / ++shift+c++ | Incoming / outgoing calls |
+| ++space++ ++c++ ++r++ | Rename |
+| ++space++ ++c++ ++a++ | Code action (n / v) |
+| ++space++ ++c++ ++f++ | Format (LSP) |
+| ++space++ ++c++ ++i++ / `K` | Hover |
+| ++space++ ++u++ ++h++ | Toggle inlay hints (only if the server supports them) |
+| ++space++ ++c++ ++m++ | Open Mason |
 
-Declared in `lua/plugins/lint.lua` but **not** auto-installed. The config filters
-to linters present on `$PATH`, so listing one you have not installed is harmless.
+It also highlights other references to the symbol under the cursor on `CursorHold`.
 
-| Filetype | Linter | Install |
-|---|---|---|
-| sh, bash, zsh | `shellcheck` | `brew install shellcheck` |
-| dockerfile | `hadolint` | `brew install hadolint` |
-| yaml | `yamllint` | `brew install yamllint` |
-| markdown | `markdownlint` | installed ✓ — tuned by `.markdownlint.json` |
-| go | `golangci-lint` | `brew install golangci-lint` |
-| terraform | `tflint` | `brew install tflint` |
+### blink.cmp + friendly-snippets
+
+[`saghen/blink.cmp`](https://github.com/Saghen/blink.cmp) is the completion
+engine, pinned to `1.*` so it uses the prebuilt Rust matcher.
+[`friendly-snippets`](https://github.com/rafamadriz/friendly-snippets) supplies
+the snippets. Sources: LSP, path, snippets, buffer.
+
+| Keys (insert) | Does |
+|---|---|
+| ++ctrl+y++ | Accept |
+| ++ctrl+n++ ++ctrl+p++ / ++ctrl+j++ ++ctrl+k++ | Next / previous |
+| ++ctrl+space++ | Open menu / docs |
+| ++ctrl+e++ | Dismiss |
+| ++tab++ / ++shift+tab++ | Next / previous snippet field |
+
+++tab++ and ++enter++ never accept a completion, on purpose.
+
+### nvim-lint
+
+[`mfussenegger/nvim-lint`](https://github.com/mfussenegger/nvim-lint) runs on
+read, write and `InsertLeave`. It only runs linters that are actually on `$PATH`,
+so a missing one is skipped quietly.
+
+| Filetype | Linter |
+|---|---|
+| sh, bash, zsh | `shellcheck` |
+| dockerfile | `hadolint` |
+| yaml | `yamllint` |
+| markdown | `markdownlint` (tuned by `.markdownlint.json`) |
+| go | `golangci-lint` |
+| terraform | `tflint` |
+
+| Keys | Does |
+|---|---|
+| ++space++ ++c++ ++l++ | Lint now |
+
+---
+
+## Git
+
+### gitsigns.nvim
+
+[`lewis6991/gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim) handles
+gutter signs (line numbers are tinted too), hunk staging, blame, and the
+[review mode](review.md#review-mode) base switch. All keys are buffer-local, so
+they only exist in files inside a git repo.
+
+| Keys | Does |
+|---|---|
+| `]h` / `[h` | Next / previous hunk (in diff mode: stock `]c` / `[c`) |
+| `ih` | Hunk text object, e.g. `vih` |
+| ++space++ ++g++ ++h++ / ++shift+h++ | Stage / reset hunk (n / v) |
+| ++space++ ++g++ ++u++ | Undo stage hunk |
+| ++space++ ++g++ ++shift+s++ / ++shift+r++ | Stage / reset buffer |
+| ++space++ ++g++ ++p++ | Preview hunk inline |
+| ++space++ ++g++ ++b++ / ++shift+b++ | Blame line (full) / blame buffer |
+| ++space++ ++g++ ++d++ / ++shift+d++ | Diff against index / last commit |
+| ++space++ ++u++ ++b++ | Toggle inline blame |
+| ++space++ ++g++ ++r++ | **Review mode**: diff the gutter and tree against the merge-base with `main` |
+| ++space++ ++g++ ++l++ | Toggle full-line highlight of changed lines |
+
+### FTerm.nvim
+
+[`numToStr/FTerm.nvim`](https://github.com/numToStr/FTerm.nvim) provides
+floating terminals. One is a general shell and one is a dedicated lazygit float.
+When lazygit exits, gitsigns refreshes so the gutter is current.
+
+| Keys | Does |
+|---|---|
+| ++ctrl+backslash++ | Toggle floating shell (also from terminal mode) |
+| ++space++ ++g++ ++g++ | Lazygit |
+
+---
+
+## PR review
+
+These two, plus gitsigns' review mode, turn nvim into the review client for
+[gh-dash](review.md#from-gh-dash). [PR review](review.md) walks through the
+workflow. This section is the reference.
+
+### diffview.nvim
+
+[`sindrets/diffview.nvim`](https://github.com/sindrets/diffview.nvim) gives a
+tabbed diff of any revision range: a file panel on the left and a side-by-side
+diff on the right. It also does file history and a 3-way merge tool
+(`diff3_mixed` layout).
+
+The base is `origin/$REVIEW_BASE` when gh-dash launched nvim. Otherwise it is
+origin's default branch.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++g++ ++v++ | Whole branch vs base (`base...HEAD`) |
+| ++space++ ++g++ ++m++ | Branch commit by commit (file history over `base..HEAD`) |
+| ++space++ ++g++ ++f++ | History of the current file |
+| ++space++ ++g++ ++x++ / `q` | Close diffview (`q` works in every diffview panel) |
+
+Inside diffview (plugin defaults):
+
+| Keys | Does |
+|---|---|
+| ++tab++ / ++shift+tab++ | Next / previous file |
+| `[F` / `]F` | First / last file |
+| `gf` | Open the file in the previous tab |
+| ++space++ ++e++ / ++space++ ++b++ | Focus / toggle the file panel |
+| `g<C-x>` | Cycle diff layouts |
+| `j` `k` ++enter++ `o` `l` | File panel: move / open |
+| `-` / `s`, `S`, `U` | File panel: stage-toggle entry, stage all, unstage all |
+| `X` | Restore entry to the left-hand state |
+| `L` | Commit log panel / commit details |
+| `y` | File history: copy commit hash |
+| `[x` / `]x` | Merge tool: previous / next conflict |
+| ++space++ ++c++ ++o++ / ++t++ / ++b++ / ++a++ | Merge tool: choose ours / theirs / base / all (capitals: whole file) |
+| `dx` / `dX` | Delete conflict region / for whole file |
+| `g?` | Help |
+
+### octo.nvim
+
+[`pwntester/octo.nvim`](https://github.com/pwntester/octo.nvim) brings GitHub
+PRs and issues into buffers. You can read the description and threads, leave
+inline review comments and suggestions, and submit the review. It uses fzf-lua
+as its picker and needs `gh` to be authenticated.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++r++ ++l++ | List open PRs |
+| ++space++ ++r++ ++o++ | Open this checkout's PR (uses `$REVIEW_PR`, else `gh pr view`) |
+| ++space++ ++r++ ++s++ | Start a review |
+| ++space++ ++r++ ++r++ | Resume a pending review |
+| ++space++ ++r++ ++c++ | Review a single commit |
+| ++space++ ++r++ ++b++ | Open the PR in the browser |
+
+Inside octo buffers (plugin defaults; `<localleader>` is ++space++):
+
+=== "PR buffer"
+
+    | Keys | Does |
+    |---|---|
+    | ++space++ ++v++ ++s++ / ++space++ ++v++ ++r++ | Start / resume a review |
+    | ++space++ ++c++ ++a++ / ++space++ ++c++ ++r++ | Add comment / reply |
+    | ++space++ ++c++ ++d++ | Delete comment |
+    | `]c` / `[c` | Next / previous comment |
+    | ++space++ ++r++ ++t++ / ++space++ ++r++ ++shift+t++ | Resolve / unresolve thread |
+    | ++space++ ++p++ ++c++ / ++space++ ++p++ ++f++ / ++space++ ++p++ ++d++ | List commits / changed files / show diff |
+    | ++space++ ++p++ ++o++ | Check the PR out |
+    | ++space++ ++p++ ++m++ / ++space++ `psm` / ++space++ `prm` | Merge / squash / rebase |
+    | ++space++ ++v++ ++a++ / ++space++ ++v++ ++d++ | Add / remove reviewer |
+    | ++space++ ++g++ ++c++ / ++space++ ++t++ ++c++ | Open CI check / fold checks list |
+    | ++space++ ++r++ + `p` `h` `e` `+` `-` `r` `l` `c` | React 🎉 ❤️ 👀 👍 👎 🚀 😄 😕 |
+    | ++ctrl+r++ / ++ctrl+b++ / ++ctrl+y++ | Reload / browser / copy URL |
+    | ++enter++ | PR options menu |
+
+=== "Review diff"
+
+    | Keys | Does |
+    |---|---|
+    | ++space++ ++c++ ++a++ | Add a review comment (visual: on a range) |
+    | ++space++ ++s++ ++a++ | Add a suggestion (visual: on a range) |
+    | `]t` / `[t` | Next / previous thread |
+    | `]q` / `[q`, `[Q` / `]Q` | Next / previous file, first / last |
+    | `]u` / `[u` | Next / previous **unviewed** file |
+    | ++space++ ++space++ | Toggle "viewed" on this file |
+    | ++space++ ++e++ / ++space++ ++b++ | Focus / toggle the changed-files panel |
+    | ++space++ ++v++ ++s++ | Submit the review |
+    | ++space++ ++v++ ++d++ | Discard the review |
+    | ++space++ ++shift+c++ | Review PR commits |
+    | ++ctrl+c++ | Close the review tab |
+
+=== "Submit window"
+
+    | Keys | Does |
+    |---|---|
+    | ++ctrl+a++ | Approve |
+    | ++ctrl+m++ | Comment |
+    | ++ctrl+r++ | Request changes |
+    | ++ctrl+c++ | Close |
+
+---
 
 ## AI
 
-| Plugin | What it does | Key |
-|---|---|---|
-| [`claudecode.nvim`](https://github.com/coder/claudecode.nvim) | Runs the Claude CLI in a split using the same protocol as the VS Code extension. Sends selections as context; returns edits as reviewable diffs. Uses your subscription — no API key. | ++space++ ++a++ ++c++ |
-| [`codecompanion.nvim`](https://github.com/olimorris/codecompanion.nvim) | Native chat buffer and inline assistant against the Anthropic API. Requires `ANTHROPIC_API_KEY`; billed per token. | ++space++ ++n++ ++n++ |
+See [AI workflow](ai.md) for when to use which.
 
-See [AI workflow](ai.md) for how they differ in practice.
+### claudecode.nvim
 
-## Git and terminal
+[`coder/claudecode.nvim`](https://github.com/coder/claudecode.nvim) runs the
+`claude` CLI in a right-hand split (40%), using the same protocol as the VS Code
+extension. Claude can see your selection, and its edits arrive as real Neovim
+diffs. It uses your subscription, so you don't need an API key.
 
-| Plugin | What it does | Key |
-|---|---|---|
-| [`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim) | Gutter signs, hunk staging and reset, inline blame, hunk text object. | `]h` ++space++ ++g++ ++b++ |
-| [`FTerm.nvim`](https://github.com/numToStr/FTerm.nvim) | Floating terminal. Also hosts lazygit, removing the need for a separate git-UI plugin. | ++ctrl+backslash++ |
+| Keys | Does |
+|---|---|
+| ++space++ ++a++ ++c++ / ++space++ ++a++ ++f++ | Toggle / focus Claude |
+| ++space++ ++a++ ++r++ / ++space++ ++a++ ++shift+c++ | Resume a session / continue the last |
+| ++space++ ++a++ ++m++ | Select model |
+| ++space++ ++a++ ++b++ | Add current buffer as context |
+| ++space++ ++a++ ++s++ | Send selection (visual), or add file under cursor (nvim-tree) |
+| ++space++ ++a++ ++a++ / ++space++ ++a++ ++d++ | Accept / deny the proposed diff |
+| ++space++ ++a++ ++q++ | Close all diffs |
+| ++space++ ++a++ ++question++ | Connection status |
 
-## Interface
+### codecompanion.nvim
 
-| Plugin | What it does | Key |
-|---|---|---|
-| [`catppuccin`](https://github.com/catppuccin/nvim) | Mocha flavour, transparent background so the terminal shows through. | — |
-| [`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim) | Statusline: mode, branch, diagnostics, relative path, attached LSP servers. | — |
-| [`barbar.nvim`](https://github.com/romgrk/barbar.nvim) | Buffer tabs with pinning, reordering and jump-by-letter. | ++shift+h++ ++shift+l++ |
-| [`which-key.nvim`](https://github.com/folke/which-key.nvim) | Press leader and pause — every binding appears, grouped. | ++space++ |
-| [`alpha-nvim`](https://github.com/goolord/alpha-nvim) | Start screen with routes into files, grep, tree, lazygit and Claude. | — |
-| [`nvim-colorizer.lua`](https://github.com/catgoose/nvim-colorizer.lua) | Renders hex and rgb values as swatches inline. Maintained fork. | ++space++ ++u++ ++c++ |
-| [`nvim-web-devicons`](https://github.com/nvim-tree/nvim-web-devicons) | Filetype glyphs. Requires a Nerd Font. | — |
-| [`nvim-autopairs`](https://github.com/windwp/nvim-autopairs) | Closes brackets and quotes, treesitter-aware. | — |
-| [`lazy.nvim`](https://github.com/folke/lazy.nvim) | Plugin manager. Owns the lockfile and the deferred-loading model. | ++space++ ++shift+l++ |
-| [`plenary.nvim`](https://github.com/nvim-lua/plenary.nvim) | Shared Lua utility library. A dependency, never used directly. | — |
+[`olimorris/codecompanion.nvim`](https://github.com/olimorris/codecompanion.nvim)
+is a chat buffer and inline assistant that talks to the Anthropic API directly.
+It needs **`ANTHROPIC_API_KEY`** and is billed per token. If the key is missing,
+it warns once when the chat opens.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++n++ ++n++ | Toggle chat (n / v) |
+| ++space++ ++n++ ++a++ | Action palette (n / v) |
+| ++space++ ++n++ ++i++ | Inline assistant (n / v) |
+| ++space++ ++n++ ++d++ | Add selection to chat (v) |
+| ++space++ ++n++ ++c++ | Generate a `:command` |
+
+In the chat: ++enter++ (normal) or ++ctrl+s++ (insert) sends; `q` / ++ctrl+c++
+closes.
+
+---
 
 ## Markdown
 
-`lua/plugins/markdown.lua`. This repo is markdown-heavy — 20 files, a
-mkdocs-material site, the cheatsheets, `README.md` — so the setup is built
-around editing a documentation site, not around note-taking.
+`markdown.lua` is built for editing this repo's mkdocs site, not for taking notes.
+There is deliberately no browser preview. A GitHub-flavoured preview would get
+`!!!` admonitions and `===` tabs wrong, so ++space++ ++m++ ++p++ runs the real
+`mkdocs serve` instead.
 
-| Plugin | Role |
+### render-markdown.nvim
+
+[`MeanderingProgrammer/render-markdown.nvim`](https://github.com/MeanderingProgrammer/render-markdown.nvim)
+renders headings, code blocks, tables, checkboxes and links in the buffer. Only
+in normal / command / terminal mode, and the cursor line stays raw. It also
+renders CodeCompanion chat buffers. `markdown.lua` adds highlighting for
+Material's `!!!` and `===` syntax on top.
+
+| Keys | Does |
 |---|---|
-| `render-markdown.nvim` | draws headings, code blocks, tables, bullets, checkboxes and links as styled text **in the buffer** |
-| `vim-table-mode` | typing <code>&#124;</code> re-aligns the whole table as you go |
-| `marksman` (LSP) | link/heading completion, follow links, heading outline |
-| `markdownlint` | lint, tuned by `.markdownlint.json` at the repo root |
+| ++space++ ++u++ ++m++ | Toggle rendering |
 
-Rendering only applies in normal mode (`render_modes = { "n", "c", "t" }`),
-and anti-conceal un-renders the line under the cursor — so you always edit
-real source and only ever *read* the pretty version. It also renders
-`codecompanion` chat buffers, which makes AI replies far easier to skim.
+### vim-table-mode
 
-### No browser preview, on purpose
+[`dhruvasagar/vim-table-mode`](https://github.com/dhruvasagar/vim-table-mode)
+re-aligns the table as you type `|`. Its own mappings are switched off, and these
+markdown-only ones are used instead:
 
-`markdown-preview.nvim` and friends render **GitHub** markdown. `docs/` is
-mkdocs-material: `!!! tip` admonitions, `=== "Tab"` content tabs, the
-Material theme. A browser preview would show those as literal text — wrong
-in exactly the places it matters.
+| Keys | Does |
+|---|---|
+| ++space++ ++m++ ++t++ | Toggle table mode |
+| ++space++ ++m++ ++r++ | Realign table |
+| ++space++ ++m++ ++shift+t++ | Tableize selection (CSV → table) |
 
-So: render in-buffer while editing, and use the real thing for the real
-thing. ++space++ ++m++ ++p++ runs `mkdocs serve` from the nearest
-`mkdocs.yml` and opens the browser; press it again to stop the server.
+Two more keys live in `markdown.lua` itself, with no plugin behind them:
 
-### mkdocs-material syntax highlighting
+| Keys | Does |
+|---|---|
+| ++space++ ++m++ ++x++ | Toggle checkbox `[ ]` ↔ `[x]`, promoting a plain list item (n / v) |
+| ++space++ ++m++ ++p++ | Start / stop `mkdocs serve` and open the browser |
 
-`render-markdown` understands GitHub callouts (`> [!NOTE]`) but has no
-concept of Material's `!!!` admonitions or `===` tabs — to treesitter they
-are ordinary paragraph text, so they would sit in the buffer looking like
-body copy. There are 19 admonitions across `docs/`.
+---
 
-`markdown.lua` adds two `matchadd()` patterns for them, linked to `Special`
-and `Identifier` so they follow whichever [theme](../theming.md) is active,
-and re-applied on `ColorScheme` because loading a colorscheme clears every
-highlight.
+## Interface
 
-!!! warning "One thing this cannot fix"
-    Admonition *bodies* are indented four spaces, which CommonMark treats as
-    an indented code block. Treesitter therefore highlights them as code,
-    and `markdownlint` had to have `MD032`/`MD022`/`MD046` disabled for the
-    same reason. Nothing short of a Material-aware parser solves it.
+### Colourschemes: tokyonight, solarized-osaka, catppuccin
+
+[`folke/tokyonight.nvim`](https://github.com/folke/tokyonight.nvim),
+[`craftzdog/solarized-osaka.nvim`](https://github.com/craftzdog/solarized-osaka.nvim)
+and [`catppuccin/nvim`](https://github.com/catppuccin/nvim) are all installed,
+but only the one named in `~/.config/theme/current` loads, through
+`config/theme.lua`. All three are transparent so Ghostty's blur shows through.
+To switch, run `theme <name>` in the shell, then restart nvim. See
+[Theming](../theming.md).
+
+### lualine.nvim
+
+[`nvim-lualine/lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim) is a
+single global statusline showing mode, branch, diagnostics, relative path, the
+diff count, attached LSP servers (on wide terminals) and position. No keys.
+
+### barbar.nvim
+
+[`romgrk/barbar.nvim`](https://github.com/romgrk/barbar.nvim) shows buffer tabs
+along the top with gitsigns counts. Tabs move aside for the tree and the outline.
+
+| Keys | Does |
+|---|---|
+| ++shift+h++ / ++shift+l++ | Previous / next buffer |
+| ++space++ ++b++ ++s++ | Pick a buffer by letter |
+| ++space++ ++1++ … ++5++ / ++space++ ++9++ | Go to position / last |
+| ++space++ ++b++ `<` / `>` | Move buffer left / right |
+| ++space++ ++b++ ++p++ | Pin / unpin |
+| ++space++ ++b++ ++d++ | Close buffer |
+| ++space++ ++b++ ++o++ / ++shift+p++ | Close all but current+pinned / all unpinned |
+| ++space++ ++b++ ++b++ | Alternate buffer (core keymap, not barbar) |
+
+### alpha-nvim
+
+[`goolord/alpha-nvim`](https://github.com/goolord/alpha-nvim) is the start
+screen. Its footer shows the startup time.
+
+| Key | Button |
+|---|---|
+| `f` `/` `r` | Find file / grep / recent |
+| `e` `g` `a` | Tree / lazygit / Claude |
+| `c` `l` `q` | Config / Lazy / quit |
+
+### which-key.nvim
+
+[`folke/which-key.nvim`](https://github.com/folke/which-key.nvim) (helix preset):
+press ++space++ and wait to see every binding, grouped.
+
+| Keys | Does |
+|---|---|
+| ++space++ (pause) | All leader bindings |
+| ++space++ ++question++ | Only this buffer's bindings |
+
+Groups: `a` ai · `b` buffer · `c` code · `f` find · `g` git · `m` markdown ·
+`n` ai chat · `r` review · `s` search · `u` toggles · `x` quickfix.
+
+### nvim-colorizer.lua
+
+[`catgoose/nvim-colorizer.lua`](https://github.com/catgoose/nvim-colorizer.lua),
+the maintained fork, shows a `■` swatch after hex, rgb, CSS and Tailwind colours.
+Colour *names* are off, so "red" in prose stays plain.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++u++ ++c++ | Toggle swatches |
+
+### nvim-web-devicons
+
+[`nvim-tree/nvim-web-devicons`](https://github.com/nvim-tree/nvim-web-devicons)
+provides filetype glyphs everywhere. Your terminal needs a Nerd Font.
+
+---
+
+## Editing
+
+### nvim-autopairs
+
+[`windwp/nvim-autopairs`](https://github.com/windwp/nvim-autopairs) closes
+brackets and quotes, aware of treesitter context.
+
+| Keys (insert) | Does |
+|---|---|
+| ++alt+e++ | Fast-wrap: wrap the next object in the pair you just typed |
+
+---
+
+## Plumbing
+
+### lazy.nvim
+
+[`folke/lazy.nvim`](https://github.com/folke/lazy.nvim) is the plugin manager.
+Everything is lazy by default. It checks for updates quietly and never notifies.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++shift+l++ | Open Lazy |
+
+### plenary.nvim
+
+[`nvim-lua/plenary.nvim`](https://github.com/nvim-lua/plenary.nvim) is a shared
+Lua library that codecompanion and octo depend on. `markdown.lua` also uses it as
+a dummy spec to hang its local keys on.
+
+---
+
+## Known clashes
+
+These came from loading the config and reading the installed plugins' default
+maps, not from guessing.
+
+| Where | Key | What happens | Workaround |
+|---|---|---|---|
+| Any diff window (diffview, `:Gitsigns diffthis`, `nvim -d`) | `]c` / `[c` | treesitter-textobjects' global "next class" wins over Vim's "next change" | `]h` / `[h` in buffers gitsigns is attached to; otherwise ++tab++ between files in diffview |
+| octo PR buffer | ++space++ ++r++ ++r++ / ++c++ / ++l++ | octo's buffer-local reactions (🚀 😕 😄) beat the global review keys | Use those from a normal buffer, or ++space++ ++v++ ++r++ (octo's own resume) |
+| diffview / octo review | ++space++ ++e++ / ++space++ ++b++ | Focus / toggle *their* file panel instead of nvim-tree / buffer keys | Intended. Leave the view to get the global ones back |
+| diffview merge tool | ++space++ ++c++ ++o++ etc. | Conflict choices shadow ++space++ ++c++ ++shift+o++ (aerial nav) and friends | Intended |
+
+## Version pins
+
+| Plugin | Pin | Why |
+|---|---|---|
+| `nvim-treesitter` | `branch = "main"` | The rewrite for Neovim 0.12; `master` is frozen and breaks on 0.12 |
+| `nvim-treesitter-textobjects` | `branch = "main"` | Must match the above |
+| `aerial.nvim` | `branch = "nvim-0.11"` | Compatibility branch. **Now stale:** this machine runs 0.12.5 and the spec comment says to drop the pin on 0.12 |
+| `blink.cmp` | `version = "1.*"` | Prebuilt binary; v2 is still breaking |
 
 ## Deliberately absent
 
 | Not installed | Why |
 |---|---|
-| `Comment.nvim` | Neovim 0.10+ ships `gc` / `gcc` natively |
-| `oil.nvim` | `nvim-tree` covers the explorer role; two is not minimal |
-| `trouble.nvim` | `fzf-lua` + quickfix cover diagnostics and references |
-| `lazygit.nvim` | FTerm hosts lazygit in a float for free |
-| a formatter | **gap** — `<leader>cf` uses LSP formatting, weak for JS/TS/Python |
-
-!!! tip "Closing the formatter gap"
-    `conform.nvim` wired to `prettier`, `ruff` and `gofumpt` is the usual answer.
-    Not installed yet.
-
-## Version pins
-
-Four plugins are pinned. These are not arbitrary — unpinning them on Neovim
-0.11.2 breaks the editor at launch.
-
-| Plugin | Pin | Reason |
-|---|---|---|
-| `nvim-treesitter` | `branch = "master"` | `main` is a full rewrite requiring Neovim 0.12 |
-| `nvim-treesitter-textobjects` | `branch = "master"` | same rewrite |
-| `aerial.nvim` | `branch = "nvim-0.11"` | maintained compatibility branch |
-| `blink.cmp` | `version = "1.*"` | v2 is still landing breaking changes |
-
-When you move to Neovim 0.12, **migrate** these rather than simply removing the
-pins. The treesitter `main` branch has a completely different setup API.
+| `Comment.nvim` | `gc` / `gcc` are built in |
+| `oil.nvim` | nvim-tree covers it |
+| `trouble.nvim` | fzf-lua + quickfix cover it |
+| `lazygit.nvim` | FTerm hosts lazygit for free |
+| `vim-fugitive` / `neogit` | lazygit for writing history, diffview for reading it |
+| a formatter | **Gap.** ++space++ ++c++ ++f++ is LSP-only; `conform.nvim` would close it |
