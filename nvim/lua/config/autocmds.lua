@@ -132,7 +132,7 @@ local function relnum(on)
     end
   end
 end
-vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "InsertLeave", "WinEnter" }, {
+vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "InsertLeave", "WinEnter", "CursorHold" }, {
   group = augroup("relnum"),
   callback = relnum(true),
 })

@@ -30,7 +30,7 @@ require("lazy").setup({
     rtp = {
       -- Disable built-in plugins we don't use; oil.nvim replaces netrw.
       disabled_plugins = {
-        "gzip", "tarPlugin", "tohtml", "tutor", "zipPlugin",
+        "gzip", "tarPlugin", "tohtml", "zipPlugin",
         "netrwPlugin", "rplugin", "matchit",
       },
     },
