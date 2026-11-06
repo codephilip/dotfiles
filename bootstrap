@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =========================================================
-# bootstrap — fresh Mac to working config
+# bootstrap — fresh Mac or Linux box to working config
 #
 #   ./bootstrap          symlink configs, then report missing tools
 #   ./bootstrap --check  report only, change nothing
@@ -42,8 +42,9 @@ LINKS=(
 # Tools the configs actually reference. Missing ones degrade gracefully
 # (.zshrc guards every integration with `command -v`), so this reports
 # rather than installs — you stay in control of what lands on the machine.
-BREW_FORMULAE=(bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship tmux tree-sitter-cli
-               zoxide zsh-autosuggestions zsh-syntax-highlighting)
+BREW_FORMULAE=(bat btop delta eza fd fzf gh jq k9s lazydocker lazygit mise mtr ncdu neovim ripgrep
+               shellcheck starship tlrc tmux tree-sitter-cli watch zoxide
+               zsh-autosuggestions zsh-syntax-highlighting)
 
 # Tools the config uses that Homebrew is not necessarily the source of.
 # Each can arrive by several routes -- a native installer, npm, pip,
@@ -72,9 +73,18 @@ BREW_CASKS=(ghostty alacritty font-jetbrains-mono-nerd-font)
 # arrays above, so there is one source of truth for what to install.
 # The README used to carry its own copy of this list and drifted --
 # it was missing gh and k9s while claiming to be in sync.
+#
+# Casks are macOS-only. On Linux the same formulae install through
+# Homebrew on Linux; the font and terminals come from elsewhere (see
+# the "Desktop" section below and docs/setup.md).
 if [[ "${1:-}" == "--tools" ]]; then
   printf 'brew install %s\n' "${BREW_FORMULAE[*]}"
-  printf 'brew install --cask %s\n' "${BREW_CASKS[*]}"
+  if [[ $OSTYPE == darwin* ]]; then
+    printf 'brew install --cask %s\n' "${BREW_CASKS[*]}"
+  else
+    printf '# Linux: no casks. Desktop machines also want JetBrainsMono Nerd Font\n'
+    printf '# and a terminal (ghostty or alacritty) -- see docs/setup.md.\n'
+  fi
   exit 0
 fi
 
@@ -164,6 +174,7 @@ for tool in "${BREW_FORMULAE[@]}"; do
   case $tool in
     neovim)  bin=nvim ;;
     ripgrep) bin=rg ;;
+    tlrc)    bin=tldr ;;   # the official tldr client; the old `tldr` formula is gone
     *)       bin=$tool ;;
   esac
 
@@ -212,6 +223,7 @@ if (( ${#foreign[@]} > 0 )); then
   printf '    %s\n' "${foreign[@]}"
 fi
 
+if [[ $OSTYPE == darwin* ]]; then
 bold $'\nCasks'
 missing_casks=()
 for cask in "${BREW_CASKS[@]}"; do
@@ -249,6 +261,30 @@ else
   printf '    brew install --cask %s\n' "${missing_casks[*]}"
 fi
 
+else
+# --- Linux desktop ---------------------------------------
+# No casks on Linux. The font and the terminal only matter on a machine
+# you sit in front of: on a server you SSH into, glyphs are drawn by the
+# terminal on YOUR machine, so a headless box needs neither.
+bold $'\nDesktop (Linux — skip on a headless server)'
+if command -v fc-list >/dev/null && fc-list 2>/dev/null | grep -qi 'JetBrainsMono.*Nerd'; then
+  green "  ✓ JetBrainsMono Nerd Font"
+else
+  red "  – JetBrainsMono Nerd Font not found"
+  dim "      https://github.com/ryanoasis/nerd-fonts/releases → ~/.local/share/fonts, then fc-cache -f"
+fi
+for term in ghostty alacritty; do
+  if command -v "$term" >/dev/null; then
+    green "  ✓ $term"
+  else
+    case $term in
+      ghostty)   dim "  – ghostty not found (https://ghostty.org/docs/install)" ;;
+      alacritty) dim "  – alacritty not found (distro package: apt/dnf/pacman install alacritty)" ;;
+    esac
+  fi
+done
+fi
+
 # --- External tools --------------------------------------
 # Classify an absolute binary path into the install route it implies.
 # Inferred from location, which is the only evidence available --
@@ -263,7 +299,7 @@ install_route() {
     *) case $p in
          */node_modules/*|*/.npm*/*|*/.nvm/*) echo "npm" ;;
          /usr/local/bin/*)                    echo "direct install or Intel brew" ;;
-         /usr/bin/*|/bin/*)                   echo "macOS system copy" ;;
+         /usr/bin/*|/bin/*)                   echo "system copy (OS package)" ;;
          *)                                   echo "unknown" ;;
        esac ;;
   esac

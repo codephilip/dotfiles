@@ -3,7 +3,7 @@
 #
 #   make install   symlink configs into place, report missing tools
 #   make verify    dry-run of install; changes nothing
-#   make tools     print the brew install lines for a new machine
+#   make tools     print the brew install lines for a new machine (macOS or Linux)
 #   make windows   install everything on Windows (scoop + MSYS2 zsh/tmux)
 #   make serve     live-reload docs at http://127.0.0.1:8000
 #   make docs      build the static site into ./site
@@ -14,7 +14,8 @@
 SHELL      := /bin/bash
 BRIEF_SRC  := brief/executive-brief.html
 BRIEF_PDF  := docs/assets/executive-brief.pdf
-CHROME     := /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+# Override on Linux: make pdf CHROME=google-chrome (or chromium)
+CHROME     ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 
 .PHONY: all install verify tools windows serve docs pdf clean check help
 
@@ -50,6 +51,12 @@ docs: pdf
 pdf: $(BRIEF_PDF)
 
 $(BRIEF_PDF): $(BRIEF_SRC)
+	@# The PDF is committed, so a machine without Chrome (most Linux boxes)
+	@# keeps the tracked copy instead of failing the docs build.
+	@if ! command -v "$(CHROME)" >/dev/null 2>&1 && [ ! -x "$(CHROME)" ]; then \
+		if [ -s $@ ]; then echo "! Chrome not found — keeping committed $@"; touch $@; exit 0; \
+		else echo "✗ Chrome not found and no committed PDF (set CHROME=...)"; exit 1; fi; \
+	fi
 	@mkdir -p $(dir $@)
 	@echo "→ rendering $< to $@"
 	@"$(CHROME)" \

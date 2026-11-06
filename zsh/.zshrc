@@ -417,6 +417,9 @@ fi
 # --- 4. zoxide: `z <partial>` jumps to frecent dirs ---
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
+# --- 4b. mise: per-project node/python/go versions from mise.toml ---
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
+
 # --- 5. prompt: starship ---
 # Bracketed-segment style with Nerd Font icons — see starship.toml, which
 # is generated (icons are Private Use Area codepoints; the generator
