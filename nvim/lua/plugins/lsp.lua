@@ -9,7 +9,9 @@
 local SERVERS = {
   "lua_ls",
   "gopls",
-  "ts_ls",
+  -- vtsls: TypeScript/JavaScript. Same tsserver underneath as ts_ls, plus
+  -- "go to source definition" (gI) and the workspace's own TypeScript.
+  "vtsls",
   "pyright",
   "bashls",
   "jsonls",
@@ -22,6 +24,43 @@ local SERVERS = {
   -- cross-linked mkdocs site navigable.
   "marksman",
 }
+
+-- gI: go to the code that actually runs.
+--   TypeScript: definition jumps to the .d.ts type declaration for any
+--   library, so ask vtsls for the source definition instead.
+--   Elsewhere: implementations (a Go interface's or Rust trait's
+--   implementers), or plain definition where the server has no
+--   implementation support (pyright, for one).
+local function goto_source()
+  local fzf = require("fzf-lua")
+  local vtsls = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
+  if not vtsls then
+    if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/implementation" }) > 0 then
+      return fzf.lsp_implementations()
+    end
+    return fzf.lsp_definitions()
+  end
+
+  local params = vim.lsp.util.make_position_params(0, vtsls.offset_encoding)
+  vtsls:request("workspace/executeCommand", {
+    command = "typescript.goToSourceDefinition",
+    arguments = { params.textDocument.uri, params.position },
+  }, function(err, result)
+    if err then
+      vim.notify("Source definition: " .. err.message, vim.log.levels.ERROR)
+    elseif not result or #result == 0 then
+      vim.notify("No source definition found", vim.log.levels.INFO)
+    elseif #result == 1 then
+      vim.lsp.util.show_document(result[1], vtsls.offset_encoding, { focus = true })
+    else
+      vim.fn.setqflist({}, " ", {
+        title = "Source definitions",
+        items = vim.lsp.util.locations_to_items(result, vtsls.offset_encoding),
+      })
+      fzf.quickfix()
+    end
+  end, 0)
+end
 
 -- Non-server tools Mason installs on start: the formatters conform.nvim
 -- runs (lua/plugins/format.lua) and Copilot's server (lua/plugins/ai.lua).
@@ -120,6 +159,22 @@ return {
         },
       })
 
+      vim.lsp.config("vtsls", {
+        settings = {
+          vtsls = {
+            autoUseWorkspaceTsdk = true, -- the project's own typescript, not the bundled one
+            enableMoveToFileCodeAction = true,
+            experimental = { completion = { enableServerSideFuzzyMatch = true } },
+          },
+          typescript = {
+            updateImportsOnFileMove = { enabled = "always" },
+          },
+          javascript = {
+            updateImportsOnFileMove = { enabled = "always" },
+          },
+        },
+      })
+
       -- Keymaps attach per-buffer, only once a server is actually running.
       -- Neovim 0.11 already provides: K (hover), grn (rename), gra (code
       -- action), grr (references), gri (implementation), gO (symbols).
@@ -136,7 +191,7 @@ return {
           map("gd", fzf.lsp_definitions, "Goto definition")
           map("gD", fzf.lsp_declarations, "Goto declaration")
           map("gr", fzf.lsp_references, "References")
-          map("gI", fzf.lsp_implementations, "Goto implementation")
+          map("gI", goto_source, "Goto source (TS) / implementation")
           map("gy", fzf.lsp_typedefs, "Goto type definition")
           map("gO", fzf.lsp_document_symbols, "Document symbols")
           map("<leader>cs", fzf.lsp_live_workspace_symbols, "Workspace symbols")
