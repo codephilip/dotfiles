@@ -64,3 +64,10 @@ containers/
 github-copilot/
 configstore/
 btop/
+
+# Runtime state that tools write into ~/.config. This repo is PUBLIC:
+# anything holding a token, a session or a log stays out.
+# github-copilot/auth.db is the Copilot OAuth token
+github-copilot/
+herdr/*
+!herdr/config.toml
