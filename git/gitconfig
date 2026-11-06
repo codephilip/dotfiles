@@ -56,3 +56,36 @@
 # skipped.
 [include]
   path = ~/.config/git/theme.gitconfig
+[alias]
+	# Used as `g <alias>` (zsh: alias g=git). Cheatsheet: git-commands
+	st = status
+	s = status -sb
+	l = log --oneline --decorate
+	lg = log --graph --all --oneline --decorate --date-order
+	la = log --graph --pretty=format:'%C(auto)%h%d %s %C(black)%C(bold)%cr'
+	br = branch
+	brv = branch -vv
+	co = checkout
+	cob = checkout -b
+	sw = switch
+	swc = switch -c
+	a = add
+	aa = add -A
+	ci = commit
+	cm = commit -m
+	ca = commit --amend
+	can = commit --amend --no-edit
+	f = fetch
+	fa = fetch --all --prune
+	pl = pull
+	po = push origin HEAD
+	pm = push origin main
+	rb = rebase
+	rbi = rebase -i
+	rbc = rebase --continue
+	rba = rebase --abort
+	m = merge
+	d = diff
+	ds = diff --staged
+	sp = stash pop
+	sl = stash list

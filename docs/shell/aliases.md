@@ -3,7 +3,7 @@
 Every shortcut `.zshrc` defines, in one place. Tool-specific sets have their
 own pages:
 
-- **git**: `gs`, `gl`, `gco`… on the [Git](../git.md#aliases) page
+- **git**: `gs`, `gl`, `gco`… on the [Git](../git.md#commands) page
 - **docker** and **kubectl**: `dps`, `kgp`, `ksh`… on the
   [Docker and Kubernetes](../containers.md) page
 

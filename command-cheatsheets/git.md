@@ -1,48 +1,56 @@
 # Git Commands
 
+g         → git  (so g st = git status, and any git command works: g push, g stash)
 lg        → lazygit (TUI: ? lists keys, q quits)
 Ctrl-G    → lazygit, straight from the prompt
 
 ## Status
-gs        → git status -sb
-gss       → git status
+g st      → status
+g s       → short status (status -sb)
 
 ## Logs
-gl        → oneline log
-glg       → graph log (all branches)
-gla       → pretty graph log
+g l       → oneline log
+g lg      → graph log, all branches
+g la      → pretty graph log (relative dates)
 
 ## Branch
-gb        → list branches
-gbv       → branches with upstream
-gbd       → delete branch
+g br      → list branches
+g brv     → branches with upstream
+g br -d   → delete branch
 
 ## Checkout / Switch
-gco       → checkout
-gcob      → checkout new branch
-gsw       → switch
-gswc      → switch new branch
+g co      → checkout
+g cob     → checkout new branch
+g sw      → switch
+g swc     → switch new branch
 
-## Commit
-ga        → add .
-gaa       → add -A
-gc        → commit
-gcm       → commit -m
-gca       → amend
-gcan      → amend (no edit)
+## Add / Commit
+g a .     → add current dir
+g aa      → add everything (add -A)
+g ci      → commit
+g cm "x"  → commit -m
+g ca      → amend
+g can     → amend, keep message
 
-## Fetch / Push
-gf        → fetch
-gfa       → fetch all + prune
-gpo       → push origin HEAD
-gpm       → push origin main
+## Fetch / Pull / Push
+g f       → fetch
+g fa      → fetch all + prune
+g pl      → pull
+g po      → push origin HEAD
+g pm      → push origin main
 
-## Rebase
-grb       → rebase
-grbi      → interactive rebase
-grbc      → rebase continue
-grba      → rebase abort
+## Rebase / Merge
+g rb      → rebase
+g rbi     → interactive rebase
+g rbc     → rebase continue
+g rba     → rebase abort
+g m       → merge
 
 ## Diff
-gd        → diff
-gds       → diff staged
+g d       → diff
+g ds      → diff staged
+
+## Stash
+g stash   → stash
+g sp      → stash pop
+g sl      → stash list

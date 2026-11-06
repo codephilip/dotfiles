@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# g = git, so git's own aliases work too: g st -> git status
+alias g="git"
+
 # ---- Status ----
 alias gs="git status -sb"
 alias gss="git status"
