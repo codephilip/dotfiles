@@ -74,6 +74,18 @@ return {
     },
   },
 
+  -- gitlinker — GitHub permalink for the line or the visual selection.
+  -- `:GitLink blame` gives the blame page instead.
+  {
+    "linrongbin16/gitlinker.nvim",
+    cmd = "GitLink",
+    keys = {
+      { "<leader>gy", "<cmd>GitLink<cr>", mode = { "n", "v" }, desc = "Copy GitHub link" },
+      { "<leader>gY", "<cmd>GitLink!<cr>", mode = { "n", "v" }, desc = "Open GitHub link in browser" },
+    },
+    opts = {},
+  },
+
   -- lazygit itself runs in a FTerm float — see lua/plugins/terminal.lua
   -- (<leader>gg). No extra plugin needed for it.
 }

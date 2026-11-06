@@ -14,6 +14,68 @@ local function base()
 end
 
 return {
+  -- codediff — VS Code-style side-by-side diff with a file tree, showing
+  -- only the changes plus 8 lines of context. Quicker to skim than
+  -- diffview; diffview stays for the gh-dash PR flow and merge conflicts.
+  -- Downloads a prebuilt diff library on first use (`:CodeDiff install!`
+  -- reinstalls it).
+  {
+    "esmuellert/codediff.nvim",
+    cmd = "CodeDiff",
+    keys = {
+      {
+        "<leader>dv",
+        function()
+          if vim.t.codediff then
+            vim.cmd.tabclose()
+          else
+            vim.cmd("CodeDiff")
+          end
+        end,
+        desc = "Toggle diff view (working tree)",
+      },
+      { "<leader>dh", "<cmd>CodeDiff history %<cr>", desc = "Diff history of this file" },
+      { "<leader>dH", "<cmd>CodeDiff history<cr>", desc = "Diff history of the repo" },
+    },
+    opts = {
+      explorer = {
+        view_mode = "tree",
+        width = 50,
+        auto_open_on_cursor = true,
+        line_stats = { enabled = true },
+      },
+      diff = {
+        compact = true,
+        compact_context_lines = 8,
+        compact_sync_folds = true,
+      },
+    },
+    config = function(_, opts)
+      -- Workaround for neovim/neovim#40290: setting 'foldminlines' (which
+      -- compact mode does on every file switch) refreshes treesitter folds
+      -- in wiped buffers and throws "Invalid buffer id". The refresh only
+      -- matters when changing 'foldminlines'/'foldnestmax', so drop it.
+      -- Remove once the issue is fixed upstream.
+      require("vim.treesitter._fold")
+      for _, au in ipairs(vim.api.nvim_get_autocmds({ event = "OptionSet" })) do
+        if au.desc == "Refresh treesitter folds" then
+          vim.api.nvim_del_autocmd(au.id)
+        end
+      end
+
+      require("codediff").setup(opts)
+
+      -- Mark codediff tabs so <leader>dv closes the view instead of opening another.
+      vim.api.nvim_create_autocmd("User", {
+        group = vim.api.nvim_create_augroup("phil_codediff", { clear = true }),
+        pattern = "CodeDiffOpen",
+        callback = function(ev)
+          vim.t[ev.data.tabpage].codediff = true
+        end,
+      })
+    end,
+  },
+
   {
     "sindrets/diffview.nvim",
     cmd = { "DiffviewOpen", "DiffviewFileHistory", "DiffviewClose" },

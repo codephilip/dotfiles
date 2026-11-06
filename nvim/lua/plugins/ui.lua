@@ -301,6 +301,7 @@ return {
         { "<leader>a", group = "ai (claude code)" },
         { "<leader>b", group = "buffer" },
         { "<leader>c", group = "code" },
+        { "<leader>d", group = "diff (codediff)" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },
         { "<leader>m", group = "markdown" },
