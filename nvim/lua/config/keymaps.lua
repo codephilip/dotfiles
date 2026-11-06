@@ -81,6 +81,13 @@ end, { desc = "Source current file" })
 
 -- `gx` (built in since 0.10) already opens the URL under the cursor.
 
+-- Context for AI agents (lua/config/context.lua)
+local context = require("config.context")
+map("n", "<leader>yf", context.copy_relative_path, { desc = "Copy relative path#Lline" })
+map("n", "<leader>yp", context.copy_absolute_path, { desc = "Copy absolute path#Lline" })
+map("x", "<leader>yc", context.copy_as_codeblock, { desc = "Copy selection as a code block" })
+map("n", "<leader>j", context.open_package_json, { desc = "Open package.json (float)" })
+
 -- Toggles worth having at hand while reading code
 map("n", "<leader>uw", function() vim.opt.wrap = not vim.opt.wrap:get() end, { desc = "Toggle wrap" })
 map("n", "<leader>ur", function() vim.opt.relativenumber = not vim.opt.relativenumber:get() end,

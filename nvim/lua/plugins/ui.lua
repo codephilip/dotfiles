@@ -302,6 +302,7 @@ return {
         { "<leader>b", group = "buffer" },
         { "<leader>c", group = "code" },
         { "<leader>d", group = "diff (codediff)" },
+        { "<leader>y", group = "yank context (for AI)" },
         { "<leader>f", group = "find" },
         { "<leader>g", group = "git" },
         { "<leader>m", group = "markdown" },
