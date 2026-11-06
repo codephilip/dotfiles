@@ -38,6 +38,7 @@ vim.pack.add({
 	{ src = gh("lewis6991/gitsigns.nvim") },
 	{ src = gh("craftzdog/mini.diff"), version = "feat/grouping" },
 	{ src = gh("esmuellert/codediff.nvim") },
+	{ src = gh("linrongbin16/gitlinker.nvim") },
 	-- Editor
 	{ src = gh("stevearc/conform.nvim") },
 	{ src = gh("nvim-mini/mini.pairs") },

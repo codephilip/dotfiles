@@ -7,6 +7,9 @@ require("mini.diff").setup({
 	view = { overlay_style = "hunk" },
 })
 
+-- :GitLink copies a GitHub URL for the current line or the selected range
+require("gitlinker").setup()
+
 -- Side-by-side diffs and history, for reviewing larger changes
 require("codediff").setup({
 	explorer = {
