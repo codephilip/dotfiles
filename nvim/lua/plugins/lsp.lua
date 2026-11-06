@@ -79,10 +79,15 @@ return {
       "saghen/blink.cmp", -- load first so capabilities are registered
     },
     config = function()
-      -- Advertise blink.cmp's extra completion capabilities to every server.
+      -- Advertise blink.cmp's extra completion capabilities to every server,
+      -- plus file-rename support so oil renames update imports.
       local ok, blink = pcall(require, "blink.cmp")
       if ok then
-        vim.lsp.config("*", { capabilities = blink.get_lsp_capabilities(nil, true) })
+        vim.lsp.config("*", {
+          capabilities = blink.get_lsp_capabilities({
+            workspace = { fileOperations = { didRename = true, willRename = true } },
+          }, true),
+        })
       end
 
       -- Per-server tweaks. These merge into whatever nvim-lspconfig ships.

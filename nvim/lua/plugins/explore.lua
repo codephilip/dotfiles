@@ -75,6 +75,35 @@ return {
     end,
   },
 
+  -- oil.nvim — edit a directory as a buffer: rename, delete or add lines,
+  -- then :w applies them. Renames ask the language server to update
+  -- imports. nvim-tree stays the sidebar and keeps `nvim some/dir`.
+  {
+    "stevearc/oil.nvim",
+    cmd = "Oil",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "-", function() require("oil").open_float(nil, { preview = {} }) end, desc = "Oil: edit this directory" },
+    },
+    opts = {
+      default_file_explorer = false,
+      columns = {
+        "icon",
+        { "permissions", highlight = "Type" },
+        { "size", highlight = "String" },
+        { "mtime", highlight = "Keyword" },
+      },
+      view_options = { show_hidden = true },
+      float = { border = "rounded", max_width = 200 },
+      preview_win = { update_on_cursor_moved = true },
+      lsp_file_methods = { enabled = true, timeout_ms = 1000, autosave_changes = true },
+      keymaps = {
+        ["h"] = { "actions.parent", mode = "n" },
+        ["q"] = { "actions.close", mode = "n" },
+      },
+    },
+  },
+
   -- aerial.nvim — a symbol outline of the current file. The single best
   -- plugin for getting oriented in a large unfamiliar source file.
   {
