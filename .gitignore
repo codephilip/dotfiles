@@ -60,8 +60,6 @@ zsh/.zcompdump*
 # stripe/ holds the CLI login, including live API keys — never commit it.
 stripe/
 containers/
-# Copilot's OAuth login (auth.db), written by copilot.lua
-github-copilot/
 configstore/
 btop/
 
