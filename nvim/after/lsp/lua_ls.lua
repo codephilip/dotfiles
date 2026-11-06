@@ -17,7 +17,7 @@ return {
 			},
 			diagnostics = {
 				-- globals set up by this config and its plugins
-				globals = { "Craftzdog", "Snacks", "MiniIcons" },
+				globals = { "Craftzdog", "Snacks", "MiniIcons", "MiniDiff" },
 				disable = { "incomplete-signature-doc", "trailing-space" },
 				unusedLocalExclude = { "_*" },
 			},
