@@ -23,6 +23,30 @@ local SERVERS = {
   "marksman",
 }
 
+-- Non-server tools Mason installs on start: the formatters conform.nvim
+-- runs (lua/plugins/format.lua). Already-installed ones are skipped.
+local TOOLS = {
+  "oxfmt",
+  "prettierd",
+  "prettier",
+  "ruff",
+  "stylua",
+  "shfmt",
+}
+
+local function ensure_tools()
+  local registry = require("mason-registry")
+  registry.refresh(function()
+    for _, name in ipairs(TOOLS) do
+      local ok, pkg = pcall(registry.get_package, name)
+      if ok and not pkg:is_installed() then
+        vim.notify("Mason: installing " .. name)
+        pkg:install()
+      end
+    end
+  end)
+end
+
 return {
   {
     "neovim/nvim-lspconfig",
@@ -35,6 +59,10 @@ return {
         cmd = { "Mason", "MasonInstall", "MasonUninstall", "MasonUpdate", "MasonLog" },
         keys = { { "<leader>cm", "<cmd>Mason<cr>", desc = "Mason (LSP/tool installer)" } },
         opts = { ui = { border = "rounded" } },
+        config = function(_, opts)
+          require("mason").setup(opts)
+          ensure_tools()
+        end,
       },
       { "mason-org/mason-lspconfig.nvim", opts = {
         -- Servers matching the toolchains you already have installed.
@@ -111,7 +139,6 @@ return {
           -- Actions.
           map("<leader>cr", vim.lsp.buf.rename, "Rename symbol")
           map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "v" })
-          map("<leader>cf", function() vim.lsp.buf.format({ async = true }) end, "Format buffer")
           map("<leader>ci", vim.lsp.buf.hover, "Hover info")
           -- Signature help in insert mode is <C-s>, provided by Neovim 0.11
           -- by default. Not remapped here: <C-k> belongs to blink.cmp.
