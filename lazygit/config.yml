@@ -1,0 +1,13 @@
+gui:
+  mouseEvents: false
+git:
+  autoFetch: false
+  diffRenderers:
+    - command: delta --dark --paging=never --syntax-theme="Solarized (dark)"
+customCommands:
+  - key: "C"
+    context: "files"
+    command: "git cz"
+    description: "Commit with commitizen"
+    loadingText: "Opening commitizen"
+    output: terminal

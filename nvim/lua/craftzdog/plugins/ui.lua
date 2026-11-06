@@ -16,6 +16,15 @@ MiniIcons.mock_nvim_web_devicons()
 Craftzdog.tabline.setup()
 
 -- Snacks
+
+-- On macOS lazygit reads its config from ~/Library/Application Support, not
+-- ~/.config. Point it at ~/.config/lazygit/config.yml; snacks adds the synced
+-- theme on top.
+local lazygit_config = vim.fs.normalize("~/.config/lazygit/config.yml")
+if not vim.env.LG_CONFIG_FILE and vim.uv.fs_stat(lazygit_config) then
+	vim.env.LG_CONFIG_FILE = lazygit_config
+end
+
 require("snacks").setup({
 	notifier = { enabled = true },
 	indent = { enabled = true },
@@ -28,6 +37,19 @@ require("snacks").setup({
 			-- dotfiles like .github/ and .env.example are part of real projects
 			files = { hidden = true },
 			grep = { hidden = true },
+		},
+	},
+	lazygit = {
+		configure = true, -- sync the theme
+		theme = {
+			activeBorderColor = { fg = "WarningMsg", bold = true },
+		},
+		config = {
+			-- open files in the window lazygit was launched from (utils/lazygit.lua)
+			os = {
+				edit = Craftzdog.lazygit.edit_command(),
+				editAtLine = Craftzdog.lazygit.edit_command({ at_line = true }),
+			},
 		},
 	},
 })

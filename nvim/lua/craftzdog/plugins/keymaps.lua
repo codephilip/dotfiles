@@ -151,6 +151,11 @@ map({ "n", "x" }, "[c", function()
 	end
 end, { desc = "Previous hunk" })
 
+-- Lazygit
+map("n", ";g", function()
+	Craftzdog.lazygit.open()
+end, { desc = "Lazygit" })
+
 -- Diff view
 map("n", "<leader>dv", function()
 	if vim.t.codediff then
