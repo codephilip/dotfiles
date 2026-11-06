@@ -12,7 +12,9 @@ local SERVERS = {
   -- vtsls: TypeScript/JavaScript. Same tsserver underneath as ts_ls, plus
   -- "go to source definition" (gI) and the workspace's own TypeScript.
   "vtsls",
-  "pyright",
+  -- basedpyright: Python. A pyright fork that adds inlay hints (pyright
+  -- has none); set to pyright's "standard" checking below.
+  "basedpyright",
   "bashls",
   "jsonls",
   "yamlls",
@@ -25,20 +27,42 @@ local SERVERS = {
   "marksman",
 }
 
+-- TypeScript/JavaScript inlay hints. Variable types are off: those are
+-- usually obvious from the right-hand side and make lines long.
+local ts_inlay_hints = {
+  enumMemberValues = { enabled = true },
+  functionLikeReturnTypes = { enabled = true },
+  parameterNames = { enabled = "literals" },
+  parameterTypes = { enabled = true },
+  propertyDeclarationTypes = { enabled = true },
+  variableTypes = { enabled = false },
+}
+
 -- gI: go to the code that actually runs.
 --   TypeScript: definition jumps to the .d.ts type declaration for any
 --   library, so ask vtsls for the source definition instead.
---   Elsewhere: implementations (a Go interface's or Rust trait's
---   implementers), or plain definition where the server has no
---   implementation support (pyright, for one).
+--   Elsewhere: the implementations (a Go interface's, a Python abstract
+--   method's or a Rust trait's implementers). When there are none, as
+--   for a plain function, the definition.
 local function goto_source()
   local fzf = require("fzf-lua")
   local vtsls = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
   if not vtsls then
-    if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/implementation" }) > 0 then
-      return fzf.lsp_implementations()
+    if #vim.lsp.get_clients({ bufnr = 0, method = "textDocument/implementation" }) == 0 then
+      return fzf.lsp_definitions()
     end
-    return fzf.lsp_definitions()
+    local function params(client)
+      return vim.lsp.util.make_position_params(0, client.offset_encoding)
+    end
+    vim.lsp.buf_request_all(0, "textDocument/implementation", params, function(results)
+      for _, r in pairs(results) do
+        if r.result and not vim.tbl_isempty(r.result) then
+          return fzf.lsp_implementations()
+        end
+      end
+      fzf.lsp_definitions()
+    end)
+    return
   end
 
   local params = vim.lsp.util.make_position_params(0, vtsls.offset_encoding)
@@ -168,9 +192,28 @@ return {
           },
           typescript = {
             updateImportsOnFileMove = { enabled = "always" },
+            inlayHints = ts_inlay_hints,
           },
           javascript = {
             updateImportsOnFileMove = { enabled = "always" },
+            inlayHints = ts_inlay_hints,
+          },
+        },
+      })
+
+      vim.lsp.config("basedpyright", {
+        settings = {
+          basedpyright = {
+            analysis = {
+              -- basedpyright's own default ("recommended") is far stricter
+              typeCheckingMode = "standard",
+              inlayHints = {
+                variableTypes = true,
+                callArgumentNames = true,
+                functionReturnTypes = true,
+                genericTypes = false,
+              },
+            },
           },
         },
       })
@@ -210,8 +253,10 @@ return {
             return
           end
 
-          -- Inlay hints: off by default (they add visual noise), toggleable.
+          -- Inlay hints: on wherever the server has them (vtsls, basedpyright,
+          -- gopls, lua_ls). <leader>uh hides them in this buffer.
           if client:supports_method("textDocument/inlayHint") then
+            vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
             map("<leader>uh", function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }),
                 { bufnr = event.buf })
