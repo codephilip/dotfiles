@@ -87,6 +87,12 @@ require("lualine").setup({
 					modified = icons.git.modified,
 					removed = icons.git.removed,
 				},
+				source = function()
+					local status = vim.b.gitsigns_status_dict
+					if status then
+						return { added = status.added, modified = status.changed, removed = status.removed }
+					end
+				end,
 			},
 		},
 		lualine_y = { { "progress", padding = { left = 1, right = 1 } } },

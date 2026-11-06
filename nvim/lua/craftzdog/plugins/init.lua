@@ -34,6 +34,9 @@ vim.pack.add({
 	{ src = gh("WhoIsSethDaniel/mason-tool-installer.nvim") },
 	{ src = gh("neovim/nvim-lspconfig") },
 	{ src = gh("saghen/blink.cmp"), version = vim.version.range("^1") },
+	-- Git
+	{ src = gh("lewis6991/gitsigns.nvim") },
+	{ src = gh("craftzdog/mini.diff"), version = "feat/grouping" },
 	-- Editor
 	{ src = gh("stevearc/conform.nvim") },
 	{ src = gh("nvim-mini/mini.pairs") },
@@ -43,5 +46,6 @@ vim.pack.add({
 require("craftzdog.plugins.ui")
 require("craftzdog.plugins.treesitter")
 require("craftzdog.plugins.lsp")
+require("craftzdog.plugins.git")
 require("craftzdog.plugins.editor")
 require("craftzdog.plugins.keymaps")

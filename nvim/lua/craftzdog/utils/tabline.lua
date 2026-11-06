@@ -45,6 +45,10 @@ local function label(buf)
 	end
 
 	local name = vim.fn.fnamemodify(bufname, ":t")
+	if bufname:find("^gitsigns://") then
+		-- a file at a revision (<leader>go) is named .../<sha>:<path>
+		name = vim.fn.fnamemodify(name:gsub("^%x+:", ""), ":t")
+	end
 	local icon = MiniIcons and MiniIcons.get("file", name) or ""
 	if vim.fn.strchars(name) > MAX_NAME then
 		name = vim.fn.strcharpart(name, 0, TRUNCATE_TO) .. "…"

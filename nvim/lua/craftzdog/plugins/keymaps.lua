@@ -109,6 +109,48 @@ map("n", "<leader>cl", function()
 	Snacks.picker.lsp_config()
 end, { desc = "LSP info" })
 
+-- Git signs and blame
+map("n", "<leader>gb", function()
+	require("gitsigns").blame_line()
+end, { desc = "Blame line" })
+map("n", "<leader>gB", function()
+	require("gitsigns").blame()
+end, { desc = "Blame buffer" })
+map("n", "<leader>go", function()
+	Craftzdog.git.open_blamed_commit()
+end, { desc = "Open file at the line's last commit" })
+map("n", "<leader>gs", function()
+	local gitsigns = require("gitsigns")
+	if #(gitsigns.get_hunks() or {}) > 0 then
+		gitsigns.stage_buffer()
+	else
+		gitsigns.reset_buffer_index()
+	end
+end, { desc = "Stage / unstage buffer" })
+map("n", "<leader>gh", function()
+	require("gitsigns").stage_hunk()
+end, { desc = "Stage / unstage hunk" })
+
+-- Diff overlay
+map("n", "<leader>gd", function()
+	MiniDiff.toggle_overlay()
+end, { desc = "Toggle diff overlay" })
+-- In diff mode, ]c / [c keep their built-in meaning
+map({ "n", "x" }, "]c", function()
+	if vim.wo.diff then
+		vim.cmd("normal! " .. vim.v.count1 .. "]c")
+	else
+		MiniDiff.goto_hunk("next", { n_times = vim.v.count1 })
+	end
+end, { desc = "Next hunk" })
+map({ "n", "x" }, "[c", function()
+	if vim.wo.diff then
+		vim.cmd("normal! " .. vim.v.count1 .. "[c")
+	else
+		MiniDiff.goto_hunk("prev", { n_times = vim.v.count1 })
+	end
+end, { desc = "Previous hunk" })
+
 -- Snacks words: jump between occurrences of the word under the cursor
 map({ "n", "t" }, "]]", function()
 	Snacks.words.jump(vim.v.count1)
