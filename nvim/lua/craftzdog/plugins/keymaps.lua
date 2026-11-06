@@ -151,6 +151,17 @@ map({ "n", "x" }, "[c", function()
 	end
 end, { desc = "Previous hunk" })
 
+-- Diff view
+map("n", "<leader>dv", function()
+	if vim.t.codediff then
+		vim.cmd.tabclose()
+	else
+		vim.cmd("CodeDiff")
+	end
+end, { desc = "Toggle diff view" })
+map("n", "<leader>dh", "<Cmd>CodeDiff history %<CR>", { desc = "File history" })
+map("n", "<leader>dH", "<Cmd>CodeDiff history<CR>", { desc = "Repo history" })
+
 -- Snacks words: jump between occurrences of the word under the cursor
 map({ "n", "t" }, "]]", function()
 	Snacks.words.jump(vim.v.count1)
