@@ -54,6 +54,58 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-- LSP: navigation goes through the picker
+map("n", "gd", function()
+	Snacks.picker.lsp_definitions()
+end, { desc = "Go to definition" })
+map("n", "gD", function()
+	Snacks.picker.lsp_declarations()
+end, { desc = "Go to declaration" })
+map("n", "gy", function()
+	Snacks.picker.lsp_type_definitions()
+end, { desc = "Go to type definition" })
+-- nowait: Neovim's default gra/grn/grr/... mappings share the gr prefix
+map("n", "gr", function()
+	Snacks.picker.lsp_references()
+end, { nowait = true, desc = "References" })
+map("n", "gI", function()
+	-- In TypeScript, skip the .d.ts and land on the real code
+	local vtsls = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
+	if not vtsls then
+		return Snacks.picker.lsp_implementations()
+	end
+	local params = vim.lsp.util.make_position_params(0, vtsls.offset_encoding)
+	vtsls:request("workspace/executeCommand", {
+		command = "typescript.goToSourceDefinition",
+		arguments = { params.textDocument.uri, params.position },
+	}, function(err, result)
+		if err then
+			vim.notify("Source definition: " .. err.message, vim.log.levels.ERROR)
+		elseif not result or #result == 0 then
+			vim.notify("No source definition found", vim.log.levels.INFO)
+		else
+			vim.lsp.util.show_document(result[1], vtsls.offset_encoding, { focus = true })
+		end
+	end, 0)
+end, { desc = "Go to source definition / implementation" })
+map("n", ";c", function()
+	Snacks.picker.lsp_incoming_calls()
+end, { desc = "Incoming calls" })
+map("n", "K", vim.lsp.buf.hover, { desc = "Hover" })
+map("n", "gK", vim.lsp.buf.signature_help, { desc = "Signature help" })
+map("i", "<C-k>", vim.lsp.buf.signature_help, { desc = "Signature help" })
+map("n", "<C-j>", function()
+	vim.diagnostic.jump({ count = 1, float = true })
+end, { desc = "Next diagnostic" })
+map({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+map("n", "<leader>cr", vim.lsp.buf.rename, { desc = "Rename symbol" })
+map("n", "<leader>cR", function()
+	Snacks.rename.rename_file()
+end, { desc = "Rename file" })
+map("n", "<leader>cl", function()
+	Snacks.picker.lsp_config()
+end, { desc = "LSP info" })
+
 -- Snacks words: jump between occurrences of the word under the cursor
 map({ "n", "t" }, "]]", function()
 	Snacks.words.jump(vim.v.count1)

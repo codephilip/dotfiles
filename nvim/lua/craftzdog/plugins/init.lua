@@ -29,11 +29,16 @@ vim.pack.add({
 	{ src = gh("nvim-treesitter/nvim-treesitter"), version = "main" },
 	{ src = gh("folke/todo-comments.nvim") },
 	{ src = gh("brenoprata10/nvim-highlight-colors") },
+	-- LSP
+	{ src = gh("mason-org/mason.nvim") },
+	{ src = gh("WhoIsSethDaniel/mason-tool-installer.nvim") },
+	{ src = gh("neovim/nvim-lspconfig") },
 	-- Editor
 	{ src = gh("stevearc/oil.nvim") },
 })
 
 require("craftzdog.plugins.ui")
 require("craftzdog.plugins.treesitter")
+require("craftzdog.plugins.lsp")
 require("craftzdog.plugins.editor")
 require("craftzdog.plugins.keymaps")
