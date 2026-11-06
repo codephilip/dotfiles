@@ -17,9 +17,66 @@
 --                      REQUIRES: export ANTHROPIC_API_KEY=...  (billed
 --                      per token, separate from your subscription).
 --                      Everything under <leader>n.
+--
+--   copilot.lua      — inline ghost-text suggestions while typing. Keys
+--                      are insert-mode only (below). Run `:Copilot auth`
+--                      once per machine; the login lives in
+--                      ~/.config/github-copilot (gitignored).
 -- =========================================================
 
+-- Mason's copilot-language-server (lua/plugins/lsp.lua TOOLS). Without it
+-- copilot.lua downloads a server of its own.
+local copilot_server = vim.fn.stdpath("data") .. "/mason/bin/copilot-language-server"
+
 return {
+  -- Copilot ---------------------------------------------------------------
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    opts = {
+      suggestion = {
+        auto_trigger = true,
+        -- Mapped in config below, so <C-]> can fall back to its built-in job.
+        keymap = {
+          accept = false,
+          accept_word = false,
+          accept_line = false,
+          next = false,
+          prev = false,
+          dismiss = false,
+        },
+      },
+      -- Copilot's default list turns these off; notes and docs benefit too.
+      filetypes = { markdown = true, help = true },
+    },
+    config = function(_, opts)
+      if vim.fn.executable(copilot_server) == 1 then
+        opts.server = { type = "binary", custom_server_filepath = copilot_server }
+      end
+      require("copilot").setup(opts)
+
+      local suggestion = require("copilot.suggestion")
+      local function map(lhs, fn, desc)
+        vim.keymap.set("i", lhs, fn, { desc = "Copilot: " .. desc })
+      end
+      -- On macOS the <M-…> keys need the terminal's Option-as-Alt.
+      map("<C-l>", suggestion.accept, "accept")
+      map("<M-l>", suggestion.accept_word, "accept word")
+      map("<M-L>", suggestion.accept_line, "accept line")
+      map("<M-]>", suggestion.next, "next suggestion")
+      map("<M-[>", suggestion.prev, "previous suggestion")
+      map("<C-]>", function()
+        if suggestion.is_visible() then
+          suggestion.dismiss()
+        else
+          -- nothing showing: keep <C-]>'s built-in meaning (expand abbreviation)
+          vim.api.nvim_feedkeys(vim.keycode("<C-]>"), "n", false)
+        end
+      end, "dismiss")
+    end,
+  },
+
   -- Claude Code -----------------------------------------------------------
   {
     "coder/claudecode.nvim",

@@ -24,8 +24,10 @@ local SERVERS = {
 }
 
 -- Non-server tools Mason installs on start: the formatters conform.nvim
--- runs (lua/plugins/format.lua). Already-installed ones are skipped.
+-- runs (lua/plugins/format.lua) and Copilot's server (lua/plugins/ai.lua).
+-- Already-installed ones are skipped.
 local TOOLS = {
+  "copilot-language-server",
   "oxfmt",
   "prettierd",
   "prettier",
