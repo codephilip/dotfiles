@@ -4,6 +4,8 @@ ssh/
 # Previous Neovim configs, kept locally for reference only
 nvim.bak/
 nvim-bread-on-pinguins/
+# The vim.pack rebuild, parked. Run it with NVIM_APPNAME=nvim-craftzdog nvim
+nvim-craftzdog/
 
 # Local backups
 *.bak
@@ -58,5 +60,7 @@ zsh/.zcompdump*
 # stripe/ holds the CLI login, including live API keys — never commit it.
 stripe/
 containers/
+# Copilot's OAuth login (auth.db), written by copilot.lua
+github-copilot/
 configstore/
 btop/

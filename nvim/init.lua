@@ -1,11 +1,9 @@
-vim.loader.enable()
+-- =========================================================
+-- Neovim — minimal, built for reading & exploring code
+-- Requires: Neovim >= 0.11, ripgrep, fd, a Nerd Font
+-- =========================================================
 
-_G.Craftzdog = require("craftzdog.utils")
-
-require("craftzdog.config.options")
-require("craftzdog.config.keymaps")
-require("craftzdog.config.autocmds")
-require("craftzdog.config.commands")
-require("craftzdog.config.workarounds")
-
-require("craftzdog.plugins")
+require("config.options")
+require("config.keymaps")
+require("config.autocmds")
+require("config.lazy")
