@@ -33,7 +33,9 @@ vim.pack.add({
 	{ src = gh("mason-org/mason.nvim") },
 	{ src = gh("WhoIsSethDaniel/mason-tool-installer.nvim") },
 	{ src = gh("neovim/nvim-lspconfig") },
+	{ src = gh("saghen/blink.cmp"), version = vim.version.range("^1") },
 	-- Editor
+	{ src = gh("nvim-mini/mini.pairs") },
 	{ src = gh("stevearc/oil.nvim") },
 })
 

@@ -35,6 +35,8 @@ require("snacks").setup({
 -- Floating `:` command line, centered, 20% from the top
 require("tiny-cmdline").setup({
 	position = { y = "20%" },
+	-- keep blink.cmp's command-line menu under the floating command line
+	on_reposition = require("tiny-cmdline").adapters.blink,
 })
 
 -- Statusline

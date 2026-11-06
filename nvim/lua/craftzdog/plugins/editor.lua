@@ -1,3 +1,8 @@
+-- Auto pairs in insert and command mode
+require("mini.pairs").setup({
+	modes = { insert = true, command = true, terminal = false },
+})
+
 -- TODO, FIXME and the like
 require("todo-comments").setup()
 

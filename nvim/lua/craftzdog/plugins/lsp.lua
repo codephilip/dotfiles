@@ -24,17 +24,47 @@ require("mason-tool-installer").setup({
 	run_on_start = true,
 })
 
+-- Completion
+require("blink.cmp").setup({
+	keymap = { preset = "enter" },
+	appearance = {
+		kind_icons = vim.tbl_map(vim.trim, icons.kinds),
+	},
+	completion = {
+		accept = { auto_brackets = { enabled = true } },
+		menu = {
+			draw = { treesitter = { "lsp" } },
+		},
+		documentation = {
+			auto_show = true,
+			auto_show_delay_ms = 200,
+		},
+		-- Copilot already shows inline suggestions
+		ghost_text = { enabled = false },
+	},
+	cmdline = {
+		completion = {
+			list = { selection = { preselect = false } },
+			menu = {
+				auto_show = function()
+					return vim.fn.getcmdtype() == ":"
+				end,
+			},
+		},
+	},
+})
+
 -- nvim-lspconfig supplies the defaults, after/lsp/<name>.lua the overrides.
--- Every server gets file-rename support.
+-- Every server gets blink.cmp's completion capabilities and file-rename support.
 vim.lsp.config("*", {
-	capabilities = {
+	capabilities = require("blink.cmp").get_lsp_capabilities({
 		workspace = {
 			fileOperations = {
 				didRename = true,
 				willRename = true,
 			},
 		},
-	},
+	}),
 })
 
 vim.lsp.enable({
