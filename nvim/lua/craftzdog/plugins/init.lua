@@ -35,6 +35,7 @@ vim.pack.add({
 	{ src = gh("neovim/nvim-lspconfig") },
 	{ src = gh("saghen/blink.cmp"), version = vim.version.range("^1") },
 	-- Editor
+	{ src = gh("stevearc/conform.nvim") },
 	{ src = gh("nvim-mini/mini.pairs") },
 	{ src = gh("stevearc/oil.nvim") },
 })

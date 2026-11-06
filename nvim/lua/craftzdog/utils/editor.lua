@@ -26,4 +26,15 @@ function M.delete_hidden_buffers()
 	vim.notify(msg, vim.log.levels.INFO)
 end
 
+--- Turn format-on-save off or back on for the current buffer.
+function M.toggle_formatter()
+	local disabled = not vim.b.disable_autoformat
+	vim.b.disable_autoformat = disabled
+	if disabled then
+		vim.notify("Format on save disabled for this buffer", vim.log.levels.WARN)
+	else
+		vim.notify("Format on save enabled for this buffer", vim.log.levels.INFO)
+	end
+end
+
 return M
