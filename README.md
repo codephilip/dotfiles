@@ -14,7 +14,7 @@ every tool.
 
 | Layer | Choice | Notes |
 | --- | --- | --- |
-| Editor | Neovim ≥ 0.11 | lazy.nvim, native LSP, fzf-lua, blink.cmp, Claude Code + CodeCompanion |
+| Editor | Neovim ≥ 0.12 | lazy.nvim, native LSP, fzf-lua, blink.cmp, conform, Claude Code + CodeCompanion + Copilot |
 | Shell | zsh, no framework | starship prompt, fzf, fzf-tab, zoxide, eza, autosuggestions |
 | Multiplexer | tmux | prefix `Ctrl-a`, auto-attaches over SSH |
 | Terminal | Ghostty (Alacritty fallback) | JetBrainsMono Nerd Font, blur/glass |

@@ -1,9 +1,12 @@
 # AI workflow
 
-Two tools, deliberately separate. The split is simple:
+Two chat tools, deliberately separate, plus inline completion and a few copy
+helpers:
 
 - ++space++ ++a++ — **Claude Code**. Edits your code. No API key.
 - ++space++ ++n++ — **CodeCompanion**. Just talks. Needs an API key.
+- ++ctrl+l++ in insert mode — **Copilot**. Accepts the grey inline suggestion.
+- ++space++ ++y++ — **Copy context** for an agent running outside Neovim.
 
 ## Claude Code
 
@@ -120,6 +123,39 @@ Inside the chat buffer, ++enter++ sends and `#buffer` / `#file` pull context in.
 | You want the answer in a buffer you can yank from | CodeCompanion |
 
 For most work Claude Code is the better tool and costs nothing extra.
+
+## Copilot
+
+`copilot.lua` shows GitHub Copilot's suggestion as grey text while you type, in
+code, Markdown and help files. It is separate from the completion menu: the menu
+completes a word, and Copilot suggests the rest of the line or block.
+
+| Keys (insert) | Does |
+|---|---|
+| ++ctrl+l++ | Accept the suggestion |
+| ++alt+l++ / ++alt+shift+l++ | Accept one word / one line of it |
+| ++alt+bracket-right++ / ++alt+bracket-left++ | Next / previous suggestion |
+| ++ctrl+bracket-right++ | Dismiss |
+
+It runs Mason's `copilot-language-server`. Sign in once per machine with
+`:Copilot auth`, and check with `:Copilot status`. The login is stored in
+`~/.config/github-copilot/`, which is gitignored.
+
+## Copying context for an agent
+
+When the agent runs outside Neovim (Claude Code in another tmux pane, a web
+chat, a PR comment), these put a precise reference on the clipboard:
+
+| Keys | Copies |
+|---|---|
+| ++space++ ++y++ ++f++ | `src/app.ts#L42`: the path from cwd and the cursor line |
+| ++space++ ++y++ ++p++ | The same with the absolute path |
+| ++space++ ++y++ ++c++ (visual) | The selection as a fenced block: `` ```ts filename="src/app.ts" line=40 `` |
+| ++space++ ++g++ ++y++ | A GitHub permalink to the line or selection, for a remote agent or reviewer |
+
+The code block's path is from the project root (the nearest `.git`,
+`package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml` or `Makefile`), so it
+stays right even when Neovim was started in a subdirectory.
 
 ## The buffer-reload problem
 

@@ -69,6 +69,24 @@ q       → close the tree
 
 ---
 
+## 🛢️ Edit A Directory As Text (oil)
+
+Open the current file's directory in a float:
+-
+
+Rename, delete or add lines like text, then :w to apply (asks first).
+Renames update imports through the language server.
+
+Inside oil:
+Enter   → open file / enter directory
+h or -  → parent directory
+g.      → toggle dotfiles
+Ctrl-p  → toggle preview
+q       → close
+g?      → every oil key
+
+---
+
 ## 🔍 Fuzzy Finder (fzf-lua)
 
 Find files:
@@ -290,7 +308,8 @@ gd
 Go to declaration:
 gD
 
-Go to implementation:
+Go to the code that runs (TypeScript: the library's .js, not the .d.ts;
+elsewhere: the implementations, or the definition when there are none):
 gI
 
 Go to type definition:
@@ -317,13 +336,16 @@ Rename symbol:
 Code actions:
 <Space>ca
 
-Format file:
+Format file or selection (files also format on save; shell only on demand):
 <Space>cf
+
+Format on save off / on for this buffer:
+<Space>uf   (or :ToggleFormatter)
 
 Incoming / outgoing calls:
 <Space>cc / <Space>cC
 
-Toggle inlay hints (when the server supports them):
+Inlay hints — on by default for TypeScript, Python, Go, Lua; toggle:
 <Space>uh
 
 Manage servers and tools:
@@ -338,6 +360,13 @@ Ctrl-n / Ctrl-p → next / previous
 Ctrl-y → accept
 Ctrl-e → dismiss
 Tab / Shift-Tab → jump through snippet placeholders
+
+Copilot inline suggestion (insert mode, grey text):
+Ctrl-l          → accept
+Alt-l / Alt-L   → accept one word / one line
+Alt-] / Alt-[   → next / previous suggestion
+Ctrl-]          → dismiss
+First time on a machine: :Copilot auth
 
 ---
 
@@ -408,6 +437,19 @@ Pickers — commits (repo), commits (this file), status:
 Select the hunk you are standing in:
 vih
 
+Copy / open the GitHub permalink for the line or selection:
+<Space>gy / <Space>gY
+
+Side-by-side diff of the working tree (codediff; press again to close):
+<Space>dv
+
+Diff history of this file / the whole repo:
+<Space>dh / <Space>dH
+
+Diff against a branch or a PR:
+:CodeDiff main
+:CodeDiff pr 512
+
 Branch switching lives in lazygit (<Space>gg).
 
 ---
@@ -432,6 +474,15 @@ CodeCompanion (chat inside nvim):
 <Space>ni   → inline assistant
 <Space>nd   → add selection to chat (visual)
 <Space>nc   → generate a :command
+
+Copy context to paste into an agent elsewhere:
+<Space>yf   → path#Lline (relative)
+<Space>yp   → path#Lline (absolute)
+<Space>yc   → selection as a code block with filename and line (visual)
+<Space>gy   → GitHub permalink to the line / selection
+<Space>j    → the project's package.json in a float
+
+Copilot: Ctrl-l accepts the inline suggestion (see LSP section).
 
 ---
 
@@ -493,6 +544,7 @@ Relative numbers:   <Space>ur
 Diagnostics:        <Space>ud
 Inline git blame:   <Space>ub
 Inlay hints:        <Space>uh
+Format on save:     <Space>uf
 Treesitter context: <Space>ut
 Colour swatches:    <Space>uc
 Markdown rendering: <Space>um

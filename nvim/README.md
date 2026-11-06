@@ -1,6 +1,8 @@
 # Neovim config
 
-A minimal Lua config built for **reading and exploring code**, with Claude wired in.
+A Lua config built for **reading and exploring code**, with Claude wired in. Writing
+gets format on save, Copilot suggestions and inlay hints. Docs site:
+`docs/neovim/` (`make serve`).
 
 Leader is `<Space>`. Press `<Space>` and wait — which-key lists everything.
 
@@ -8,7 +10,9 @@ Leader is `<Space>`. Press `<Space>` and wait — which-key lists everything.
 
 | Thing | Why | Status |
 |---|---|---|
-| Neovim >= 0.11 | native `vim.lsp.config` / `vim.lsp.enable` | ✅ 0.12.5 — see [Pinned versions](#pinned-versions--do-not-unpin-casually) |
+| Neovim >= 0.12 | native `vim.lsp.config` / `vim.lsp.enable`; nvim-treesitter `main` needs 0.12 | ✅ 0.12.5 |
+| `tree-sitter` CLI | builds the parsers (nvim-treesitter `main`) | ✅ |
+| `node` | most Mason servers and formatters, Copilot's server | ✅ |
 | `ripgrep` | live grep | ✅ |
 | `fd` | fast file finding | ✅ |
 | `fzf` | picker backend | ✅ |
@@ -17,25 +21,27 @@ Leader is `<Space>`. Press `<Space>` and wait — which-key lists everything.
 | `claude` CLI | Claude Code integration | ✅ |
 | JetBrainsMono Nerd Font | icons | ✅ (alacritty.toml updated) |
 | `ANTHROPIC_API_KEY` | **CodeCompanion only** | ❌ not set — see below |
+| `:Copilot auth` | Copilot, once per machine | run it once |
 
 ## Layout
 
 ```
 init.lua
 lua/config/     options, keymaps, autocmds, lazy bootstrap (+ :Doctor),
-                theme resolution, review mode
+                theme resolution, review mode, context (copy helpers for AI)
 lua/plugins/    one file per concern
   ui.lua          colorschemes, devicons, lualine, barbar, alpha, colorizer, which-key
-  explore.lua     nvim-tree, aerial, autopairs
+  explore.lua     nvim-tree, oil, aerial, autopairs
   treesitter.lua  treesitter + textobjects + context
   fzf-lua.lua     every picker
   lsp.lua         mason + lspconfig + blink.cmp
   lint.lua        nvim-lint
-  git.lua         gitsigns
+  format.lua      conform (format on save)
+  git.lua         gitsigns, gitlinker
   terminal.lua    FTerm (floating shell + lazygit)
-  ai.lua          claudecode.nvim + CodeCompanion
+  ai.lua          claudecode.nvim, CodeCompanion, copilot.lua
   markdown.lua    in-buffer rendering, tables, mkdocs
-  review.lua      diffview + octo (PR review)
+  review.lua      codediff, diffview + octo (PR review)
 ```
 
 ## Reading code — the parts that matter
@@ -45,7 +51,8 @@ lua/plugins/    one file per concern
 | `<leader><leader>` / `<leader>ff` | find files |
 | `<leader>/` | live grep the project |
 | `<leader>sw` | grep word under cursor |
-| `gd` `gr` `gI` `gy` | definition / references / implementation / type def |
+| `gd` `gr` `gy` | definition / references / type definition |
+| `gI` | **the code that runs**: in TypeScript the source definition (the library's `.js`, not the `.d.ts`); elsewhere the implementations, or the definition when there are none |
 | `<leader>cc` `<leader>cC` | incoming / outgoing call hierarchy |
 | `<leader>o` | **symbol outline** (aerial) — get oriented in a big file |
 | `gO` / `<leader>cs` | document / workspace symbols |
@@ -55,9 +62,22 @@ lua/plugins/    one file per concern
 | sticky header | treesitter-context shows the enclosing function as you scroll |
 | `<leader>gb` | blame the current line (full commit) |
 | `<leader>gC` | this file's commit history |
+| `<leader>dv` | side-by-side diff of the working tree (codediff); again to close |
+| `<leader>dh` / `<leader>dH` | diff history of this file / the repo |
 
-`<leader>e` toggles the file tree, `-` is unused (oil was dropped — add it back if
-you miss editing directories as buffers).
+`<leader>e` toggles the file tree. `-` opens the current file's directory in **oil**:
+rename, delete or add lines, then `:w` applies them (renames update imports).
+
+## Writing code
+
+| What | How |
+|---|---|
+| **Format on save** | conform: oxfmt (if the project has an oxfmt / Vite+ config) or prettier for JS/TS/web, ruff for Python, stylua for Lua, the LSP for Go and Terraform. Shell only on demand, Markdown never — see `lua/plugins/format.lua` |
+| Format now | `<leader>cf` (also a visual selection) |
+| Format on save off for a buffer | `<leader>uf` or `:ToggleFormatter` |
+| **Inlay hints** | on by default for TypeScript (vtsls), Python (basedpyright), Go and Lua. `<leader>uh` hides them |
+| **Copilot** (insert) | `<C-l>` accept, `<M-l>` / `<M-L>` one word / line, `<M-]>` / `<M-[>` cycle, `<C-]>` dismiss |
+| GitHub link | `<leader>gy` copies the permalink to the line / selection, `<leader>gY` opens it |
 
 ## AI
 
@@ -78,6 +98,13 @@ subscription; **no API key needed.**
 
 Claude's edits open as real Neovim diffs — review them before they land.
 
+**`<leader>y…` — copy context** for an agent outside Neovim (another tmux pane,
+a web chat): `<leader>yf` / `<leader>yp` copy the relative / absolute path with
+`#L<line>`, `<leader>yc` (visual) copies the selection as a code block tagged
+`filename="…" line=…`. `<leader>j` opens the project's `package.json` in a float.
+
+**Copilot** suggests inline as you type; `<C-l>` accepts (see Writing code).
+
 **`<leader>n…` — CodeCompanion.** Native chat buffer + inline assistant, talking
 straight to the Anthropic API. **Needs `ANTHROPIC_API_KEY` exported** (billed per
 token, separate from your subscription). Without it, `<leader>nn` warns you once.
@@ -91,6 +118,8 @@ token, separate from your subscription). Without it, `<leader>nn` warns you once
 | `<leader>cx` | `chmod +x` the current file |
 | `<leader>cR` | re-source the current file |
 | `<leader>cm` | Mason (install LSP servers / linters) |
+| `:GitLink blame` | copy the GitHub blame-page link |
+| `:CodeDiff main` / `:CodeDiff pr 512` | diff against a revision / a GitHub PR |
 | `gx` | open the URL under the cursor (built in) |
 | `<leader>uw` / `<leader>ur` / `<leader>uc` | toggle wrap / relative number / colour swatches |
 
@@ -120,7 +149,9 @@ check **whenever something acts strange**. Each takes a few minutes.
 | `:Lazy log` | the commits each pending update would pull in |
 | `:Lazy update` | apply the updates (rewrites `lazy-lock.json`) |
 | `:Lazy restore` | **roll back** every plugin to the commits in `lazy-lock.json` |
-| `:Mason` (`<leader>cm`) / `:MasonUpdate` | see and update the LSP servers and linters Mason installed |
+| `:Mason` (`<leader>cm`) / `:MasonUpdate` | see and update the LSP servers, formatters and linters Mason installed |
+| `:ConformInfo` | which formatters apply to this buffer, and their log |
+| `:Copilot status` | is Copilot signed in and attached |
 
 ### Monthly routine
 
@@ -216,25 +247,29 @@ that has no reason for it.
 
 ## Pinned versions — do not unpin casually
 
-Three plugins are pinned because their default branches now require **Neovim 0.12**:
+- `nvim-treesitter` and `nvim-treesitter-textobjects` → `branch = "main"`, the
+  rewrite for Neovim 0.12 (`master` is frozen and breaks on 0.12).
+- `blink.cmp` → `version = "1.*"` (prebuilt binary; v2 is still making breaking changes).
+- `aerial.nvim` → `branch = "nvim-0.11"`. **Stale:** this machine runs 0.12, so the
+  pin can go. That's the outstanding maintenance job.
 
-- `nvim-treesitter` → `branch = "master"` (main is a full rewrite with a different API)
-- `nvim-treesitter-textobjects` → `branch = "master"`
-- `aerial.nvim` → `branch = "nvim-0.11"`
-
-`blink.cmp` is pinned to `version = "1.*"` (v2 is still making breaking changes).
-
-Neovim is now **0.12**, so these pins are holding plugins on old branches. **Migrate**
-them (each has a 0.12 upgrade path) rather than just removing the pins. That's
-the outstanding maintenance job.
+codediff downloads a prebuilt diff library from its GitHub releases on first use
+and after updates. Vet its updates like any plugin's.
 
 ## Notes
 
 - **Comment.nvim was intentionally left out** — Neovim 0.10+ ships `gc`/`gcc`
   commenting natively, so it would be dead weight.
-- Formatters/linters are **not** auto-installed. `nvim-lint` is wired to skip any
+- **Formatters are auto-installed** (the `TOOLS` list in `lua/plugins/lsp.lua`,
+  with Copilot's server); **linters are not**. `nvim-lint` is wired to skip any
   linter whose binary isn't on `$PATH`, so the list in `lint.lua` is safe even if
   you've installed none of them. Add the ones you want via `:Mason` (`<leader>cm`).
+- TypeScript runs **vtsls** (not ts_ls) for go-to-source-definition, and Python runs
+  **basedpyright** (not pyright) because pyright has no inlay hints. It is set
+  to pyright's `standard` checking, so it shows no more warnings than pyright did.
+- `nvim-craftzdog/` (gitignored) is the parked vim.pack rebuild that format on save,
+  Copilot, codediff, gitlinker, oil and the context helpers were ported from. Run
+  it with `NVIM_APPNAME=nvim-craftzdog nvim`.
 - LSP servers live in the `SERVERS` list at the top of `lua/plugins/lsp.lua`. Add a
   name there (not just via `:Mason`) — the enable list is an explicit allow-list so
   that mason formatters can't get started as language servers.

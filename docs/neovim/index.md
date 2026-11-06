@@ -1,6 +1,6 @@
 # Neovim
 
-A 33-plugin Lua configuration for Neovim 0.12, built around one question: how
+A 37-plugin Lua configuration for Neovim 0.12, built around one question: how
 fast can you understand code you did not write? That now includes code someone
 wants merged: it doubles as a [PR review](review.md) client.
 
@@ -8,11 +8,11 @@ wants merged: it doubles as a [PR review](review.md) client.
 
 | | |
 |---|---|
-| Plugins | 33, lazy-loaded by default |
+| Plugins | 37, lazy-loaded by default |
 | Language servers | 10, installed through Mason |
 | Treesitter parsers | 34 up front, more on first use |
 | Leader | ++space++ (localleader too) |
-| Colourscheme | Whatever `~/.config/theme/current` names: tokyonight, solarized-osaka or catppuccin-mocha. Transparent |
+| Colourscheme | Whatever `~/.config/theme/current` names: tokyonight, solarized-osaka (its vivid variant) or catppuccin-mocha. Transparent |
 | Config root | `~/.config/nvim` |
 
 ## The design goal
@@ -27,6 +27,10 @@ plugins carry most of that weight:
   to see a file's shape before reading any of it.
 - **`fzf-lua`** powers both file search and every LSP result list, so "who calls
   this?" and "where is this defined?" are the same muscle memory.
+
+Writing gets the basics without ceremony: format on save (`conform`), Copilot
+suggestions inline, inlay hints for TypeScript, Python, Go and Lua, and `oil`
+for renaming files as text.
 
 ## Sections
 

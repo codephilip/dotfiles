@@ -11,7 +11,7 @@ actually installed and configured, not what could be.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Editor | Neovim ≥ 0.11 | 27 plugins, tuned for reading unfamiliar code |
+| Editor | Neovim ≥ 0.12 | 37 plugins, tuned for reading unfamiliar code |
 | Shell | zsh | starship prompt, fzf, zoxide, autosuggestions |
 | Terminal | Ghostty (Alacritty as fallback) | macOS 26 glass material, splits and tabs |
 | Multiplexer | tmux | auto-attaches over SSH |
