@@ -28,11 +28,11 @@ M.themes = {
     lualine = "tokyonight",
   },
   ["solarized-osaka"] = {
-    -- Plain "solarized-osaka", not "-night". Unlike tokyonight, this
-    -- fork's dark variant is the unsuffixed default (config.lua sets
-    -- style = ""); the only suffixed colorschemes it ships are
-    -- -light and -vivid.
-    colorscheme = "solarized-osaka",
+    -- The -vivid variant, as in craftzdog's own config: the same palette
+    -- with text brightened for contrast. Everything outside nvim uses
+    -- the plain palette, which vivid only lightens. For the unsuffixed
+    -- dark default, set this to "solarized-osaka".
+    colorscheme = "solarized-osaka-vivid",
     -- The plugin ships a lightline theme but no lualine one, so let
     -- lualine derive its colours from the loaded highlight groups.
     lualine = "auto",
