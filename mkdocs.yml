@@ -1,9 +1,21 @@
 site_name: phil's dotfiles
 site_description: Neovim, zsh and terminal configuration — a working reference
 site_author: codephil
+repo_url: https://github.com/codephilip/dotfiles
+repo_name: codephilip/dotfiles
+edit_uri: edit/main/docs/
 docs_dir: docs
 site_dir: site
 use_directory_urls: true
+
+# `make docs` builds with --strict, which turns every warning below into an
+# error: a page missing from `nav`, or a link to a file or heading that does
+# not exist, fails the build instead of shipping a dead end.
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
 
 theme:
   name: material
@@ -32,6 +44,7 @@ theme:
     # Content
     - content.code.copy        # copy button on every code block
     - content.code.annotate
+    - content.action.edit      # "edit this page" pencil → GitHub
     - content.tabs.link
     - content.tooltips
 
@@ -99,12 +112,14 @@ plugins:
 
 nav:
   - Home: index.md
+  - Setup: setup.md
   - Neovim:
       - neovim/index.md
       - Architecture: neovim/architecture.md
       - Plugins: neovim/plugins.md
       - Key bindings: neovim/keybindings.md
       - PR review: neovim/review.md
+      - CI and deploys: neovim/ci.md
       - AI workflow: neovim/ai.md
   - Shell:
       - shell/index.md
@@ -117,6 +132,7 @@ nav:
   - Git: git.md
   - Windows: windows.md
   - Troubleshooting: troubleshooting.md
+  - Maintenance: maintenance.md
 
 extra:
   generator: false

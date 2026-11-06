@@ -1,6 +1,6 @@
 # Plugins
 
-All 33, one at a time: what each is for, where it is configured, and the keys
+All 37, one at a time: what each is for, where it is configured, and the keys
 that drive it. Versions are pinned in `nvim/lazy-lock.json`.
 
 For the same bindings sorted by *task* rather than by plugin, see
@@ -11,12 +11,12 @@ For the same bindings sorted by *task* rather than by plugin, see
 
 | Area | Plugins | Spec file |
 |---|---|---|
-| Finding and navigating | fzf-lua, nvim-tree, aerial | `fzf-lua.lua`, `explore.lua` |
+| Finding and navigating | fzf-lua, nvim-tree, oil, aerial | `fzf-lua.lua`, `explore.lua` |
 | Syntax | nvim-treesitter, -textobjects, -context | `treesitter.lua` |
-| Code intelligence | nvim-lspconfig, mason, mason-lspconfig, blink.cmp, friendly-snippets, nvim-lint | `lsp.lua`, `lint.lua` |
-| Git | gitsigns, FTerm (hosts lazygit) | `git.lua`, `terminal.lua` |
-| PR review | diffview, octo | `review.lua` (+ `config/review.lua`) |
-| AI | claudecode, codecompanion | `ai.lua` |
+| Code intelligence | nvim-lspconfig, mason, mason-lspconfig, blink.cmp, friendly-snippets, nvim-lint, conform | `lsp.lua`, `lint.lua`, `format.lua` |
+| Git | gitsigns, gitlinker, FTerm (hosts lazygit) | `git.lua`, `terminal.lua` |
+| PR review and diffs | codediff, diffview, octo | `review.lua` (+ `config/review.lua`) |
+| AI | claudecode, codecompanion, copilot (+ the context helpers) | `ai.lua` (+ `config/context.lua`) |
 | Markdown | render-markdown, vim-table-mode | `markdown.lua` |
 | Interface | tokyonight, solarized-osaka, catppuccin, lualine, barbar, alpha, which-key, nvim-colorizer, nvim-web-devicons | `ui.lua` |
 | Editing | nvim-autopairs | `explore.lua` |
@@ -91,6 +91,24 @@ In the tree, these change the defaults: `l` opens, `h` closes / goes to parent,
 `i` shows file info, ++ctrl+t++ makes a directory the root.
 ++space++ ++a++ ++s++ adds the file under the cursor to Claude. `g?` lists
 everything else.
+
+### oil.nvim
+
+[`stevearc/oil.nvim`](https://github.com/stevearc/oil.nvim) opens a directory as
+an ordinary buffer: rename a line to rename the file, delete a line to delete it,
+add a line to create one, then `:w` applies everything (after a confirmation).
+Renames go through the language server, so imports follow a moved file. It opens
+as a float with a preview of the file under the cursor. nvim-tree stays the
+sidebar and keeps `nvim some/dir`.
+
+| Keys | Does |
+|---|---|
+| `-` | Open this file's directory in oil. Replaces stock `-` (line up) |
+| `h` / `-` (in oil) | Parent directory |
+| ++enter++ (in oil) | Open the file / enter the directory |
+| `q` (in oil) | Close |
+| `g.` (in oil) | Toggle dotfiles |
+| `g?` (in oil) | Every oil key |
 
 ### aerial.nvim
 
@@ -168,8 +186,13 @@ server definitions that Neovim's native `vim.lsp.config` / `vim.lsp.enable` use.
 [`mason-lspconfig.nvim`](https://github.com/mason-org/mason-lspconfig.nvim)
 installs and enables **exactly** the `SERVERS` list in `lsp.lua`:
 
-`lua_ls` · `gopls` · `ts_ls` · `pyright` · `bashls` · `jsonls` · `yamlls` ·
+`lua_ls` · `gopls` · `vtsls` · `basedpyright` · `bashls` · `jsonls` · `yamlls` ·
 `terraformls` · `dockerls` · `marksman`
+
+`vtsls` is the TypeScript server (the same tsserver as `ts_ls`, plus "go to
+source definition"). `basedpyright` is a pyright fork that adds inlay hints, set
+to pyright's `standard` checking. Mason also installs the formatters and
+Copilot's server from the `TOOLS` list.
 
 The keys below are set on `LspAttach`, so they exist only in buffers with a
 running server. Most results open in fzf-lua.
@@ -178,15 +201,15 @@ running server. Most results open in fzf-lua.
 |---|---|
 | `gd` / `gD` | Definition / declaration |
 | `gr` | References. Stock `grr` `grn` `gra` `gri` still work if you type them without pausing |
-| `gI` / `gy` | Implementation / type definition |
+| `gI` | Go to the code that runs. TypeScript: the source definition, so a library call lands in its `.js`, not the `.d.ts` that `gd` shows. Other languages: the implementations (Go interfaces, Python abstract methods), or the definition when there are none |
+| `gy` | Type definition |
 | `gO` | Document symbols (picker) |
 | ++space++ ++c++ ++s++ | Workspace symbols, live |
 | ++space++ ++c++ ++c++ / ++shift+c++ | Incoming / outgoing calls |
 | ++space++ ++c++ ++r++ | Rename |
 | ++space++ ++c++ ++a++ | Code action (n / v) |
-| ++space++ ++c++ ++f++ | Format (LSP) |
 | ++space++ ++c++ ++i++ / `K` | Hover |
-| ++space++ ++u++ ++h++ | Toggle inlay hints (only if the server supports them) |
+| ++space++ ++u++ ++h++ | Toggle inlay hints. On by default for vtsls, basedpyright, gopls and lua_ls |
 | ++space++ ++c++ ++m++ | Open Mason |
 
 It also highlights other references to the symbol under the cursor on `CursorHold`.
@@ -227,6 +250,29 @@ so a missing one is skipped quietly.
 |---|---|
 | ++space++ ++c++ ++l++ | Lint now |
 
+### conform.nvim
+
+[`stevearc/conform.nvim`](https://github.com/stevearc/conform.nvim) formats on
+save. Filetypes without a formatter below fall back to their language server
+(gopls, terraformls).
+
+| Filetype | Formatter |
+|---|---|
+| JS, TS, JSX, TSX, JSON, CSS, SCSS, HTML, YAML, GraphQL | `oxfmt` if the project has an oxfmt or Vite+ config, else `prettierd`, else `prettier` |
+| Python | `ruff` (organise imports, then format) |
+| Lua | `stylua`, using `nvim/.stylua.toml` (2-space) here |
+| sh, bash | `shfmt -i 2 -ci`, **on demand only** |
+| Markdown | none |
+
+Shell is skipped on save because shfmt would re-indent hand-aligned scripts.
+Markdown has no formatter at all: prettier mangles mkdocs `!!!` and `===` blocks.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++c++ ++f++ | Format the buffer, or the selection |
+| ++space++ ++u++ ++f++ / `:ToggleFormatter` | Format on save off / on for this buffer |
+| `:ConformInfo` | Which formatters apply here, and the log |
+
 ---
 
 ## Git
@@ -252,6 +298,18 @@ they only exist in files inside a git repo.
 | ++space++ ++g++ ++r++ | **Review mode**: diff the gutter and tree against the merge-base with `main` |
 | ++space++ ++g++ ++l++ | Toggle full-line highlight of changed lines |
 
+### gitlinker.nvim
+
+[`linrongbin16/gitlinker.nvim`](https://github.com/linrongbin16/gitlinker.nvim)
+builds a GitHub permalink for the cursor line or the visual selection, pinned to
+a commit that exists on the remote.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++g++ ++y++ | Copy the link (n / v) |
+| ++space++ ++g++ ++shift+y++ | Open the link in the browser (n / v) |
+| `:GitLink blame` | Copy the blame-page link instead |
+
 ### FTerm.nvim
 
 [`numToStr/FTerm.nvim`](https://github.com/numToStr/FTerm.nvim) provides
@@ -267,7 +325,24 @@ When lazygit exits, gitsigns refreshes so the gutter is current.
 
 ## PR review
 
-These two, plus gitsigns' review mode, turn nvim into the review client for
+### codediff.nvim
+
+[`esmuellert/codediff.nvim`](https://github.com/esmuellert/codediff.nvim) is a
+VS Code-style diff: a file tree with per-file line counts on the left and a
+side-by-side diff on the right, showing only the changes plus 8 lines of context.
+It is the quick look at what changed. diffview (below) stays for the gh-dash
+flow and merge conflicts. On first use it downloads a prebuilt diff library from
+its GitHub releases (`:CodeDiff install!` reinstalls it).
+
+| Keys | Does |
+|---|---|
+| ++space++ ++d++ ++v++ | Toggle the diff of the working tree (closes it if open) |
+| ++space++ ++d++ ++h++ | History of this file |
+| ++space++ ++d++ ++shift+h++ | History of the repo |
+| `:CodeDiff main` / `:CodeDiff HEAD~3` | Diff against a revision |
+| `:CodeDiff pr 512` | Diff a GitHub PR |
+
+The two below, plus gitsigns' review mode, turn nvim into the review client for
 [gh-dash](review.md#from-gh-dash). [PR review](review.md) walks through the
 workflow. This section is the reference.
 
@@ -410,6 +485,34 @@ it warns once when the chat opens.
 In the chat: ++enter++ (normal) or ++ctrl+s++ (insert) sends; `q` / ++ctrl+c++
 closes.
 
+### copilot.lua
+
+[`zbirenbaum/copilot.lua`](https://github.com/zbirenbaum/copilot.lua) shows
+Copilot's suggestions inline as you type, Markdown and help buffers included. It
+runs Mason's `copilot-language-server`. Run `:Copilot auth` once per machine; the
+login lands in `~/.config/github-copilot/`, which is gitignored.
+
+| Keys (insert) | Does |
+|---|---|
+| ++ctrl+l++ | Accept the suggestion |
+| ++alt+l++ / ++alt+shift+l++ | Accept one word / one line |
+| ++alt+bracket-right++ / ++alt+bracket-left++ | Next / previous suggestion |
+| ++ctrl+bracket-right++ | Dismiss (with nothing showing: stock abbreviation expand) |
+
+The ++alt++ keys need the left ++option++ key sent as Alt, as the terminal is set up.
+
+### Context helpers
+
+`config/context.lua`, no plugin. For pasting context into an agent outside
+Neovim, such as Claude Code in another tmux pane, a web chat, or a PR comment.
+
+| Keys | Does |
+|---|---|
+| ++space++ ++y++ ++f++ | Copy `path/from/cwd#L42` |
+| ++space++ ++y++ ++p++ | Copy `/absolute/path#L42` |
+| ++space++ ++y++ ++c++ (visual) | Copy the selection as a fenced code block tagged `filename="…" line=…`, the path from the project root |
+| ++space++ ++j++ | The project's `package.json` in a float (`q` closes) |
+
 ---
 
 ## Markdown
@@ -461,6 +564,8 @@ Two more keys live in `markdown.lua` itself, with no plugin behind them:
 and [`catppuccin/nvim`](https://github.com/catppuccin/nvim) are all installed,
 but only the one named in `~/.config/theme/current` loads, through
 `config/theme.lua`. All three are transparent so Ghostty's blur shows through.
+solarized-osaka loads its `-vivid` variant, the look from craftzdog's own config:
+the same palette with brighter text.
 To switch, run `theme <name>` in the shell, then restart nvim. See
 [Theming](../theming.md).
 
@@ -585,8 +690,6 @@ maps, not from guessing.
 | Not installed | Why |
 |---|---|
 | `Comment.nvim` | `gc` / `gcc` are built in |
-| `oil.nvim` | nvim-tree covers it |
 | `trouble.nvim` | fzf-lua + quickfix cover it |
 | `lazygit.nvim` | FTerm hosts lazygit for free |
 | `vim-fugitive` / `neogit` | lazygit for writing history, diffview for reading it |
-| a formatter | **Gap.** ++space++ ++c++ ++f++ is LSP-only; `conform.nvim` would close it |

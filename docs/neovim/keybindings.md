@@ -27,8 +27,11 @@ tab on the site.
     | ++shift+h++ / ++shift+l++ | Previous / next buffer. Replace stock `H` / `L` |
     | ++ctrl+h++ ++ctrl+j++ ++ctrl+k++ ++ctrl+l++ | Move between windows |
     | ++space++ ++e++ | File tree |
+    | `-` | Edit this directory in oil |
     | ++space++ ++g++ ++g++ | Lazygit |
+    | ++space++ ++d++ ++v++ | Diff view of the working tree |
     | ++space++ ++a++ ++c++ | Toggle Claude |
+    | ++ctrl+l++ (insert) | Accept the Copilot suggestion |
     | ++space++ | Show every binding |
 
 === "Stock"
@@ -60,6 +63,8 @@ All ours — fzf-lua pickers.
 | ++space++ ++f++ ++r++ | Recent files |
 | ++space++ ++f++ ++b++ | Buffers |
 | ++space++ ++f++ ++c++ | Find inside the Neovim config |
+| `-` | Open this file's directory in oil (a float): edit names as text, `:w` applies. Replaces stock `-` |
+| ++space++ ++j++ | The project's `package.json` in a float |
 | ++space++ ++slash++ or ++space++ ++s++ ++g++ | Live grep |
 | ++space++ ++s++ ++w++ | Grep word under cursor (or selection, in visual) |
 | ++space++ ++s++ ++b++ | Grep the current buffer |
@@ -118,7 +123,7 @@ All ours — fzf-lua pickers.
     | ++g++ ++d++ | Go to definition |
     | ++g++ ++shift+d++ | Go to declaration |
     | ++g++ ++r++ | References. Stock `grr`, `grn` and friends still work — type them without pausing after `gr` |
-    | ++g++ ++shift+i++ | Implementation |
+    | ++g++ ++shift+i++ | Go to the code that runs: in TypeScript the source definition (the library's `.js`, not its `.d.ts`); elsewhere the implementations, or the definition when there are none |
     | ++g++ ++y++ | Type definition |
     | ++g++ ++shift+o++ | Document symbols, as a picker. Replaces stock `gO` |
     | ++space++ ++c++ ++s++ | Workspace symbols (live search) |
@@ -211,7 +216,8 @@ All ours (treesitter text objects and aerial), except `an` / `in`: Neovim
     |---|---|
     | ++space++ ++c++ ++r++ | Rename symbol across the project |
     | ++space++ ++c++ ++a++ | Code action |
-    | ++space++ ++c++ ++f++ | Format buffer (LSP) |
+    | ++space++ ++c++ ++f++ | Format the buffer or selection (conform). Saving formats too, except shell |
+    | ++space++ ++u++ ++f++ | Format on save off / on for this buffer (`:ToggleFormatter`) |
     | ++space++ ++c++ ++i++ | Hover info |
     | ++space++ ++c++ ++l++ | Lint now |
     | ++space++ ++c++ ++m++ | Mason — install servers and tools |
@@ -254,6 +260,15 @@ alone.
 | ++ctrl+e++ | Dismiss |
 | ++tab++ / ++shift+tab++ | Jump between snippet fields |
 | ++ctrl+s++ | Signature help (stock) |
+
+Copilot's grey inline suggestion is separate from the menu:
+
+| Keys | Does |
+|---|---|
+| ++ctrl+l++ | Accept the suggestion |
+| ++alt+l++ / ++alt+shift+l++ | Accept one word / one line of it |
+| ++alt+bracket-right++ / ++alt+bracket-left++ | Next / previous suggestion |
+| ++ctrl+bracket-right++ | Dismiss |
 
 ## Buffers and windows
 
@@ -307,6 +322,9 @@ All ours.
 | `ih` | Hunk text object — `vih` selects the hunk you are in |
 | ++space++ ++g++ ++r++ | Review mode — gutter and tree diff against the merge-base with `main` |
 | ++space++ ++g++ ++l++ | Highlight whole changed lines |
+| ++space++ ++g++ ++y++ / ++shift+y++ | Copy / open the GitHub permalink for the line or selection |
+| ++space++ ++d++ ++v++ | codediff: side-by-side diff of the working tree. Again to close |
+| ++space++ ++d++ ++h++ / ++shift+h++ | codediff: history of this file / the repo |
 
 ## Reviewing PRs
 
@@ -343,6 +361,9 @@ All ours. Full detail in [AI workflow](ai.md).
 | ++space++ ++n++ ++a++ | CodeCompanion action palette |
 | ++space++ ++n++ ++d++ | Add the selection to the CodeCompanion chat |
 | ++space++ ++n++ ++c++ | Generate a `:command` from a description |
+| ++space++ ++y++ ++f++ / ++space++ ++y++ ++p++ | Copy the relative / absolute path with `#L<line>`, to paste into an agent |
+| ++space++ ++y++ ++c++ (visual) | Copy the selection as a code block tagged with file and line |
+| ++ctrl+l++ (insert) | Accept the Copilot suggestion (see [Completion](#completion)) |
 
 ## Toggles
 
@@ -355,7 +376,8 @@ All ours, under ++space++ ++u++.
 | ++space++ ++u++ ++c++ | Colour swatches |
 | ++space++ ++u++ ++t++ | Treesitter context |
 | ++space++ ++u++ ++b++ | Inline git blame |
-| ++space++ ++u++ ++h++ | Inlay hints |
+| ++space++ ++u++ ++h++ | Inlay hints (on by default) |
+| ++space++ ++u++ ++f++ | Format on save |
 | ++space++ ++u++ ++i++ | Inspect highlight under cursor |
 | ++space++ ++u++ ++m++ | Markdown rendering |
 
@@ -436,6 +458,20 @@ All ours. These only work while the cursor is in that plugin's window.
 
     ++space++ ++a++ ++s++ in the tree adds the file under the cursor to Claude's
     context.
+
+??? note "Oil (`-`)"
+
+    | Keys | Does |
+    |---|---|
+    | ++enter++ | Open the file / enter the directory |
+    | `h` / `-` | Parent directory |
+    | `g.` | Toggle dotfiles |
+    | ++ctrl+p++ | Toggle the preview |
+    | `q` | Close |
+    | `g?` | Every binding |
+
+    Rename, delete or add lines like text, then `:w`. A rename asks the language
+    server to update imports.
 
 ??? note "Symbol outline (++space++ ++o++)"
 

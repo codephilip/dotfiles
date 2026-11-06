@@ -34,6 +34,7 @@ plugins carry most of that weight:
 - [Plugins](plugins.md) — every plugin and its keys, grouped by role
 - [Key bindings](keybindings.md) — everything, by task
 - [PR review](review.md) — gh-dash → diffview → octo, and review mode
+- [CI and deploys](ci.md) — checks, runs, logs, the server, and rollbacks with `gh`
 - [AI workflow](ai.md) — the Claude review loop
 
 ## First run

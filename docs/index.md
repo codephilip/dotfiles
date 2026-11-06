@@ -11,7 +11,7 @@ actually installed and configured, not what could be.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Editor | Neovim 0.11.2 | 27 plugins, tuned for reading unfamiliar code |
+| Editor | Neovim ≥ 0.11 | 27 plugins, tuned for reading unfamiliar code |
 | Shell | zsh | starship prompt, fzf, zoxide, autosuggestions |
 | Terminal | Ghostty (Alacritty as fallback) | macOS 26 glass material, splits and tabs |
 | Multiplexer | tmux | auto-attaches over SSH |
@@ -20,16 +20,15 @@ actually installed and configured, not what could be.
 
 ## Setting this up on a new machine
 
-The install sequence lives in the
-[README](https://github.com/codephilip/dotfiles#-quick-start) rather than here,
-for the obvious reason that this site needs `mkdocs-material` installed before
-you can read it.
+[Setup](setup.md) has the full sequence for macOS, Linux (desktop or headless
+server) and Windows. In short: install Homebrew (on Linux too), clone to
+`~/.config`, run `make tools | sh`, run `make install`, then open `nvim` and
+let lazy.nvim bootstrap. The same steps are in the
+[README](https://github.com/codephilip/dotfiles#quick-start), which you can
+read before `mkdocs-material` is installed.
 
-The short version: install Homebrew, clone to `~/.config`, `brew install` the
-formulae and casks, `make install`, then open `nvim` and let lazy.nvim
-bootstrap. Four things are deliberately not in the repo and have to be restored
-by hand — `ssh/config`, `gh auth login`, a `~/.zshrc.local` holding
-`ANTHROPIC_API_KEY`, and the docs toolchain. The README has the table.
+Keeping several machines consistent, and keeping these docs accurate, is
+covered on [Maintenance](maintenance.md).
 
 ## Layout
 

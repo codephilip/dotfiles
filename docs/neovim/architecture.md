@@ -28,6 +28,7 @@ time — set it late and half your bindings land on the wrong key.
 ~/.config/nvim
 ├── init.lua                4 requires, nothing else
 ├── lazy-lock.json          pinned commits — commit this
+├── .stylua.toml            2-space Lua, for format on save
 ├── README.md
 └── lua/
     ├── config/
@@ -36,19 +37,21 @@ time — set it late and half your bindings land on the wrong key.
     │   ├── autocmds.lua    yank highlight, cursor restore, disk reload
     │   ├── lazy.lua        bootstrap + plugin import
     │   ├── theme.lua       reads ~/.config/theme/current, picks the colourscheme
-    │   └── review.lua      review mode: diff gutter + tree against main
+    │   ├── review.lua      review mode: diff gutter + tree against main
+    │   └── context.lua     copy paths / code blocks for AI agents
     └── plugins/
         ├── ui.lua          themes, statusline, tabs, dashboard, which-key
-        ├── explore.lua     file tree, outline, motion, pairs
+        ├── explore.lua     file tree, oil, outline, pairs
         ├── treesitter.lua  syntax, textobjects, sticky context
         ├── fzf-lua.lua     every picker
         ├── lsp.lua         mason + lspconfig + blink.cmp
         ├── lint.lua        nvim-lint
-        ├── git.lua         gitsigns
-        ├── review.lua      diffview + octo (PR review)
+        ├── format.lua      conform (format on save)
+        ├── git.lua         gitsigns, gitlinker
+        ├── review.lua      codediff, diffview + octo (PR review)
         ├── markdown.lua    render-markdown, table mode, mkdocs serve
         ├── terminal.lua    FTerm float + lazygit
-        └── ai.lua          claudecode + codecompanion
+        └── ai.lua          claudecode, codecompanion, copilot
 ```
 
 Each file in `plugins/` returns a table of plugin specs. Adding a plugin means
@@ -56,7 +59,7 @@ adding to the right file — there is no central registry to update.
 
 ## The load model
 
-Only **six** of the 33 plugins load when Neovim opens:
+Only **six** of the 37 plugins load when Neovim opens:
 
 | Plugin | Why eager |
 |---|---|
@@ -67,13 +70,13 @@ Only **six** of the 33 plugins load when Neovim opens:
 | `nvim-web-devicons` | needed by whatever draws first |
 | `alpha-nvim` | the start screen, on `VimEnter` |
 
-The other 27 wait for a trigger:
+The other 31 wait for a trigger:
 
 === "keys"
 
     A mapping is registered as a stub. Press it once and the real plugin loads,
-    then the key fires. This is how `fzf-lua`, `aerial` and both AI
-    tools stay out of startup entirely.
+    then the key fires. This is how `fzf-lua`, `aerial`, `oil`, `codediff`
+    and the chat tools stay out of startup entirely.
 
     ```lua
     keys = {
@@ -91,8 +94,9 @@ The other 27 wait for a trigger:
 
 === "event"
 
-    `BufReadPre` for LSP and gitsigns, `InsertEnter` for completion and
-    autopairs — nothing loads before a real buffer exists.
+    `BufReadPre` for LSP and gitsigns, `InsertEnter` for completion,
+    autopairs and Copilot, `BufWritePre` for conform — nothing loads before
+    a real buffer exists.
 
     ```lua
     event = { "BufReadPre", "BufNewFile" },
@@ -112,12 +116,12 @@ plugin.
 
 ## Code intelligence
 
-Four systems are frequently confused. They solve different problems and run
+Five systems are frequently confused. They solve different problems and run
 independently: treesitter works with no language server attached, and the
 language server works with no parser installed.
 
 <div class="dg">
-  <div class="dg-cap">Four systems, one buffer</div>
+  <div class="dg-cap">Five systems, one buffer</div>
   <div class="dg-stack">
     <div class="dg-layer" style="--nc:var(--tn-green)">
       <b>Treesitter</b>
@@ -139,6 +143,11 @@ language server works with no parser installed.
       <span>Opinions the server does not hold. Standalone linters on write,
       skipped silently when the binary is absent.</span>
     </div>
+    <div class="dg-layer" style="--nc:var(--tn-cyan)">
+      <b>conform</b>
+      <span>Layout, not meaning. A dedicated formatter per filetype on save,
+      handing over to the language server where none is set.</span>
+    </div>
   </div>
 </div>
 
@@ -148,6 +157,7 @@ language server works with no parser installed.
 | LSP | whole project | definitions, references, rename, diagnostics, call hierarchy |
 | blink.cmp | presentation | merges LSP + snippets + buffer + path into one menu |
 | nvim-lint | this buffer | shellcheck, hadolint, golangci-lint on write |
+| conform | this buffer | formatting on save: oxfmt / prettier, ruff, stylua; the LSP otherwise |
 
 ### How servers get enabled
 
@@ -156,10 +166,14 @@ explicit allow-list in `lua/plugins/lsp.lua`:
 
 ```lua
 local SERVERS = {
-  "lua_ls", "gopls", "ts_ls", "pyright", "bashls",
+  "lua_ls", "gopls", "vtsls", "basedpyright", "bashls",
   "jsonls", "yamlls", "terraformls", "dockerls", "marksman",
 }
 ```
+
+Tools that are not servers (the formatters, Copilot's server) go in the `TOOLS`
+list next to it. Mason installs any that are missing on start, and never
+updates them by itself.
 
 !!! danger "Do not set `automatic_enable = true`"
     Mason also holds formatters and linters. Some share a name with an

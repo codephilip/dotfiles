@@ -144,3 +144,5 @@ gh dash
 Claude fits in here too. In review mode, `vaf` on a function you don't follow
 followed by ++space++ ++a++ ++s++ hands exactly that to Claude. See
 [AI workflow](ai.md).
+
+After the merge, [CI and deploys](ci.md) follows the change to the server.

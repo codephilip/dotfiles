@@ -1,590 +1,140 @@
-# Developer Configuration
+# dotfiles
 
-A comprehensive collection of configuration files for a modern developer environment. This repository contains configurations for terminal, shell, editor, and development tools.
+My `~/.config`. One repo for every machine: macOS, Linux desktops,
+headless Linux servers and (optionally) Windows.
 
-## 📋 Overview
+Neovim is the centrepiece, tuned for reading unfamiliar code and with Claude
+wired in. Around it are zsh, tmux, Ghostty and one colour palette shared by
+every tool.
 
-This configuration setup is designed for macOS/Linux systems with a focus on minimal, fast, and remote-friendly tooling. Each configuration is self-contained and can be used independently.
+> **Full docs:** run `make serve` and open <http://127.0.0.1:8000>, or browse
+> [`docs/`](docs/index.md) here on GitHub. This README is the short version.
 
-## 🚀 Quick Start
+## The stack
 
-This repository *is* `~/.config`, so most tools (Neovim, Ghostty, Alacritty, tmux)
-already find their config at the XDG path with no setup. Only the few files that
-have to live outside `~/.config` need linking.
+| Layer | Choice | Notes |
+| --- | --- | --- |
+| Editor | Neovim ≥ 0.11 | lazy.nvim, native LSP, fzf-lua, blink.cmp, Claude Code + CodeCompanion |
+| Shell | zsh, no framework | starship prompt, fzf, fzf-tab, zoxide, eza, autosuggestions |
+| Multiplexer | tmux | prefix `Ctrl-a`, auto-attaches over SSH |
+| Terminal | Ghostty (Alacritty fallback) | JetBrainsMono Nerd Font, blur/glass |
+| Git | git + delta + lazygit + gh / gh-dash | PR review inside Neovim (diffview, octo) |
+| Containers | docker / kubectl aliases, lazydocker, k9s | configs pulled back into `~/.config` |
+| Theme | `tokyonight` · `solarized-osaka` · `catppuccin-mocha` | `theme <name>` switches every tool at once |
 
-`make install` deliberately **reports** missing tools rather than installing
-them, so adopting this on a new machine is five steps, not one:
+## Quick start
+
+This repo **is** `~/.config`, so clone it there. `make install` links the few
+files that live outside `~/.config` and **reports** missing tools without
+installing them.
 
 ```bash
-# 1. Homebrew — nothing here installs it for you
+# macOS and Linux: Homebrew is the package manager on both
+# (Linux needs build tools + zsh first, see docs/setup.md)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 2. Clone. The path matters — see "Cloning somewhere else" below.
 git clone https://github.com/codephilip/dotfiles.git ~/.config
-
-# 3. Tools. `make tools` prints these from bootstrap's own list, so it is
-#    never out of date — pipe it to a shell, or paste it:
-#        cd ~/.config && make tools
-brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
-             tmux tree-sitter-cli zoxide zsh-autosuggestions zsh-syntax-highlighting
-brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
-
-# 4. Symlinks + generated theme files
 cd ~/.config
-make verify    # dry run — show what would change
-make install
-
-# 5. Pick up the new shell, then let the editor bootstrap itself
+make tools | sh    # install the tool list from bootstrap
+make verify        # dry run: what would be linked, what's missing
+make install       # link ~/.zshrc ~/.tmux.conf ~/.gitconfig (~/.ssh/config), generate theme files
 exec zsh
-nvim           # lazy.nvim self-installs; then :Mason for the language servers
+nvim               # plugins install themselves; :Mason for language servers
 ```
 
-`make install` is idempotent and never overwrites a real file — if `~/.zshrc`
-already exists as a regular file, it says so and leaves it alone. It links
-`~/.zshrc`, `~/.tmux.conf` and `~/.gitconfig`, lists any missing formulae and
-casks as copy-pasteable `brew install` lines, then runs `theme regen` to write
-the generated colour fragments (a fresh clone has none — they are gitignored)
-and fetch the `bat` theme Tokyo Night needs.
+**Windows:** `make windows` from Git Bash with scoop. See
+[docs/windows.md](docs/windows.md).
 
-### Four things `make install` can't do for you
+After that, restore the things a public repo can't hold: `ssh/config`,
+`gh auth login`, and `~/.zshrc.local` for secrets. On a Mac, also fix key
+repeat. Both are covered in **[docs/setup.md](docs/setup.md)**, along with the
+per-distro Linux steps, adopting an existing `~/.config`, and keeping machines
+in sync.
 
-These are per-machine or secret, so they are not in the repo and nothing
-checks for them:
+## Everyday commands
 
-| What | Command | Needed for |
-| --- | --- | --- |
-| SSH config | restore `ssh/config` from your password manager | the `github`, `prox-*`, `macmini*` and Hetzner hosts |
-| GitHub auth | `gh auth login` | `gh`; the token lives in the keychain, not here |
-| Secrets | create `~/.zshrc.local` with `export ANTHROPIC_API_KEY=…` | CodeCompanion in Neovim (inert without it) |
-| Key repeat | see below — `make install` reports these | holding `j`/`k` in Neovim without it crawling |
-| Docs toolchain | `brew install mkdocs-material` (or `pip install`) | `make serve` / `make docs` only |
+```bash
+make help            # every make target
+make verify          # health report for this machine; changes nothing
+make install         # re-run after a git pull (idempotent)
 
-`ssh/config` is gitignored — it used to be an Ansible Vault blob in the repo,
-but it is local-only now, so a rebuild needs it from elsewhere. `bootstrap`
-reports `not in repo, nothing to link` and carries on.
+theme list           # themes, active one marked
+theme next           # cycle; theme <name> to pick one
 
-**Key repeat** is the one that makes a new Mac feel broken in Neovim. These are
-per-user macOS defaults rather than files, so they cannot live in this repo and
-`make install` can only report them. All three steps are needed, in order:
+git-commands         # terminal cheatsheets rendered with bat. Also:
+                     #   tmux- zsh- nvim- vim- docker- k8s-commands
+```
 
-1. **System Settings → Keyboard** — *Key Repeat Rate* to the fastest notch,
-   *Delay Until Repeat* to the shortest. Do this first; writing the prefs
-   without the pane having set them does not take.
-2. **Then run:**
-   ```bash
-   defaults write -g KeyRepeat -int 1                      # below the slider's floor of 2
-   defaults write -g InitialKeyRepeat -int 15              # delay before repeating
-   defaults write -g ApplePressAndHoldEnabled -bool false  # not in System Settings at all
-   ```
-3. **Log out and back in.** A terminal relaunch is not enough — macOS latches
-   the rate for the login session.
+Inside Neovim: press `Space` and wait, and which-key lists everything.
+`:Doctor` checks the setup's health.
 
-Step 2 is not redundant with step 1: `KeyRepeat = 1` is faster than the slider
-can express, and `ApplePressAndHoldEnabled` has no GUI control. While that one
-is on, holding a key opens the accent-character picker **instead of repeating at
-all**, so `j` advances one line per press however fast the rate is set.
-
-Note that `defaults read` — and therefore `make verify` — reports the *stored*
-value, which looks correct immediately while the session still uses the old one.
-The only real test is holding `j` after a logout. Full detail, including the
-case-sensitivity trap, is in
-[docs/troubleshooting.md](docs/troubleshooting.md).
-
-### Tools Homebrew doesn't own
-
-A few things the config uses can arrive by several routes — a native installer,
-npm, pip, uv, cargo, a direct download — so there is no `brew install` line that
-fixes them and no `brew upgrade` that keeps them current. `make verify` gives
-them their own section:
+## Layout
 
 ```text
-External tools
-  not from this homebrew — compare versions across machines
-  ✓ Claude Code 2.1.220
-      /usr/local/bin/claude — direct install or Intel brew
-  ✓ mkdocs 1.6.1
-      /opt/homebrew/bin/mkdocs — homebrew
+~/.config/
+├── bootstrap             symlinks + tool report  (make install / verify / tools)
+├── Makefile              entry point for everything
+├── nvim/                 Neovim: init.lua, lua/config, lua/plugins, lazy-lock.json
+├── zsh/                  .zshrc (→ ~/.zshrc), prompt fallback, vendored fzf-tab
+├── tmux/tmux.conf        → ~/.tmux.conf
+├── git/                  gitconfig (→ ~/.gitconfig), global ignore, aliases
+├── ghostty/  alacritty/  terminals
+├── starship.toml         prompt (generated from the palette by scripts/gen-starship.py)
+├── theme/                palettes (source of truth) + the active theme name
+├── docker/  k8s/         aliases, lazydocker and k9s configs
+├── gh/  gh-dash/         GitHub CLI and PR dashboard
+├── scripts/              theme, newscript, windows-setup, gen-starship.py
+├── command-cheatsheets/  terminal-readable references
+├── docs/  mkdocs.yml     the docs site
+└── brief/                one-page executive brief (→ docs/assets/*.pdf)
 ```
 
-The route is inferred from the path, because nothing records how a binary
-actually got there. This matters because the failure mode is quiet: a *missing*
-tool announces itself, whereas the same tool installed three different ways on
-three machines just runs three different versions. Claude Code has already done
-this here — the native installer puts it in `~/.local/bin`, npm in the brew
-prefix, and a direct install in `/usr/local/bin`. Run `make verify` on each
-machine and compare the versions; nothing can do that comparison for you.
+Some files are **generated and gitignored**: `ghostty/theme.conf`,
+`alacritty/theme-current.toml`, `git/theme.gitconfig`,
+`starship-current.toml` and the k9s skin. `make install` creates them. Don't
+edit them by hand.
 
-### Cloning somewhere else
+**Not tracked, on purpose:** `ssh/`, `~/.zshrc.local`, `ghostty/local.conf`,
+and the state other tools write into `~/.config` (gh tokens, stripe keys,
+caches). See [`.gitignore`](.gitignore).
 
-`git clone … ~/.config` fails if `~/.config` already exists with content,
-which is common on a machine that has been used. Adopt the directory in place
-instead:
+## Docs
+
+The long-form docs are a [MkDocs Material](https://squidfunk.github.io/mkdocs-material/)
+site in `docs/`:
 
 ```bash
-git init ~/.config && cd ~/.config
-git remote add origin https://github.com/codephilip/dotfiles.git
-git fetch origin && git checkout -f main
+brew install mkdocs-material   # once (or: pip install mkdocs-material)
+make serve                     # live reload at http://127.0.0.1:8000
+make docs                      # strict build into ./site; fails on dead links
 ```
 
-Cloning to a path *other* than `~/.config` only half-works: `bootstrap` and
-`scripts/theme` both resolve the repo from their own location, so linking and
-theme generation are correct — but every tool that reads an XDG path (Neovim,
-Ghostty, Alacritty, starship) still looks in `~/.config` and will not see the
-clone. Symlink `~/.config` at it, or clone there in the first place.
-
-Per-tool details and manual steps are in the sections below.
-
-## 🔧 Core Dependencies
-
-### Required System Tools
-
-- **Git** - Version control (required for Neovim plugins, git aliases, and various integrations)
-- **Neovim** (0.11+) - Required, not just recommended: the LSP config uses the
-  native `vim.lsp.config` / `vim.lsp.enable` API added in 0.11
-- **tmux** - Terminal multiplexer
-- **Zsh** - Shell (uses built-in features, no Oh My Zsh required)
-- **ripgrep** (rg) - Fast text search (required for Neovim `:Rg` command)
-- **bat** - Syntax-highlighted pager (required for zsh pager and cheatsheet viewing)
-- **fzf** - Fuzzy finder (required for Neovim file navigation)
-
-### Optional but Recommended
-
-- **Docker** - Container platform (for docker aliases)
-- **kubectl** - Kubernetes CLI (for k8s aliases)
-- **lsof** - List open files (for `ports()` and `killport()` functions)
-
-## 📁 Configuration Files
-
-### Theme (`theme/`, `scripts/theme`)
-
-One palette drives the terminal, prompt, fzf, Neovim, `bat` and `delta`.
-Three are available; switch with a single command:
-
-```bash
-theme list              # all themes, active one marked
-theme solarized-osaka   # switch
-theme next              # cycle
-theme show              # swatches for the active palette
-```
-
-| Theme | Look |
+| Page | What's there |
 | --- | --- |
-| `tokyonight` | cool blue-violet on near-black (default) |
-| `solarized-osaka` | deep teal-black, Solarized accents |
-| `catppuccin-mocha` | warm, soft, low-contrast |
-
-`theme/palettes/<name>.sh` is the single source of truth. The per-tool
-fragments (`ghostty/theme.conf`, `alacritty/theme-current.toml`,
-`git/theme.gitconfig`) are **generated** from it and gitignored — don't
-hand-edit them, and don't put colours in `ghostty/config` or
-`alacritty.toml`. Full detail: [`docs/theming.md`](docs/theming.md).
-
-### Ghostty (`ghostty/`) — primary terminal
-
-Ghostty is the daily driver because it can use the macOS 26 **glass
-material** (via the per-machine `local.conf`), and it has splits, tabs and
-shell integration. Alacritty is styled to match it everywhere else.
-
-**Key Features:**
-- `background-opacity = 0.86` + `background-blur = 20`; `macos-glass-regular` in `local.conf` on macOS 26+
-- Window padding: 14pt horizontal, 12pt vertical; titlebar hidden
-- `JetBrainsMono Nerd Font` at 13.5pt, `adjust-cell-height = 8%`
-- Beam cursor with blinking; `copy-on-select`
-- Shift+Enter sends ESC CR (needed by Claude Code and most REPLs)
-
-Reload config with ⌘⇧, — Ghostty has no CLI reload.
-
-### Alacritty (`alacritty/`) — fallback
-
-Kept because it works everywhere, including over X forwarding and on
-Linux. Styled to match Ghostty: same palette, opacity, blur, padding, font
-and cursor, so switching between the two is not a visual jump.
-
-**Font Requirements:**
-- **JetBrains Mono Nerd Font** must be installed
-  - Regular style
-  - Bold style  
-  - Italic style
-- Font size: 13.5pt with y-offset of 1
-
-**Color Scheme:**
-- Generated — imports `alacritty/theme-current.toml`, written by `theme`
-
-**Key Features:**
-- Window padding: 14px horizontal, 12px vertical
-- Opacity 0.86 with `blur = true`, the same glass as Ghostty's shared setting
-- Left Option is Alt (`option_as_alt = "OnlyLeft"`), as in Ghostty
-- Mouse cursor hides while typing
-- `live_config_reload`, so a theme switch applies without a restart
-- Scrollback history: 100,000 lines (Alacritty's maximum)
-- Selection automatically copied to clipboard
-- Beam cursor with blinking enabled
-
-**Installation:**
-- On macOS: Install JetBrains Mono via Homebrew (`brew install font-jetbrains-mono`) or download from [JetBrains](https://www.jetbrains.com/lp/mono/)
-- On Linux: Install via package manager or download from JetBrains website
-
-### Neovim (`nvim/`)
-
-**Plugin Manager:**
-- **lazy.nvim** - Automatically bootstrapped on first run
-
-**Core Dependencies:**
-- **fzf** - Must be installed and built (`fzf` binary in PATH)
-- **ripgrep** - Required for `:Rg` search command (`rg` binary in PATH)
-- **git** - Required for git integration (gitsigns, fzf git commands)
-
-**LSP Servers (installed via Mason.nvim):**
-- `lua_ls` - Lua Language Server
-- `ts_ls` - TypeScript/JavaScript Language Server
-- `pyright` - Python Language Server
-- `gopls` - Go Language Server
-- `rust_analyzer` - Rust Language Server
-- `bashls` - Bash Language Server
-- `yamlls` - YAML Language Server
-- `jsonls` - JSON Language Server
-
-**Treesitter Parsers (auto-installed):**
-- lua, vim, bash, json, yaml, javascript, typescript, html, css, python
-
-**Keybindings:**
-- `<Space>` - Leader key
-- `<leader>e` - Toggle file tree (nvim-tree)
-- `<leader>ff` - Find files (fzf)
-- `<leader>fg` - Find git files
-- `<leader>fb` - Find buffers
-- `<leader>fw` - Search with ripgrep
-- `<leader>f` - Format code (LSP)
-- `gd` - Go to definition (LSP)
-- `gr` - Go to references (LSP)
-- `K` - Hover documentation (LSP)
-- `<leader>rn` - Rename symbol (LSP)
-- `<C-h/j/k/l>` - Navigate windows (works with tmux via vim-tmux-navigator)
-
-**Plugins:**
-- nvim-tree.lua - File tree
-- fzf.vim - Fuzzy finder
-- nvim-treesitter - Syntax highlighting
-- gitsigns.nvim - Git signs in gutter
-- nvim-cmp + sources - Autocompletion
-- nvim-lspconfig - LSP client
-- mason.nvim - LSP server installer
-- vim-tmux-navigator - Seamless tmux/neovim navigation
-- bufdelete.nvim - Safe buffer deletion
-- LuaSnip - Snippet engine (for LSP snippets)
-
-**Installation:**
-1. Ensure Neovim 0.9+ is installed
-2. Install fzf: `brew install fzf` (macOS) or via package manager
-3. Install ripgrep: `brew install ripgrep` (macOS) or via package manager
-4. Link config: `ln -s ~/.config/nvim ~/.config/nvim` (if needed)
-5. Launch Neovim - plugins will auto-install via lazy.nvim
-6. LSP servers will be installed automatically via Mason when you open files
-
-### tmux (`tmux/`)
-
-**Terminal Requirements:**
-- **tmux-256color** terminal capability - Your terminal must support 256-color mode
-- On macOS, this is typically enabled by default in modern terminals
-- On Linux, you may need to ensure `TERM=tmux-256color` is set
-
-**Keybindings:**
-- Prefix: `Ctrl-a` (changed from the default `Ctrl-b`)
-- Every other binding is stock tmux: `%` and `"` split, arrows move between
-  panes, `d` detaches. On a server's stock tmux, use `Ctrl-b` and the rest is
-  the same.
-- `Ctrl-a Ctrl-a` sends a literal `Ctrl-a` (go to line start in the shell)
-- `Ctrl-a R` reloads the config
-- Full reference: `tmux-commands`, or the tmux page in the docs
-
-**Features:**
-- Mouse support enabled
-- History limit: 50,000 lines
-- Vim-style copy mode
-- Window/pane indexing starts at 1
-- Status bar shows session name and hostname (when SSH'd)
-
-**Plugin Directories (Optional):**
-The `plugins/` directory contains plugin folders, but no TPM configuration is present. These plugins are not automatically loaded unless TPM is configured separately:
-- nord-tmux (theme)
-- tmux-prefix-highlight
-- tmux-sensible
-- tmux-sessionx
-- tmux-yank
-- vim-tmux-navigator (also in Neovim)
-
-**Installation:**
-1. Install tmux: `brew install tmux` (macOS) or via package manager
-2. Link config: `ln -s ~/.config/tmux/tmux.conf ~/.tmux.conf`
-3. Ensure your terminal supports 256-color mode
-
-### Zsh (`zsh/`)
-
-**Dependencies:**
-- **bat** - Required for pager (`LESSOPEN`) and cheatsheet commands
-- **git** - Required for git aliases and prompt integration
-- **Docker** (optional) - For docker aliases
-- **kubectl** (optional) - For k8s aliases
-- **lsof** - Required for `ports()` and `killport()` functions (usually pre-installed on macOS)
-
-**Features:**
-- starship prompt — bracketed segments with Nerd Font icons, themed from
-  the shared palette. `starship.toml` is generated by
-  `scripts/gen-starship.py`; `zsh/prompt.zsh` is the faster pure-zsh
-  fallback. See [`docs/shell/index.md`](docs/shell/index.md)
-- No framework — no oh-my-zsh, prezto, zinit or antigen
-- 50,000 line history with sharing across sessions
-- Case-insensitive globbing
-- Autocompletion with menu selection
-
-**Aliases:**
-- Git aliases: sourced from `~/.config/git/aliases.sh`
-- Docker aliases: sourced from `~/.config/docker/aliases.sh`
-- Kubernetes aliases: sourced from `~/.config/k8s/aliases.sh`
-- Cheatsheet commands: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`, `vim-commands`
-
-**Functions:**
-- `mkcd <dir>` - Create directory and cd into it
-- `cdr` - Jump to git repository root
-- `ports` - Show active listening ports
-- `killport <port>` - Kill process on specified port
-- `dkclean` - Docker system prune
-- `kctxp` - Show current kubectl context
-
-**Auto-tmux:**
-- Automatically attaches/creates tmux session when SSH'ing into a server
-
-**macOS-specific:**
-- Disables press-and-hold character accent menu
-
-**Installation:**
-1. Ensure zsh is your default shell (usually default on macOS)
-2. Install bat: `brew install bat` (macOS) or via package manager
-3. Link config: `ln -s ~/.config/zsh/.zshrc ~/.zshrc`
-4. Source it: `source ~/.zshrc` or restart terminal
-
-### Git (`git/`)
-
-**Configuration:**
-- User name: `codephil`
-- User email: `philip@meiers.in`
-
-**Aliases (`git/aliases.sh`):**
-Extensive git aliases for common operations:
-- Status: `gs`, `gss`
-- Logs: `gl`, `glg`, `gla`
-- Branches: `gb`, `gbv`, `gbd`
-- Checkout/Switch: `gco`, `gcob`, `gsw`, `gswc`
-- Add/Commit: `ga`, `gaa`, `gc`, `gcm`, `gca`, `gcan`
-- Fetch/Pull/Push: `gf`, `gfa`, `gp`, `gpo`, `gpm`
-- Rebase: `grb`, `grbi`, `grbc`, `grba`
-- Diff: `gd`, `gds`
-- Stash: `gsh`, `gshp`, `gshl`
-
-**Installation:**
-- Git aliases are automatically sourced by zsh config if `~/.config/git/aliases.sh` exists
-- Git config can be linked: `ln -s ~/.config/git/gitconfig ~/.gitconfig`
-
-### Docker (`docker/`)
-
-**Aliases (`docker/aliases.sh`):**
-- Base: `d`, `dc`
-- Containers: `dps`, `dpa`, `dst`
-- Images: `di`
-- Logs/Exec: `dl`, `dlf`, `dex`
-- Build/Run: `db`, `dr`, `drm`, `drmi`
-- Compose: `dcu`, `dcud`, `dcd`, `dcb`, `dcl`, `dclf`
-- Cleanup: `dclean`, `dcleanf`
-
-**Installation:**
-- Aliases are automatically sourced by zsh config if `~/.config/docker/aliases.sh` exists
-- Requires Docker to be installed
-
-#### lazydocker (`docker/lazydocker/`)
-
-Docker TUI — `lazydocker`, or `ld`. The Docker counterpart to k9s: every
-container, image, volume and Compose service in one screen, with live logs and
-stats. Start it inside a Compose project and a Services panel appears too.
-
-**Same XDG problem as k9s, different fix.** lazydocker defaults to
-`~/Library/Application Support/lazydocker` on macOS. Its override is an env
-var called plain `CONFIG_DIR`, which is too generic to export into every
-process, so `docker/aliases.sh` wraps `lazydocker` in a function that sets it
-for that one command. Check with `type lazydocker`; it should say "shell
-function".
-
-`docker/lazydocker/config.yml` changes one thing: logs show the last 500 lines
-rather than the last 60 minutes. The default leaves the log pane empty for any
-container that crashed more than an hour ago. There is no generated skin: its
-colours are ANSI names, so they already follow the terminal's theme.
-
-### Kubernetes (`k8s/`)
-
-**Aliases (`k8s/aliases.sh`):**
-- Base: `k`
-- Get: `kgp`, `kgs`, `kgd`, `kgn`, `kgi`, `kgcm`, `kgsec`
-- Describe: `kdp`, `kdd`, `kds`
-- Logs: `kl`, `klf`, `klp`
-- Exec: `kex`, `ksh`, `kbash`
-- Apply/Delete: `ka`, `kdel`
-- Context/Namespace: `kctx`, `kctxs`, `kns`, `knsa`
-- Rollout: `kro`, `kru`
-- Metrics: `ktp`, `ktn`
-
-**Installation:**
-- Aliases are automatically sourced by zsh config if `~/.config/k8s/aliases.sh` exists
-- Requires kubectl to be installed
-
-#### k9s (`k8s/k9s/`)
-
-Cluster TUI — `k9s`. Use it instead of chaining the `kg*` aliases when you are
-exploring rather than scripting: live-updating resource lists, `l` for logs,
-`s` to shell into a pod, `d` to describe, and `:` to jump to any resource type
-by name.
-
-**This one needs an env var to work at all.** k9s ignores XDG on macOS and
-defaults to `~/Library/Application Support/k9s`, which would put its config
-outside this repo — unversioned and unthemed. `.zshrc` exports
-`K9S_CONFIG_DIR=~/.config/k8s/k9s` to pull it back in. Confirm which paths it
-actually resolved with:
-
-```bash
-k9s info          # Config: and Skins: should both be under ~/.config/k8s/k9s
-```
-
-`k8s/k9s/config.yaml` is tracked and deliberately minimal — k9s merges it over its
-own defaults, so a short file stays correct across upgrades. Colours come from
-`k8s/k9s/skins/theme-current.yaml`, generated by `scripts/theme` and gitignored
-like the other theme fragments; restart k9s after `theme <name>`.
-
-**Gotcha worth knowing:** k9s 0.51 validates `config.yaml` against a schema and
-rejects the **whole file** on a single misplaced key, falling back to its
-defaults with only a warning in its log — nothing on screen. If your settings
-seem to be ignored, check:
-
-```bash
-grep -i 'not allowed\|load failed' "$(k9s info | awk '/Logs:/{print $2}')"
-```
-
-Backgrounds are `default` rather than a palette colour throughout the skin, so
-k9s inherits the terminal background instead of painting its own — the same
-reason tmux uses `bg=default` and the Neovim themes are transparent. Ghostty's
-blur stays visible behind it.
-
-### SSH (`ssh/`) — not tracked
-
-`ssh/` is gitignored. The config was previously committed as an Ansible Vault
-blob, but the repo is public and the decrypted file contains host names and
-addresses, so it is local-only now. Keep a copy in your password manager.
-
-**On a new machine:**
-```bash
-# restore ssh/config from your password manager, then:
-chmod 600 ~/.config/ssh/config
-make install        # links it to ~/.ssh/config
-```
-
-`make install` links `~/.ssh/config` when the file is present and reports
-`not in repo, nothing to link` when it isn't — it is never an error.
-
-### Command Cheatsheets (`command-cheatsheets/`)
-
-Markdown cheatsheets for:
-- docker.md
-- git.md
-- k8s.md
-- nvim.md
-- tmux.md
-- vim.md
-- zsh.md
-
-**Viewing:**
-- Use aliases: `git-commands`, `k8s-commands`, `docker-commands`, `tmux-commands`, `zsh-commands`, `nvim-commands`, `vim-commands`
-- These use `bat` for syntax highlighting
-
-## 📦 Installing Dependencies
-
-Symlinking is handled by `make install` (see [Quick Start](#-quick-start)) —
-these are just the packages. `make install` also reports which of them are
-missing, so you can run it first and paste the command it gives you.
-
-### macOS
-
-Don't trust this copy — it has drifted before. `make tools` prints the lines
-straight from `BREW_FORMULAE` and `BREW_CASKS` in `bootstrap`, which is the
-only place the list actually lives:
-
-```bash
-cd ~/.config && make tools          # paste the output
-cd ~/.config && make tools | sh     # or just run it
-```
-
-For reference, at the time of writing:
-
-```bash
-brew install bat delta eza fd fzf gh k9s lazydocker lazygit neovim ripgrep starship \
-             tmux tree-sitter-cli zoxide zsh-autosuggestions zsh-syntax-highlighting
-brew install --cask ghostty alacritty font-jetbrains-mono-nerd-font
-```
-
-The font must be the **Nerd Font** build — plain JetBrains Mono has no glyphs
-for the icons in the Neovim statusline, file tree or prompt.
-
-### Linux
-
-```bash
-# Debian/Ubuntu — note bat is `batcat` and fd is `fdfind` on apt
-sudo apt install neovim tmux fzf ripgrep bat fd-find git zsh
-
-# Not in apt; install via Homebrew on Linux, cargo, or the release pages:
-#   delta eza lazygit starship zoxide
-```
-
-JetBrains Mono Nerd Font: download the patched build from
-<https://github.com/ryanoasis/nerd-fonts/releases> — the upstream JetBrains
-release is unpatched and will render icons as tofu.
-
-### Windows (optional)
-
-Separate from `make install`, which is macOS/Linux only and refuses to run
-on Windows. From Git Bash, with [scoop](https://scoop.sh) installed:
-
-```bash
-cd ~/.config && make windows
-```
-
-This installs the CLI tools, Alacritty and the Nerd Font with scoop. zsh and
-real tmux come from MSYS2, and Alacritty is set to open zsh. It's safe to
-re-run. How it works and why: [docs/windows.md](docs/windows.md).
-
-## 🔗 Integration Notes
-
-### Neovim + tmux Navigation
-- The `vim-tmux-navigator` plugin enables seamless navigation between Neovim windows and tmux panes using `Ctrl-h/j/k/l`
-- Works automatically when both are configured
-
-### Zsh + Neovim
-- `EDITOR` and `VISUAL` environment variables are set to `nvim`
-- Git commits and other editor operations will use Neovim
-
-### Zsh + bat
-- `bat` is used as the pager for `less` (via `LESSOPEN`)
-- Cheatsheet commands use `bat` for syntax highlighting
-
-### Terminal + tmux
-- tmux's status line is two greys on `bg=default`, so it inherits the
-  terminal's background and palette rather than defining its own. That is
-  what keeps Ghostty's blur visible behind the status line, and it means
-  tmux needs no per-theme config at all
-- `terminal-overrides` must name `xterm-ghostty` explicitly — Ghostty's
-  `$TERM` matches neither `*256col*` nor `alacritty`, and without it every
-  colour inside tmux silently drops to 256
-
-## 📝 Notes
-
-- This configuration does **not** use Oh My Zsh - it relies on built-in zsh features
-- Neovim plugins are managed via `lazy.nvim` and auto-install on first run
-- LSP servers are installed via `mason.nvim` when needed
-- tmux plugins in the `plugins/` directory are not automatically loaded (no TPM config)
-- SSH config is encrypted with Ansible Vault for security
-- All aliases are modular and can be sourced independently
+| [Setup](docs/setup.md) | new machine on macOS / Linux / Windows, secrets, syncing machines |
+| [Neovim](docs/neovim/index.md) | architecture, every plugin, key bindings, PR review, CI, AI workflow |
+| [Shell](docs/shell/index.md) | zsh, prompt, fzf bindings, aliases and functions |
+| [tmux](docs/tmux.md) | every key, stock and ours |
+| [Docker and Kubernetes](docs/containers.md) | aliases, lazydocker, k9s |
+| [Terminal](docs/terminal.md) | Ghostty, Alacritty, fonts |
+| [Theming](docs/theming.md) | how one palette reaches every tool, adding a theme |
+| [Git](docs/git.md) | config, aliases, delta |
+| [Windows](docs/windows.md) | scoop + MSYS2 setup |
+| [Troubleshooting](docs/troubleshooting.md) | failures that actually happened, and their fixes |
+| [Maintenance](docs/maintenance.md) | rules, checklists and the monthly routine that keep this repo accurate |
+
+## Keeping it maintained
+
+The short version of [docs/maintenance.md](docs/maintenance.md):
+
+- **One source of truth per fact.** The tool list is in `bootstrap`, colours
+  are in `theme/palettes/`, plugin versions are in `nvim/lazy-lock.json`.
+  Docs link to these and don't copy them.
+- **Machine-specific settings go in local files** (`~/.zshrc.local`,
+  `ghostty/local.conf`), not in hostname checks.
+- **Every new directory in `git status` gets a decision:** track and document
+  it, or gitignore it.
+- **Monthly:** `brew upgrade`, run the
+  [Neovim routine](nvim/README.md#maintenance), `make verify`, `make docs`.
+  Commit, then on each other machine run
+  `git pull && make install && nvim "+Lazy restore"`.
