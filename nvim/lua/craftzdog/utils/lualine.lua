@@ -1,33 +1,13 @@
 -- Custom lualine components.
+local editor = require("craftzdog.utils.editor")
+local normalize, cwd = editor.normalize, editor.cwd
+
 local M = {}
-
-local ROOT_MARKERS = { ".git", "lua", "package.json", "Makefile", "Cargo.toml", "go.mod", "pyproject.toml" }
-
----@param path string
----@return string
-local function normalize(path)
-	path = vim.uv.fs_realpath(path) or path
-	return (path:gsub("/$", ""))
-end
-
----@return string
-local function cwd()
-	return normalize(vim.uv.cwd() or vim.fn.getcwd())
-end
-
---- Project root of the current buffer: the nearest parent holding a root marker.
----@return string
-function M.root()
-	local name = vim.api.nvim_buf_get_name(0)
-	local start = name ~= "" and vim.fs.dirname(name) or cwd()
-	local marker = vim.fs.find(ROOT_MARKERS, { path = start, upward = true })[1]
-	return marker and normalize(vim.fs.dirname(marker)) or cwd()
-end
 
 --- Project root name, shown only when the root differs from cwd.
 function M.root_dir()
 	local function name()
-		local root = M.root()
+		local root = editor.root()
 		return root ~= cwd() and vim.fs.basename(root) or nil
 	end
 	return {
