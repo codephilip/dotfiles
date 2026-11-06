@@ -22,6 +22,14 @@ require("snacks").setup({
 	statuscolumn = { enabled = true },
 	words = { enabled = true },
 	scroll = { enabled = false },
+	picker = {
+		enabled = true,
+		sources = {
+			-- dotfiles like .github/ and .env.example are part of real projects
+			files = { hidden = true },
+			grep = { hidden = true },
+		},
+	},
 })
 
 -- Floating `:` command line, centered, 20% from the top

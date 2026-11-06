@@ -35,6 +35,14 @@ local function label(buf)
 	if bufname == "" then
 		return "[No Name]", ""
 	end
+	if vim.bo[buf].filetype == "oil" then
+		local path = bufname:gsub("^oil://", ""):gsub("(.)/$", "%1")
+		local dir = vim.fn.fnamemodify(path, ":~")
+		if vim.fn.strchars(dir) > MAX_NAME then
+			dir = "…" .. vim.fn.strcharpart(dir, vim.fn.strchars(dir) - TRUNCATE_TO)
+		end
+		return dir, ""
+	end
 
 	local name = vim.fn.fnamemodify(bufname, ":t")
 	local icon = MiniIcons and MiniIcons.get("file", name) or ""
