@@ -39,6 +39,8 @@ vim.pack.add({
 	{ src = gh("craftzdog/mini.diff"), version = "feat/grouping" },
 	{ src = gh("esmuellert/codediff.nvim") },
 	{ src = gh("linrongbin16/gitlinker.nvim") },
+	-- AI
+	{ src = gh("zbirenbaum/copilot.lua") },
 	-- Editor
 	{ src = gh("stevearc/conform.nvim") },
 	{ src = gh("nvim-mini/mini.pairs") },
@@ -50,4 +52,5 @@ require("craftzdog.plugins.treesitter")
 require("craftzdog.plugins.lsp")
 require("craftzdog.plugins.git")
 require("craftzdog.plugins.editor")
+require("craftzdog.plugins.ai")
 require("craftzdog.plugins.keymaps")

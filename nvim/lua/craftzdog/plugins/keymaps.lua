@@ -167,6 +167,30 @@ end, { desc = "Toggle diff view" })
 map("n", "<leader>dh", "<Cmd>CodeDiff history %<CR>", { desc = "File history" })
 map("n", "<leader>dH", "<Cmd>CodeDiff history<CR>", { desc = "Repo history" })
 
+-- Copilot (insert mode). On macOS the terminal needs Option as Alt.
+--- Call a copilot.suggestion action. With no suggestion showing, accepting
+--- requests one, as copilot.lua's own keymaps do.
+---@param action string
+local function copilot(action)
+	return function()
+		require("copilot.suggestion")[action]()
+	end
+end
+map("i", "<C-l>", copilot("accept"), { desc = "Copilot: accept" })
+map("i", "<M-l>", copilot("accept_word"), { desc = "Copilot: accept word" })
+map("i", "<M-L>", copilot("accept_line"), { desc = "Copilot: accept line" })
+map("i", "<M-]>", copilot("next"), { desc = "Copilot: next suggestion" })
+map("i", "<M-[>", copilot("prev"), { desc = "Copilot: previous suggestion" })
+-- <C-]> keeps its built-in meaning (expand abbreviation) when nothing is showing
+map("i", "<C-]>", function()
+	local suggestion = require("copilot.suggestion")
+	if suggestion.is_visible() then
+		suggestion.dismiss()
+	else
+		vim.api.nvim_feedkeys(vim.keycode("<C-]>"), "n", false)
+	end
+end, { desc = "Copilot: dismiss" })
+
 -- Snacks words: jump between occurrences of the word under the cursor
 map({ "n", "t" }, "]]", function()
 	Snacks.words.jump(vim.v.count1)
