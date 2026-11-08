@@ -8,12 +8,45 @@ any setup. `make install` only links the few files that have to live outside
 `make install` **reports** missing tools. It never installs them, so you
 decide what goes on each machine. The steps below are the whole sequence.
 
+## How it works
+
+There is one repo, and it is cloned *as* `~/.config` on every machine.
+There's no separate `~/dotfiles` folder, and no stow or chezmoi.
+
+- **Most tools need nothing.** Neovim, Ghostty, Alacritty, starship,
+  lazygit, gh-dash, k9s and bat all read `~/.config/<tool>`, which is the
+  repo.
+- **Four files get a symlink**, because their tools only look in `$HOME`:
+
+    | Link | Points at |
+    | --- | --- |
+    | `~/.zshrc` | `zsh/.zshrc` |
+    | `~/.tmux.conf` | `tmux/tmux.conf` |
+    | `~/.gitconfig` | `git/gitconfig` |
+    | `~/.ssh/config` | `ssh/config` (only if you restored it; it's gitignored) |
+
+    The list is `LINKS` in `bootstrap`, and it should stay that short.
+- **Generated files are not committed.** The theme fragments are rebuilt by
+  `make install` from `theme/palettes/`.
+- **Per-machine differences go in gitignored local files**
+  (`~/.zshrc.local`, `ghostty/local.conf`), not in `if hostname == …`
+  branches. macOS-vs-Linux differences that every machine of that OS shares
+  are handled in the config itself (`$OSTYPE` checks, every Homebrew prefix).
+- **Everything else a tool writes into `~/.config`** (caches, tokens, login
+  state) is gitignored. This repo is public, so new directories in
+  `git status` get a decision before anything is added. See
+  [Maintenance](maintenance.md).
+
+Changing something on one machine is a normal commit and push. Every other
+machine picks it up with `git pull && make install`
+([Keeping a machine in sync](#keeping-a-machine-in-sync)).
+
 !!! info "Homebrew everywhere, including Linux"
     The tool list in `bootstrap` is a list of Homebrew formulae. On Linux, use
     [Homebrew on Linux](https://docs.brew.sh/Homebrew-on-Linux) too. The
     alternative is distro packages, which cause three problems:
 
-    - Debian and Ubuntu ship a Neovim older than the 0.11 this config needs.
+    - Debian and Ubuntu ship a Neovim older than the 0.12 this config needs.
     - apt renames binaries (`bat` becomes `batcat`, `fd` becomes `fdfind`),
       and `.zshrc` looks for the real names.
     - Half the list (`delta`, `eza`, `lazygit`, `starship`…) isn't packaged at
@@ -114,15 +147,19 @@ what it does:
    clone has none, they're gitignored) and fetches the `bat` theme that Tokyo
    Night needs.
 
-## What the repo can't carry
+## First run
 
-These are per-machine or secret, so they aren't in the repo and nothing
-checks for them:
+The repo can't carry secrets, logins or per-machine state, and nothing
+checks for them, so do these once per machine after `make install`:
 
 | What | Command | Needed for |
 | --- | --- | --- |
 | SSH config | restore `ssh/config` from the password manager, `chmod 600`, re-run `make install` | the `github`, `prox-*`, `macmini*` and Hetzner hosts |
+| Push over SSH | `git -C ~/.config remote set-url origin git@github.com:codephilip/dotfiles.git` | pushing from this machine (the clone above is HTTPS, which works before SSH keys exist) |
 | GitHub auth | `gh auth login` | `gh`, gh-dash, octo.nvim. The token lives in the OS keychain |
+| PR dashboard | `gh extension install dlvhdr/gh-dash` | `gh dash`. Its config is already in `gh-dash/` |
+| Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash` | the `claude` CLI and its Neovim integration |
+| Copilot | `:Copilot auth` inside Neovim | inline suggestions. The token goes to `github-copilot/` (gitignored) |
 | Secrets | create `~/.zshrc.local` with `export ANTHROPIC_API_KEY=…` | CodeCompanion in Neovim (inert without it) |
 | Ghostty overrides | `ghostty/local.conf` (gitignored), e.g. `background-blur = macos-glass-regular` on macOS 26+ | per-machine terminal tweaks |
 | Docs toolchain | `brew install mkdocs-material` (or `pip install mkdocs-material`) | `make serve` / `make docs` |
@@ -130,6 +167,22 @@ checks for them:
 `~/.zshrc.local` is sourced last and gitignored. Put anything that differs
 between machines there (secrets, work-only PATH entries, aliases for one
 host) rather than adding `if hostname == …` branches to `.zshrc`.
+
+## Check it worked
+
+Run `make verify` and read the output. Every line should be a ✓ apart from
+the desktop items on a headless server. Then:
+
+- [ ] A new terminal opens zsh with the starship prompt and Nerd Font icons
+      (boxes instead of icons means the font is missing)
+- [ ] `ls -la ~ | grep -- '->'` shows the four symlinks pointing into `~/.config`
+- [ ] `nvim` starts with no errors, and `:Doctor` and `:checkhealth` are clean
+      apart from the expected provider warnings
+- [ ] `:Mason` shows the language servers installed (first launch installs
+      them in the background, so give it a minute)
+- [ ] `theme next` changes the colours in the terminal, prompt and Neovim
+- [ ] `gh auth status` is logged in, and `gh dash` opens
+- [ ] On a Mac, holding ++j++ in Neovim scrolls smoothly (key repeat, below)
 
 ## macOS key repeat
 

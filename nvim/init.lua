@@ -1,6 +1,6 @@
 -- =========================================================
 -- Neovim — minimal, built for reading & exploring code
--- Requires: Neovim >= 0.11, ripgrep, fd, a Nerd Font
+-- Requires: Neovim >= 0.12, ripgrep, fd, a Nerd Font
 -- =========================================================
 
 require("config.options")

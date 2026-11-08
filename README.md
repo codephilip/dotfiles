@@ -22,6 +22,46 @@ every tool.
 | Containers | docker / kubectl aliases, lazydocker, k9s | configs pulled back into `~/.config` |
 | Theme | `tokyonight` · `solarized-osaka` · `catppuccin-mocha` | `theme <name>` switches every tool at once |
 
+## Tools
+
+Everything `make tools` installs, and what each one is for. The install list
+itself lives in [`bootstrap`](bootstrap) (`BREW_FORMULAE`, `BREW_CASKS`).
+`make docs` fails if a tool there is missing from this table.
+
+| Group | Tool | What it does here |
+| --- | --- | --- |
+| **Editor** | `neovim` | the editor; config in `nvim/` |
+| | `tree-sitter-cli` | builds the syntax parsers nvim-treesitter uses |
+| | `ripgrep` · `fd` | grep and file finding, used by the Neovim pickers and the shell |
+| | `node` | runtime for Mason's language servers (vtsls, basedpyright, prettier) and Copilot |
+| | `shellcheck` | shell linting, in Neovim and on `scripts/` |
+| **Shell** | `starship` | prompt, coloured from the active theme |
+| | `fzf` | fuzzy finder: `Ctrl-r` history, `Ctrl-t` files, fzf-tab completion |
+| | `zoxide` | `z <dir>` jumps to frequent directories |
+| | `eza` · `bat` | `ls` and `cat` replacements with icons, git status and syntax highlighting |
+| | `zsh-autosuggestions` · `zsh-syntax-highlighting` | fish-style suggestions and command colouring |
+| | `tlrc` | `tldr <cmd>`: short, example-first man pages |
+| **Terminal** | `ghostty` | the daily terminal (macOS cask) |
+| | `alacritty` | fallback terminal |
+| | `font-jetbrains-mono-nerd-font` | the font everywhere; Nerd Font glyphs for icons |
+| | `tmux` | multiplexer, prefix `Ctrl-a`, auto-attaches over SSH |
+| **Git** | `delta` | side-by-side, syntax-highlighted diffs for `git diff`/`log` |
+| | `lazygit` | git TUI, also `Space g g` in Neovim |
+| | `gh` | GitHub CLI; also runs the gh-dash PR dashboard extension |
+| **Containers** | `lazydocker` | Docker TUI |
+| | `k9s` | Kubernetes TUI |
+| **Runtimes** | `mise` | per-project node / python / go versions from `mise.toml` |
+| **System** | `btop` | process and resource monitor |
+| | `mtr` | traceroute and ping combined |
+| | `ncdu` | find what's eating disk space |
+| | `watch` | re-run a command every few seconds |
+| | `jq` | JSON on the command line |
+
+Not from Homebrew, so `make verify` prints their versions for comparing
+machines: **Claude Code** (`claude`, native installer) and **mkdocs-material**
+(docs site). Inside Neovim, **Mason** installs the language servers and
+formatters. Run `:Mason` to see them.
+
 ## Quick start
 
 This repo **is** `~/.config`, so clone it there. `make install` links the few
@@ -45,11 +85,13 @@ nvim               # plugins install themselves; :Mason for language servers
 **Windows:** `make windows` from Git Bash with scoop. See
 [docs/windows.md](docs/windows.md).
 
-After that, restore the things a public repo can't hold: `ssh/config`,
-`gh auth login`, and `~/.zshrc.local` for secrets. On a Mac, also fix key
-repeat. Both are covered in **[docs/setup.md](docs/setup.md)**, along with the
-per-distro Linux steps, adopting an existing `~/.config`, and keeping machines
-in sync.
+After that, do the one-time logins a public repo can't hold: restore
+`ssh/config`, `gh auth login`, `gh extension install dlvhdr/gh-dash`, install
+Claude Code, `:Copilot auth` in Neovim, and put secrets in `~/.zshrc.local`.
+On a Mac, also fix key repeat. **[docs/setup.md](docs/setup.md)** has all of
+it: how the repo is laid out on disk, the per-distro Linux steps, the
+[first-run list](docs/setup.md#first-run), a checklist to confirm it worked,
+adopting an existing `~/.config`, and keeping machines in sync.
 
 ## Everyday commands
 
@@ -111,7 +153,7 @@ make docs                      # strict build into ./site; fails on dead links
 
 | Page | What's there |
 | --- | --- |
-| [Setup](docs/setup.md) | new machine on macOS / Linux / Windows, secrets, syncing machines |
+| [Setup](docs/setup.md) | how it works, new machine on macOS / Linux / Windows, first-run logins, syncing machines |
 | [Neovim](docs/neovim/index.md) | architecture, every plugin, key bindings, PR review, CI, AI workflow |
 | [Shell](docs/shell/index.md) | zsh, prompt, fzf bindings, aliases and functions |
 | [tmux](docs/tmux.md) | every key, stock and ours |

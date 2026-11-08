@@ -7,6 +7,7 @@
 #   make windows   install everything on Windows (scoop + MSYS2 zsh/tmux)
 #   make serve     live-reload docs at http://127.0.0.1:8000
 #   make docs      build the static site into ./site
+#   make readme    check the README tool table covers every tool in bootstrap
 #   make pdf       render the executive brief to PDF
 #   make all       docs + pdf
 # =========================================================
@@ -17,7 +18,7 @@ BRIEF_PDF  := docs/assets/executive-brief.pdf
 # Override on Linux: make pdf CHROME=google-chrome (or chromium)
 CHROME     ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 
-.PHONY: all install verify tools windows serve docs pdf clean check help
+.PHONY: all install verify tools windows serve docs readme pdf clean check help
 
 help:
 	@grep -E '^#   make' $(MAKEFILE_LIST) | sed 's/^#   //'
@@ -42,8 +43,16 @@ windows:
 serve:
 	mkdocs serve
 
-docs: pdf
+docs: readme pdf
 	mkdocs build --strict
+
+# The README describes every tool in bootstrap. The list itself stays in
+# bootstrap; this only fails when a tool there has no row in the README.
+readme:
+	@missing=$$(./bootstrap --tools | sed 's/^brew install //; s/^--cask //' | grep -v '^\#' | tr ' ' '\n' \
+		| grep . | while read -r t; do grep -q "\`$$t\`" README.md || echo "$$t"; done); \
+	if [ -n "$$missing" ]; then echo "✗ in bootstrap but not in the README Tools table:" $$missing; exit 1; fi; \
+	echo "✓ README lists every bootstrap tool"
 
 # Chrome headless is the only PDF renderer on this machine. --no-pdf-header-footer
 # drops the default URL/date chrome; the @media print block in the HTML handles

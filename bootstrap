@@ -42,7 +42,10 @@ LINKS=(
 # Tools the configs actually reference. Missing ones degrade gracefully
 # (.zshrc guards every integration with `command -v`), so this reports
 # rather than installs — you stay in control of what lands on the machine.
-BREW_FORMULAE=(bat btop delta eza fd fzf gh jq k9s lazydocker lazygit mise mtr ncdu neovim ripgrep
+# node is here for Neovim, not for projects: Mason installs vtsls,
+# basedpyright, prettier and Copilot's server through npm. Project
+# versions come from mise, which shadows this one inside a mise.toml dir.
+BREW_FORMULAE=(bat btop delta eza fd fzf gh jq k9s lazydocker lazygit mise mtr ncdu neovim node ripgrep
                shellcheck starship tlrc tmux tree-sitter-cli watch zoxide
                zsh-autosuggestions zsh-syntax-highlighting)
 
