@@ -33,9 +33,14 @@ There's no separate `~/dotfiles` folder, and no stow or chezmoi.
   branches. macOS-vs-Linux differences that every machine of that OS shares
   are handled in the config itself (`$OSTYPE` checks, every Homebrew prefix).
 - **Everything else a tool writes into `~/.config`** (caches, tokens, login
-  state) is gitignored. This repo is public, so new directories in
-  `git status` get a decision before anything is added. See
-  [Maintenance](maintenance.md).
+  state) is ignored by default. `.gitignore` is an allowlist: it ignores
+  the whole top level and re-includes only the directories this repo
+  tracks. The repo is public, so a new tool's directory stays invisible
+  until you choose to track it. See [Maintenance](maintenance.md).
+- **Private lines stay local.** A line in `gh-dash/config.yml` that ends in
+  `# local-only` (a client repo's path, say) is kept in your working copy
+  but stripped before git stores the file. `make install` sets up the git
+  filter that does this.
 
 Changing something on one machine is a normal commit and push. Every other
 machine picks it up with `git pull && make install`

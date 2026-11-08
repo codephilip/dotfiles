@@ -149,6 +149,28 @@ for entry in "${LINKS[@]}"; do
   link_one "${entry%%:*}" "${entry#*:}"
 done
 
+# --- Git filter: local-only lines --------------------------
+# .gitattributes routes some files (gh-dash/config.yml) through the
+# `localonly` filter, which drops every line ending in `# local-only`
+# before git stores the file. That keeps private repo names and paths
+# on this machine. Filter definitions live in .git/config, which a
+# clone doesn't carry, so they're set here. Without this a tagged line
+# would be committed like any other.
+bold $'\nGit filters'
+want_clean="sed '/# local-only\$/d'"
+if [[ ! -d $CONFIG/.git ]]; then
+  dim "  – not a git checkout, nothing to configure"
+elif [[ $(git -C "$CONFIG" config --get filter.localonly.clean) == "$want_clean" ]]; then
+  green "  ✓ localonly filter configured"
+elif (( CHECK_ONLY )); then
+  red "  ! localonly filter not configured — '# local-only' lines would be committed"
+  dim "    run: make install"
+else
+  git -C "$CONFIG" config filter.localonly.clean "$want_clean"
+  git -C "$CONFIG" config filter.localonly.smudge cat
+  green "  + configured localonly filter (strips '# local-only' lines on commit)"
+fi
+
 # Homebrew's prefix differs per machine -- /opt/homebrew on Apple
 # Silicon, /usr/local on Intel, /home/linuxbrew/.linuxbrew on Linux --
 # and these tools are just as often installed by cargo, npm, a distro

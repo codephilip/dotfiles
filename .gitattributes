@@ -6,3 +6,9 @@
 *.png binary
 *.jpg binary
 *.ico binary
+
+# Lines ending in `# local-only` stay on this machine. The clean filter
+# drops them before git stores the file, so they are never committed,
+# while the working copy keeps them. bootstrap defines the filter in
+# .git/config; see docs/maintenance.md.
+gh-dash/config.yml filter=localonly

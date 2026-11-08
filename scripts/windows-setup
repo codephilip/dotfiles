@@ -121,6 +121,13 @@ else
   green "  ✓ ~/.zshenv sets ZDOTDIR"
 fi
 
+# Same as bootstrap: strip `# local-only` lines before git stores a file
+# (see .gitattributes), so private repo paths never get committed.
+bold $'\nGit filters'
+git -C "$CONFIG" config filter.localonly.clean "sed '/# local-only\$/d'"
+git -C "$CONFIG" config filter.localonly.smudge cat
+green "  ✓ localonly filter configured"
+
 # ---------------------------------------------------------
 # alacritty.toml imports alacritty/local.toml (gitignored) for exactly
 # this: per-machine settings that would break the Mac if shared.

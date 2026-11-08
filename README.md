@@ -138,7 +138,9 @@ edit them by hand.
 
 **Not tracked, on purpose:** `ssh/`, `~/.zshrc.local`, `ghostty/local.conf`,
 and the state other tools write into `~/.config` (gh tokens, stripe keys,
-caches). See [`.gitignore`](.gitignore).
+caches). [`.gitignore`](.gitignore) is an **allowlist**: everything at the
+top level is ignored except the directories it names, so a new tool's
+directory is invisible to git until you add it.
 
 ## Docs
 
@@ -174,8 +176,11 @@ The short version of [docs/maintenance.md](docs/maintenance.md):
   Docs link to these and don't copy them.
 - **Machine-specific settings go in local files** (`~/.zshrc.local`,
   `ghostty/local.conf`), not in hostname checks.
-- **Every new directory in `git status` gets a decision:** track and document
-  it, or gitignore it.
+- **`.gitignore` is an allowlist.** Nothing at the top of `~/.config` is
+  tracked unless `.gitignore` names it with `!/<dir>/`, so a new tool's
+  state never shows up by accident. Track a new config on purpose.
+- **Private lines get `# local-only`.** In `gh-dash/config.yml`, a line
+  ending in `# local-only` stays on this machine and is never committed.
 - **Monthly:** `brew upgrade`, run the
   [Neovim routine](nvim/README.md#maintenance), `make verify`, `make docs`.
   Commit, then on each other machine run

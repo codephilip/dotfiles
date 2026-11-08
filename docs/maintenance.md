@@ -36,17 +36,34 @@ keep it that way.
    shell. Keep it that way: a new integration must not break a minimal
    server.
 
-4. **Tools write state into `~/.config` too.** When a new directory shows up
-   in `git status`, decide right away:
+4. **Tools write state into `~/.config` too, so `.gitignore` is an
+   allowlist.** It starts with `/*`, which ignores everything at the top
+   level, then re-includes each tracked file and directory with a `!/<name>`
+   line. A new tool's directory never appears in `git status`, so it can't
+   be committed by accident.
 
-    - **Config you edited:** track it, and add a section to the right docs
-      page.
-    - **State, caches, sockets, logs, auth tokens:** add it to `.gitignore`
-      with a one-line comment saying what wrote it.
+    - **To track a new tool's config:** read the whole directory first, add
+      `!/<dir>/` to the allowlist, and add a section to the right docs page.
+    - **State inside a tracked directory** (caches, sockets, logs, auth
+      tokens): the allowlist re-includes everything under a directory it
+      names, so list that state by path in the second half of
+      `.gitignore`, with a comment saying what wrote it (see `herdr/`).
 
-    Never commit a directory you haven't read. `stripe/` held live API keys.
+    Never allowlist a directory you haven't read. `stripe/` held live API
+    keys, and `github-copilot/` an OAuth token. Check with
+    `git ls-files -ci --exclude-standard`, which should print nothing (a
+    tracked file that is also ignored).
 
-5. **Docs describe what is, not what could be.** If a feature is removed,
+5. **Private values get `# local-only`.** For a line that belongs on one
+   machine but has nowhere else to live, such as a client repo's path in
+   `gh-dash/config.yml`, end it with `# local-only`. The `localonly` git
+   filter (`.gitattributes`, set up by `make install`) strips those lines
+   before git stores the file, so they stay in your working copy and never
+   reach a commit. To use it on another file, add
+   `<path> filter=localonly` to `.gitattributes`. Check with
+   `git show :<path>`, which shows what git will store.
+
+6. **Docs describe what is, not what could be.** If a feature is removed,
    remove its docs in the same commit.
 
 ## Where things are documented
@@ -74,7 +91,9 @@ keep it that way.
 - [ ] Guard any `.zshrc` integration with `command -v`
 - [ ] If it reads config from `~/Library/Application Support` on macOS
       (k9s, lazydocker do), point it back at `~/.config` and note how
-- [ ] Gitignore the state it writes, then document it on the relevant page
+- [ ] If it has config worth tracking, add `!/<dir>/` to `.gitignore` and
+      list any state it writes inside that directory. Otherwise do nothing:
+      the allowlist already ignores it. Then document it on the relevant page
 
 ### Adding a docs page
 
